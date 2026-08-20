@@ -63,8 +63,9 @@ conserva su dirección.
 - `data/dynamic.txt` — por cuadro: una línea con `t` y luego `N` líneas `x y theta`.
 - `data/polarization.txt` — una línea `t va` por cuadro.
 
-`--save-every k` guarda un cuadro cada `k` pasos, para no escribir corridas
-largas completas.
+`--save-every k` ralea únicamente los cuadros de posiciones: `polarization.txt`
+se escribe en todos los pasos. Con `rho=8` y 20 000 pasos, guardar cada cuadro
+son unos 530 MB, mientras que la serie del observable queda en 20 001 líneas.
 
 ## Modelo
 

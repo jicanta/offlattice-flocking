@@ -16,8 +16,9 @@ void printUsage() {
          "../data/dynamic.txt]\n"
       << "            [--out ../data/polarization.txt]\n\n"
       << "  --n tiene prioridad sobre --rho. --m por defecto usa el maximo\n"
-      << "  admitido. --voter-strict excluye a la particula del sorteo del\n"
-      << "  modelo de votante.\n";
+      << "  admitido. --save-every solo ralea los cuadros de posiciones: el\n"
+      << "  observable se escribe en todos los pasos. --voter-strict excluye a\n"
+      << "  la particula del sorteo del modelo de votante.\n";
 }
 
 }  // namespace

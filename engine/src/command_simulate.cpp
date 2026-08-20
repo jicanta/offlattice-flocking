@@ -49,9 +49,9 @@ int runSimulate(const Arguments& arguments) {
 
   for (long step = 1; step <= steps; ++step) {
     flock.advance();
+    writer.writeObservable(step, polarization(flock.angles()));
     if (step % saveEvery == 0) {
       writer.writeFrame(step, flock.particles(), flock.angles());
-      writer.writeObservable(step, polarization(flock.angles()));
     }
   }
 

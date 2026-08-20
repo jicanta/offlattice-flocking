@@ -28,6 +28,9 @@ FlockParameters checked(const FlockParameters& parameters) {
   if (parameters.noise < 0.0) {
     throw std::invalid_argument("eta no puede ser negativo");
   }
+  if (parameters.cellsPerSide < 0) {
+    throw std::invalid_argument("M no puede ser negativo");
+  }
   return parameters;
 }
 
@@ -38,10 +41,8 @@ double wrapAngle(double angle) {
 
 double wrapCoordinate(double coordinate, double side) {
   const double shifted = std::fmod(coordinate, side);
-  if (shifted < 0.0) {
-    return shifted + side;
-  }
-  return shifted < side ? shifted : 0.0;
+  const double inside = shifted < 0.0 ? shifted + side : shifted;
+  return inside < side ? inside : 0.0;
 }
 
 }  // namespace
