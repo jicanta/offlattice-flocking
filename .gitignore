@@ -1,0 +1,14 @@
+# build artifacts
+build/
+*.o
+*.d
+sim
+
+# simulation output
+output/
+*.txt.gz
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
