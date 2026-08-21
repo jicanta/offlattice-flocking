@@ -40,16 +40,18 @@ int runSimulate(const Arguments& arguments) {
   const OutputPaths paths{
       arguments.text("static", "../data/static.txt"),
       arguments.text("dynamic", "../data/dynamic.txt"),
-      arguments.text("out", "../data/polarization.txt")};
+      arguments.text("out", "../data/observables.txt")};
 
   Flock flock(parameters);
   TrajectoryWriter writer(paths, parameters, steps, saveEvery);
   writer.writeFrame(0, flock.particles(), flock.angles());
-  writer.writeObservable(0, polarization(flock.angles()));
+  writer.writeObservable(0, polarization(flock.angles()),
+                         largestClusterFraction(flock.neighbors()));
 
   for (long step = 1; step <= steps; ++step) {
     flock.advance();
-    writer.writeObservable(step, polarization(flock.angles()));
+    writer.writeObservable(step, polarization(flock.angles()),
+                           largestClusterFraction(flock.neighbors()));
     if (step % saveEvery == 0) {
       writer.writeFrame(step, flock.particles(), flock.angles());
     }
@@ -70,6 +72,7 @@ int runSimulate(const Arguments& arguments) {
   }
   std::cout << "pasos: " << steps << "\n"
             << "va final: " << polarization(flock.angles()) << "\n"
+            << "S final: " << largestClusterFraction(flock.neighbors()) << "\n"
             << "busqueda de vecinos: " << flock.neighborMilliseconds()
             << " ms en " << flock.searches() << " llamadas ("
             << flock.neighborMilliseconds() / flock.searches()

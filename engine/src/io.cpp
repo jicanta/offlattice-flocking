@@ -45,6 +45,7 @@ void TrajectoryWriter::writeFrame(long step, const Particles& particles,
   }
 }
 
-void TrajectoryWriter::writeObservable(long step, double value) {
-  observable_ << step << " " << value << "\n";
+void TrajectoryWriter::writeObservable(long step, double polarization,
+                                       double clusterFraction) {
+  observable_ << step << " " << polarization << " " << clusterFraction << "\n";
 }

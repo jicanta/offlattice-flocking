@@ -20,7 +20,8 @@ class TrajectoryWriter {
 
   void writeFrame(long step, const Particles& particles,
                   const std::vector<double>& angles);
-  void writeObservable(long step, double value);
+  void writeObservable(long step, double polarization,
+                       double clusterFraction);
 
  private:
   std::ofstream dynamic_;
