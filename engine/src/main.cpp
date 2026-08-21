@@ -14,11 +14,20 @@ void printUsage() {
       << "            [--method cim|brute] [--m <M>] [--voter-strict]\n"
       << "            [--static ../data/static.txt] [--dynamic "
          "../data/dynamic.txt]\n"
-      << "            [--out ../data/polarization.txt]\n\n"
+      << "            [--out ../data/observables.txt]\n\n"
+      << "  sweep     [--models vicsek,voter] [--rhos 2,4,8]\n"
+      << "            [--etas 0:5:0.25] [--seeds 5] [--seed 1]\n"
+      << "            [--steps 5000] [--jobs <hilos>] [--l 10] [--rc 1]\n"
+      << "            [--v 0.03] [--dt 1] [--m <M>] [--voter-strict]\n"
+      << "            [--dir ../data/sweep]\n\n"
+      << "  bench     [--ns 100,200,400,800,1600,3200] [--ms <lista de M>]\n"
+      << "            [--steps 200] [--repeats 3] [--no-brute] [--l 10]\n"
+      << "            [--rc 1] [--eta 1.5] [--out ../data/bench.txt]\n\n"
       << "  --n tiene prioridad sobre --rho. --m por defecto usa el maximo\n"
-      << "  admitido. --save-every solo ralea los cuadros de posiciones: el\n"
-      << "  observable se escribe en todos los pasos. --voter-strict excluye a\n"
-      << "  la particula del sorteo del modelo de votante.\n";
+      << "  admitido. --save-every solo ralea los cuadros de posiciones: los\n"
+      << "  observables se escriben en todos los pasos. --voter-strict excluye\n"
+      << "  a la particula del sorteo del modelo de votante. sweep no guarda\n"
+      << "  posiciones: solo la serie temporal de va y S por corrida.\n";
 }
 
 }  // namespace
@@ -28,6 +37,12 @@ int main(int argc, char** argv) {
     const Arguments arguments(argc, argv);
     if (arguments.command() == "simulate") {
       return runSimulate(arguments);
+    }
+    if (arguments.command() == "sweep") {
+      return runSweep(arguments);
+    }
+    if (arguments.command() == "bench") {
+      return runBench(arguments);
     }
     printUsage();
     return 1;
