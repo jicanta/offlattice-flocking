@@ -140,6 +140,25 @@ python3 visualization/animate.py --desde 1000 --stride 3 --frames 500
 `--desde` saltea el transitorio y anima solo el estacionario, que es lo que hay
 que mostrar cuando la animación acompaña a un valor escalar del observable.
 
+Caso complementario, **fuera de los parámetros del enunciado** (que fija
+`L = 10` y `rho = 2, 4, 8`), útil para el ítem (e) porque es el único régimen
+que da `S < 1` con `va` alto:
+
+```bash
+# estacionario fragmentado: bandada dominante mas grupos satelite separados
+./build/flock simulate --l 40 --rho 0.6 --eta 0.2 --steps 8000 --seed 5 --save-every 25
+python3 visualization/animate.py --desde 2000 --frames 250 --arrow 1.2
+```
+
+Da `va` ~ 0.98 con `S` ~ 0.85 sostenido hasta el final: el sistema queda
+permanentemente fragmentado en el espacio y permanentemente alineado en la
+dirección. Si se usa en el informe, hay que declarar `L` y `rho` en el epígrafe
+y rotularlo como estudio complementario, no mezclarlo con las figuras del
+barrido principal.
+
+`--arrow` (y `--flecha` en `dynamic.py`) ajusta la longitud de la flecha: en una
+caja de lado 40 el valor por defecto de 0.35 queda demasiado chico.
+
 Las figuras van a `data/figures/`. El criterio de estado estacionario vive en
 `visualization/common.py`: se toma como referencia la media de la segunda mitad de la
 corrida y el estacionario arranca en el primer bloque que cruza esa referencia.
