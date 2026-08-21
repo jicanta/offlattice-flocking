@@ -129,10 +129,15 @@ partículas autopropulsadas; objetivo del trabajo: caracterizar la polarización
 ### 2. Modelo
 - Caja cuadrada de lado *L* = 10 con condiciones periódicas de contorno.
 - Regla de actualización de posiciones — **Ec. (1)**.
-- Regla de actualización de direcciones, modelo estándar (promedio de vecinos
-  dentro de *r*<sub>c</sub> + ruido *η*) — **Ec. (2)**.
-- Regla del modelo de votante (copia de la dirección de **un** vecino elegido al
-  azar + ruido *η*) [2] — **Ec. (3)**.
+- Regla de actualización de direcciones, modelo estándar (promedio vectorial de
+  las direcciones de los vecinos dentro de *r*<sub>c</sub> + ruido *η*) —
+  **Ec. (2)**. **Criterio confirmado por la cátedra:** el promedio del modelo
+  estándar **incluye a la propia partícula**; debe explicitarse en el texto que
+  acompaña a la Ec. (2).
+- Regla del modelo de votante: la partícula **copia** la dirección
+  *θ*<sub>j</sub>(*t*) de **un** vecino elegido al azar, sin promediar, más el
+  ruido *η* [2] — **Ec. (3)**. La copia se toma del estado en *t* (actualización
+  sincrónica).
 - Observable polarización *v*<sub>a</sub> — **Ec. (4)**.
 - Definición de cluster (cadena de vecinos dentro de *r*<sub>c</sub>) y del
   observable *S* (fracción de nodos en el cluster mayor) — **Ec. (5)**.
@@ -186,6 +191,9 @@ de la transición con ρ, comparación cuantitativa estándar vs. votante, relac
 
 ## 3. Checklist previo a la entrega
 
+- [ ] Explicitado en el texto de la Ec. (2) que el promedio del modelo estándar
+      incluye a la propia partícula, y en la Ec. (3) que el votante copia
+      *θ*<sub>j</sub>(*t*).
 - [ ] Secciones y sub-secciones numeradas; "Referencias" sin numerar.
 - [ ] Todas las ecuaciones numeradas y citadas como "Ec. (n)" en el texto.
 - [ ] Símbolos definidos tras cada ecuación; escalares en itálica, vectores en

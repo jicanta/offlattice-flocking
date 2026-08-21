@@ -8,7 +8,8 @@ Method.
 tp-2/
 ├── engine/           # C++: dinámica, CIM, fuerza bruta, timing
 │   ├── include/      # flock, observables, neighbor_search, geometry, io…
-│   └── src/          # main + un archivo por comando (simulate)
+│   └── src/          # main + un archivo por comando (simulate, sweep, bench)
+├── analysis/         # Python: animación y figuras del informe
 ├── data/             # salida generada (ignorado por git)
 └── INFORME.md        # formato y estructura del informe
 ```
@@ -57,15 +58,56 @@ producen trayectorias idénticas.
 defecto participa, lo que además define el caso de una partícula aislada:
 conserva su dirección.
 
+Barrer el espacio de parámetros que necesitan las curvas de los ítems (c), (d)
+y (e). Cada corrida escribe solo su serie temporal de observables, no las
+posiciones, y las corridas se reparten entre todos los núcleos:
+
+```bash
+./build/flock sweep --rhos 2,4,8 --etas 0:5:0.25 --seeds 5 --steps 20000
+```
+
+Medir el costo de la búsqueda de vecinos para el ítem (g):
+
+```bash
+./build/flock bench --ns 100,200,400,800,1600,3200 --steps 200 --repeats 3
+```
+
 ## Salida
 
 - `data/static.txt` — parámetros de la corrida, un `clave valor` por línea.
 - `data/dynamic.txt` — por cuadro: una línea con `t` y luego `N` líneas `x y theta`.
-- `data/polarization.txt` — una línea `t va` por cuadro.
+- `data/observables.txt` — una línea `t va S` por paso.
+- `data/sweep/` — una serie `t va S` por corrida del barrido, más `index.txt`
+  con una línea por corrida (`model rho N eta seed steps L rc v dt archivo`).
+- `data/bench.txt` — una línea por medición: `método N M L rc pasos repetición
+  ms_totales ms_por_búsqueda`.
 
-`--save-every k` ralea únicamente los cuadros de posiciones: `polarization.txt`
-se escribe en todos los pasos. Con `rho=8` y 20 000 pasos, guardar cada cuadro
-son unos 530 MB, mientras que la serie del observable queda en 20 001 líneas.
+`--save-every k` ralea únicamente los cuadros de posiciones: los observables se
+escriben en todos los pasos. Con `rho=8` y 20 000 pasos, guardar cada cuadro son
+unos 530 MB, mientras que la serie de observables queda en 20 001 líneas. Por eso
+`sweep` no guarda posiciones: las animaciones salen de corridas puntuales de
+`simulate`.
+
+## Análisis y figuras
+
+`pip install -r requirements.txt` y después, desde la raíz del repositorio:
+
+```bash
+python3 analysis/animate.py --out-file data/figures/vicsek.mp4   # (a) animación
+python3 analysis/animate.py --snapshots 0,100,2000               # (a) cuadros para el PDF
+python3 analysis/temporal.py --mode eta --model vicsek --rho 4   # (b) va(t) y S(t)
+python3 analysis/temporal.py --mode rho --model vicsek --eta 2   # (d) S(t) por densidad
+python3 analysis/temporal.py --mode model --rho 4 --eta 2        # (f) Vicsek vs votante
+python3 analysis/curves.py                                       # (c) (d) (e) + resumen.csv
+python3 analysis/bench.py --tp1 data/tp1.txt                     # (g) tiempos contra el TP1
+```
+
+Las figuras van a `data/figures/`. El criterio de estado estacionario vive en
+`analysis/common.py`: se toma como referencia la media de la segunda mitad de la
+corrida y el estacionario arranca en el primer bloque que cruza esa referencia.
+El mismo *t*eq se usa para `va` y para `S`. `curves.py` avisa qué puntos todavía
+derivan en el último cuarto de la corrida, es decir cuáles necesitan más pasos;
+`--teq` fuerza un valor único si se prefiere un criterio conservador y uniforme.
 
 ## Modelo
 
@@ -79,8 +121,24 @@ theta_i(t+1) = base_i(t) + U[-eta/2, eta/2]
 ```
 
 - **Vicsek**: `base_i` es el promedio vectorial de las direcciones dentro de
-  `rc`, incluida la propia partícula.
-- **Votante**: `base_i` es la dirección de un único vecino elegido al azar.
+  `rc` **incluyendo a la propia partícula**, que es el criterio estándar fijado
+  por la cátedra:
+
+  ```
+  base_i = atan2( sin(theta_i) + sum_j sin(theta_j),
+                  cos(theta_i) + sum_j cos(theta_j) )
+  ```
+
+  La lista de vecinos nunca contiene a `i` (los pares se registran una sola vez,
+  con `first < second`), así que la dirección propia entra exactamente una vez y
+  no hay doble conteo. Una partícula sin vecinos conserva su dirección más el
+  ruido.
+
+- **Votante**: `base_i` es la dirección de un único vecino elegido al azar, que
+  se copia tal cual —sin promediar— tomando su ángulo `theta_j(t)` del paso
+  actual. Como las direcciones nuevas se escriben en un buffer aparte y recién
+  se intercambian al final del paso, todas las copias de un mismo paso leen el
+  estado en `t`.
 
 ## Verificación
 
