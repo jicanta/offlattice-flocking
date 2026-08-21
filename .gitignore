@@ -9,3 +9,5 @@ __pycache__/
 # Datos y figuras generadas
 data/*
 !data/.gitkeep
+visualization/polarizacion_temporal.png
+visualization/animacion.mp4
