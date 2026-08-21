@@ -5,8 +5,8 @@ promediado sobre las repeticiones. Con --tp1 se superponen los tiempos del TP1
 para la comparacion que pide la consigna: el archivo debe tener dos columnas,
 `N` y `ms_por_busqueda`, una linea por medicion.
 
-    python3 analysis/bench.py
-    python3 analysis/bench.py --tp1 data/tp1.txt --log
+    python3 visualization/bench.py
+    python3 visualization/bench.py --tp1 data/tp1.txt --log
 """
 
 from __future__ import annotations

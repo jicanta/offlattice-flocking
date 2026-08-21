@@ -4,9 +4,9 @@ estacionario marcado con una linea vertical.
 Los datos salen del barrido (data/sweep), asi que las mismas corridas que
 alimentan las curvas de los items (c), (d) y (e) son las que se muestran aca.
 
-    python3 analysis/temporal.py --mode eta   --model vicsek --rho 4 --etas 0.5,2,4
-    python3 analysis/temporal.py --mode rho   --model vicsek --eta 2
-    python3 analysis/temporal.py --mode model --rho 4 --eta 2
+    python3 visualization/temporal.py --mode eta   --model vicsek --rho 4 --etas 0.5,2,4
+    python3 visualization/temporal.py --mode rho   --model vicsek --eta 2
+    python3 visualization/temporal.py --mode model --rho 4 --eta 2
 """
 
 from __future__ import annotations

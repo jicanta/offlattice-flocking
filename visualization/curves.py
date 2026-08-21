@@ -10,8 +10,8 @@ cada corrida y despues entre realizaciones, y genera:
 
 Los dos modelos se superponen en cada figura, que es lo que pide el item (f).
 
-    python3 analysis/curves.py
-    python3 analysis/curves.py --error sem --models vicsek
+    python3 visualization/curves.py
+    python3 visualization/curves.py --error sem --models vicsek
 """
 
 from __future__ import annotations

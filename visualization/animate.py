@@ -7,8 +7,8 @@ direccion, no modulo. El PDF de la entrega no puede llevar animaciones
 embebidas, por eso el modo --snapshots genera la tira de cuadros que si va
 impresa, con el link a la animacion aparte.
 
-    python3 analysis/animate.py --out-file data/figures/vicsek_eta0.5.mp4
-    python3 analysis/animate.py --snapshots 0,200,2000
+    python3 visualization/animate.py --out-file data/figures/vicsek_eta0.5.mp4
+    python3 visualization/animate.py --snapshots 0,200,2000
 """
 
 from __future__ import annotations

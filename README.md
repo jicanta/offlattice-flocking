@@ -9,7 +9,7 @@ tp-2/
 ├── engine/           # C++: dinámica, CIM, fuerza bruta, timing
 │   ├── include/      # flock, observables, neighbor_search, geometry, io…
 │   └── src/          # main + un archivo por comando (simulate, sweep, bench)
-├── analysis/         # Python: animación y figuras del informe
+├── visualization/    # Python: animaciones y figuras del informe
 ├── data/             # salida generada (ignorado por git)
 └── INFORME.md        # formato y estructura del informe
 ```
@@ -93,17 +93,36 @@ unos 530 MB, mientras que la serie de observables queda en 20 001 líneas. Por e
 `pip install -r requirements.txt` y después, desde la raíz del repositorio:
 
 ```bash
-python3 analysis/animate.py --out-file data/figures/vicsek.mp4   # (a) animación
-python3 analysis/animate.py --snapshots 0,100,2000               # (a) cuadros para el PDF
-python3 analysis/temporal.py --mode eta --model vicsek --rho 4   # (b) va(t) y S(t)
-python3 analysis/temporal.py --mode rho --model vicsek --eta 2   # (d) S(t) por densidad
-python3 analysis/temporal.py --mode model --rho 4 --eta 2        # (f) Vicsek vs votante
-python3 analysis/curves.py                                       # (c) (d) (e) + resumen.csv
-python3 analysis/bench.py --tp1 data/tp1.txt                     # (g) tiempos contra el TP1
+python3 visualization/animate.py --out-file data/figures/vicsek.mp4   # (a) animación
+python3 visualization/animate.py --snapshots 0,100,2000               # (a) cuadros para el PDF
+python3 visualization/temporal.py --mode eta --model vicsek --rho 4   # (b) va(t) y S(t)
+python3 visualization/temporal.py --mode rho --model vicsek --eta 2   # (d) S(t) por densidad
+python3 visualization/temporal.py --mode model --rho 4 --eta 2        # (f) Vicsek vs votante
+python3 visualization/curves.py                                       # (c) (d) (e) + resumen.csv
+python3 visualization/bench.py --tp1 data/tp1.txt                     # (g) tiempos contra el TP1
 ```
 
+`dynamic.py` y `polarization.py` son entradas sueltas para mirar una corrida
+puntual: la animación de un `dynamic.txt` y la evolución de `va` con un `t_eq`
+elegido a mano. El resto trabaja sobre el barrido completo y comparte
+`common.py`:
+
+| Script | Qué hace |
+|---|---|
+| `dynamic.py` | animación de una corrida, `-N` y `L` salen de `static.txt` |
+| `polarization.py` | `va(t)` de una corrida con `--teq` manual |
+| `animate.py` | animación y tira de cuadros para el PDF |
+| `temporal.py` | `va(t)` y `S(t)` con el `t_eq` automático |
+| `curves.py` | curvas contra `eta`, `va` contra `S` y `resumen.csv` |
+| `bench.py` | tiempos del CIM contra el TP1 |
+
+Las flechas se dibujan con longitud fija (`--flecha`, `--arrow`): con `v = 0.03`
+y `L = 10` el desplazamiento por paso es un 0.3 % de la caja, así que la flecha
+indica dirección y no módulo. Como la rapidez es común a todas las partículas,
+no se pierde información al hacerlo.
+
 Las figuras van a `data/figures/`. El criterio de estado estacionario vive en
-`analysis/common.py`: se toma como referencia la media de la segunda mitad de la
+`visualization/common.py`: se toma como referencia la media de la segunda mitad de la
 corrida y el estacionario arranca en el primer bloque que cruza esa referencia.
 El mismo *t*eq se usa para `va` y para `S`. `curves.py` avisa qué puntos todavía
 derivan en el último cuarto de la corrida, es decir cuáles necesitan más pasos;

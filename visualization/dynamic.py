@@ -9,17 +9,57 @@ import argparse
 # CONFIGURACIÓN
 # =========================================================
 
-L = 10.0                 # lado de la caja
-VELOCIDAD = 0.1          # módulo de la velocidad
-ESCALA_VECTOR = 4.0      # escala visual de los vectores
+L = 10.0                 # lado de la caja (se sobrescribe con static.txt)
+VELOCIDAD = 0.03         # módulo de la velocidad (se sobrescribe con static.txt)
 FPS = 20
+
+# Longitud con la que se dibuja cada flecha, en unidades de la caja.
+#
+# No se usa el módulo real de la velocidad: con v = 0.03 y L = 10 el
+# desplazamiento por paso es un 0.3% del ancho de la caja y las flechas se ven
+# como puntos sueltos. La flecha indica dirección, no módulo, y todas miden lo
+# mismo porque en este modelo la rapidez es común a todas las partículas.
+LONGITUD_FLECHA = 0.35
 
 
 # =========================================================
 # LECTURA DE DATOS
 # =========================================================
 
-def leer_datos(nombre_archivo, N):
+def leer_estatico(nombre_archivo):
+    """
+    Lee static.txt, que trae un `clave valor` por línea.
+
+    Devuelve un diccionario vacío si el archivo no existe, de modo que el
+    script siga andando con los valores por defecto.
+    """
+
+    parametros = {}
+
+    try:
+        with open(nombre_archivo, "r") as archivo:
+
+            for linea in archivo:
+
+                valores = linea.split()
+
+                if len(valores) != 2:
+                    continue
+
+                clave, valor = valores
+
+                try:
+                    parametros[clave] = float(valor)
+                except ValueError:
+                    parametros[clave] = valor
+
+    except FileNotFoundError:
+        return {}
+
+    return parametros
+
+
+def leer_datos(nombre_archivo, N, maximo_frames=None, salto=1):
     """
     Lee un archivo generado por TrajectoryWriter.
 
@@ -33,16 +73,44 @@ def leer_datos(nombre_archivo, N):
 
         1
         x1 y1 theta1
-        x2 y2 theta2
         ...
-        xN yN thetaN
 
     La primera línea de cada bloque es el número de frame/step.
+
+    `salto` toma uno de cada k bloques y `maximo_frames` corta la lectura:
+    dynamic.txt de una corrida larga tiene millones de líneas y no entra en
+    memoria si se lo carga entero.
     """
 
     frames = []
     steps = []
     posiciones = []
+
+    step_actual = None
+    bloques_leidos = 0
+
+    def guardar_frame():
+        """Cierra el bloque en curso respetando el salto y el máximo."""
+
+        nonlocal posiciones, bloques_leidos
+
+        if not posiciones:
+            return False
+
+        if len(posiciones) != N:
+            raise ValueError(
+                f"Un frame tiene {len(posiciones)} partículas, "
+                f"pero se esperaban N={N}."
+            )
+
+        if bloques_leidos % salto == 0:
+            frames.append(posiciones)
+            steps.append(step_actual)
+
+        bloques_leidos += 1
+        posiciones = []
+
+        return maximo_frames is not None and len(frames) >= maximo_frames
 
     with open(nombre_archivo, "r") as archivo:
 
@@ -62,29 +130,16 @@ def leer_datos(nombre_archivo, N):
 
             if len(valores) == 1:
 
-                # Si ya tenemos partículas del frame anterior,
-                # terminamos de almacenarlo.
-                if posiciones:
-
-                    if len(posiciones) != N:
-                        raise ValueError(
-                            f"El frame anterior tiene "
-                            f"{len(posiciones)} partículas, "
-                            f"pero se esperaban N={N}."
-                        )
-
-                    frames.append(posiciones)
-                    posiciones = []
+                if guardar_frame():
+                    break
 
                 try:
-                    step = int(float(valores[0]))
+                    step_actual = int(float(valores[0]))
                 except ValueError:
                     raise ValueError(
                         f"Línea {numero_linea}: "
                         f"el número de frame no es válido: {valores[0]}"
                     )
-
-                steps.append(step)
 
             # -------------------------------------------------
             # Línea de partícula
@@ -120,15 +175,7 @@ def leer_datos(nombre_archivo, N):
     # Guardar el último frame
     # ---------------------------------------------------------
 
-    if posiciones:
-
-        if len(posiciones) != N:
-            raise ValueError(
-                f"El último frame tiene {len(posiciones)} partículas, "
-                f"pero se esperaban N={N}."
-            )
-
-        frames.append(posiciones)
+    guardar_frame()
 
     # ---------------------------------------------------------
     # Verificaciones
@@ -159,16 +206,32 @@ def leer_datos(nombre_archivo, N):
 # ANIMACIÓN
 # =========================================================
 
-def crear_animacion(x, y, theta, steps, nombre_salida):
+def crear_animacion(
+    x,
+    y,
+    theta,
+    steps,
+    nombre_salida,
+    lado=L,
+    longitud_flecha=LONGITUD_FLECHA,
+    subtitulo=""
+):
 
     cantidad_tiempos = x.shape[0]
 
     # ---------------------------------------------------------
-    # Componentes de la velocidad
+    # Versores de dirección
+    #
+    # Se dibujan versores y no la velocidad real: con scale_units="xy" la
+    # longitud de la flecha en unidades de la caja es |v| / scale, así que
+    # tomando |v| = 1 y scale = 1 / longitud_flecha todas las flechas miden
+    # exactamente longitud_flecha.
     # ---------------------------------------------------------
 
-    vx = VELOCIDAD * np.cos(theta)
-    vy = VELOCIDAD * np.sin(theta)
+    vx = np.cos(theta)
+    vy = np.sin(theta)
+
+    escala = 1.0 / longitud_flecha
 
     # ---------------------------------------------------------
     # Normalización del ángulo para el mapa de colores
@@ -183,18 +246,23 @@ def crear_animacion(x, y, theta, steps, nombre_salida):
     # Figura
     # ---------------------------------------------------------
 
-    fig, ax = plt.subplots(figsize=(7, 7))
+    fig, ax = plt.subplots(figsize=(7.2, 7.0))
 
-    ax.set_xlim(0, L)
-    ax.set_ylim(0, L)
+    ax.set_xlim(0, lado)
+    ax.set_ylim(0, lado)
 
     ax.set_aspect("equal")
 
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
+    ax.set_xlabel("$x$ [m]", fontsize=14)
+    ax.set_ylabel("$y$ [m]", fontsize=14)
 
-    ax.set_title(
-        f"Dinámica del sistema - t = {steps[0]}"
+    ax.tick_params(labelsize=12)
+
+    ax.grid(True, alpha=0.15)
+
+    titulo = ax.set_title(
+        f"$t$ = {steps[0]}\n{subtitulo}",
+        fontsize=12
     )
 
     # ---------------------------------------------------------
@@ -211,8 +279,11 @@ def crear_animacion(x, y, theta, steps, nombre_salida):
         norm=normalizacion,
         angles="xy",
         scale_units="xy",
-        scale=ESCALA_VECTOR,
-        width=0.004
+        scale=escala,
+        width=0.004,
+        headwidth=3.5,
+        headlength=4.0,
+        pivot="tail"
     )
 
     # ---------------------------------------------------------
@@ -221,7 +292,9 @@ def crear_animacion(x, y, theta, steps, nombre_salida):
 
     colorbar = fig.colorbar(quiver, ax=ax)
 
-    colorbar.set_label(r"$\theta$")
+    colorbar.set_label(r"$\theta$ [rad]", fontsize=14)
+
+    colorbar.ax.tick_params(labelsize=12)
 
     colorbar.set_ticks([
         -np.pi,
@@ -238,6 +311,8 @@ def crear_animacion(x, y, theta, steps, nombre_salida):
         r"$\pi/2$",
         r"$\pi$"
     ])
+
+    fig.tight_layout()
 
     # ---------------------------------------------------------
     # ACTUALIZACIÓN DE LA ANIMACIÓN
@@ -261,11 +336,11 @@ def crear_animacion(x, y, theta, steps, nombre_salida):
         )
 
         # Mostrar el step real del archivo
-        ax.set_title(
-            f"Dinámica del sistema - t = {steps[frame]}"
+        titulo.set_text(
+            f"$t$ = {steps[frame]}\n{subtitulo}"
         )
 
-        return quiver,
+        return quiver, titulo
 
     # ---------------------------------------------------------
     # Crear animación
@@ -330,8 +405,15 @@ def main():
         "-N",
         "--particulas",
         type=int,
-        required=True,
-        help="Cantidad de partículas"
+        default=None,
+        help="Cantidad de partículas (por defecto se lee de static.txt)"
+    )
+
+    parser.add_argument(
+        "-s",
+        "--static",
+        default="data/static.txt",
+        help="Archivo con los parámetros de la corrida"
     )
 
     parser.add_argument(
@@ -341,7 +423,61 @@ def main():
         help="Archivo de salida (.mp4 o .gif)"
     )
 
+    parser.add_argument(
+        "-f",
+        "--frames",
+        type=int,
+        default=400,
+        help="Máximo de cuadros a animar (0 = todos)"
+    )
+
+    parser.add_argument(
+        "--salto",
+        type=int,
+        default=1,
+        help="Tomar uno de cada k cuadros guardados"
+    )
+
+    parser.add_argument(
+        "--flecha",
+        type=float,
+        default=LONGITUD_FLECHA,
+        help="Longitud de la flecha, en unidades de la caja"
+    )
+
     args = parser.parse_args()
+
+    # ---------------------------------------------------------
+    # Parámetros de la corrida
+    # ---------------------------------------------------------
+
+    parametros = leer_estatico(args.static)
+
+    cantidad = args.particulas
+
+    if cantidad is None:
+
+        if "N" not in parametros:
+            raise SystemExit(
+                f"No se pudo leer N de {args.static}: "
+                f"pasarlo a mano con -N."
+            )
+
+        cantidad = int(parametros["N"])
+
+    lado = float(parametros.get("L", L))
+
+    subtitulo = ""
+
+    if parametros:
+        subtitulo = (
+            f"{parametros.get('model', '?')}  ·  "
+            f"$N$ = {cantidad}, "
+            f"$\\rho$ = {parametros.get('rho', '?'):g}, "
+            f"$\\eta$ = {parametros.get('eta', '?'):g}, "
+            f"$L$ = {lado:g}, "
+            f"$r_c$ = {parametros.get('rc', '?'):g}"
+        )
 
     # ---------------------------------------------------------
     # Leer datos
@@ -349,11 +485,13 @@ def main():
 
     x, y, theta, steps = leer_datos(
         args.archivo,
-        args.particulas
+        cantidad,
+        maximo_frames=args.frames if args.frames > 0 else None,
+        salto=max(1, args.salto)
     )
 
     print(f"Frames encontrados: {len(steps)}")
-    print(f"Partículas por frame: {args.particulas}")
+    print(f"Partículas por frame: {cantidad}")
     print(f"Primer step: {steps[0]}")
     print(f"Último step: {steps[-1]}")
 
@@ -366,7 +504,10 @@ def main():
         y,
         theta,
         steps,
-        args.output
+        args.output,
+        lado=lado,
+        longitud_flecha=args.flecha,
+        subtitulo=subtitulo
     )
 
     print(f"Animación guardada en: {args.output}")
