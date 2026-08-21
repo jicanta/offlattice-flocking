@@ -121,6 +121,25 @@ y `L = 10` el desplazamiento por paso es un 0.3 % de la caja, así que la flecha
 indica dirección y no módulo. Como la rapidez es común a todas las partículas,
 no se pierde información al hacerlo.
 
+### Casos característicos para las animaciones
+
+```bash
+# transitorio: varios grupos, cada uno de un color, que se fusionan en uno solo
+./build/flock simulate --model vicsek --rho 2 --eta 0.3 --steps 600 --seed 8
+python3 visualization/animate.py --frames 300
+
+# estacionario heterogéneo cerca de la transición: los grupos se arman y se deshacen
+./build/flock simulate --model vicsek --rho 2 --eta 3 --steps 3000 --seed 5
+python3 visualization/animate.py --desde 1000 --stride 3 --frames 500
+
+# estacionario del votante: dominios de color que persisten indefinidamente
+./build/flock simulate --model voter --rho 4 --eta 1 --steps 3000 --seed 5
+python3 visualization/animate.py --desde 1000 --stride 3 --frames 500
+```
+
+`--desde` saltea el transitorio y anima solo el estacionario, que es lo que hay
+que mostrar cuando la animación acompaña a un valor escalar del observable.
+
 Las figuras van a `data/figures/`. El criterio de estado estacionario vive en
 `visualization/common.py`: se toma como referencia la media de la segunda mitad de la
 corrida y el estacionario arranca en el primer bloque que cruza esa referencia.

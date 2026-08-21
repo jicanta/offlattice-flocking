@@ -70,10 +70,19 @@ def animate(arguments) -> None:
     figure, axes = plt.subplots(figsize=(6.4, 6.0))
     decorate(axes, side)
 
-    stream = common.frames(arguments.dynamic, count, stride=1, limit=arguments.frames * stride)
-    collected = [snapshot for index, snapshot in enumerate(stream) if index % stride == 0]
+    # Se lee de a un cuadro y se corta apenas se junta lo pedido: dynamic.txt de
+    # una corrida larga no entra en memoria.
+    collected = []
+    for index, snapshot in enumerate(common.frames(arguments.dynamic, count)):
+        if snapshot[0] < arguments.desde or index % stride:
+            continue
+        collected.append(snapshot)
+        if len(collected) >= arguments.frames:
+            break
     if not collected:
-        raise SystemExit(f"{arguments.dynamic} no tiene cuadros")
+        raise SystemExit(
+            f"{arguments.dynamic} no tiene cuadros desde t = {arguments.desde:g}"
+        )
 
     time, x, y, theta = collected[0]
     artist = draw(axes, x, y, theta, arguments.arrow)
@@ -143,6 +152,8 @@ def main() -> None:
     parser.add_argument("--stride", type=int, default=1,
                         help="tomar uno de cada k cuadros guardados")
     parser.add_argument("--fps", type=int, default=20)
+    parser.add_argument("--desde", type=float, default=0.0,
+                        help="animar desde este tiempo: sirve para mostrar solo el estacionario")
     parser.add_argument("--arrow", type=float, default=0.35,
                         help="longitud fija de la flecha, en unidades de la caja")
     parser.add_argument("--snapshots", type=str, default="",
