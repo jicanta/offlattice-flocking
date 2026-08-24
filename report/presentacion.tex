@@ -1,0 +1,160 @@
+\documentclass[aspectratio=169]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx} % Times New Roman en simbolos matematicos (guia de catedra)
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+% ---------------------------------------------------------
+% PORTADA
+% ---------------------------------------------------------
+
+\title[TP2 -- Autómata Off-Lattice]{Trabajo Práctico 2}
+\subtitle{Autómata Off-Lattice: Bandadas de Agentes Autopropulsados}
+
+\author{
+    Javier Liu \and
+    Juan Ignacio Cantarella \and
+    Nicolás Rivas
+}
+
+\institute[ITBA]{
+    Instituto Tecnológico de Buenos Aires \\
+    Simulación de Sistemas -- Comisión G10S2
+}
+
+\date{2026 -- Segundo Cuatrimestre}
+
+% ---------------------------------------------------------
+% DOCUMENTO
+% ---------------------------------------------------------
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}{Índice}
+    \tableofcontents
+\end{frame}
+
+\AtBeginSection[]{
+    \begin{frame}{Índice}
+        \tableofcontents[currentsection]
+    \end{frame}
+}
+
+% =========================================================
+% 1. INTRODUCCIÓN
+% =========================================================
+
+\section{Introducción}
+
+\begin{frame}{Introducción}
+    % Contenido.
+\end{frame}
+
+% =========================================================
+% 2. MODELO
+% =========================================================
+
+\section{Modelo}
+
+\begin{frame}{Modelo de Vicsek}
+    % Contenido.
+    Actualización sincrónica: la posición \textbf{x}$_i$ avanza con la
+    velocidad \textbf{v}$_i$ del paso anterior, y el ángulo $\theta_i$
+    incorpora ruido uniforme sobre el promedio de orientaciones vecinas,
+    Ec.~(\ref{eq:posicion}) y Ec.~(\ref{eq:angulo}).
+    \begin{equation}
+        \mathbf{x}_i(t+1) = \mathbf{x}_i(t) + \mathbf{v}_i(t)\, dt
+        \label{eq:posicion}
+    \end{equation}
+    \begin{equation}
+        \theta_i(t+1) = \operatorname{base}_i(t) + \mathcal{U}\!\left[-\frac{\eta}{2},\ \frac{\eta}{2}\right]
+        \label{eq:angulo}
+    \end{equation}
+    donde $\eta$ es la amplitud de ruido y $\operatorname{base}_i(t)$ el
+    promedio vectorial de las orientaciones dentro del radio $r_c$.
+\end{frame}
+
+\begin{frame}{Modelo de votante}
+    % Contenido.
+\end{frame}
+
+% =========================================================
+% 3. IMPLEMENTACIÓN
+% =========================================================
+
+\section{Implementación}
+
+\begin{frame}{Implementación}
+    % Contenido.
+\end{frame}
+
+% =========================================================
+% 4. SIMULACIONES
+% =========================================================
+
+\section{Simulaciones}
+
+\begin{frame}{Simulaciones}
+    % Contenido.
+\end{frame}
+
+% =========================================================
+% 5. RESULTADOS
+% =========================================================
+
+\section{Resultados}
+
+\begin{frame}{Resultados}
+    % Contenido.
+    % \begin{figure}
+    %     \centering
+    %     \includegraphics[width=0.7\textwidth]{../data/figures/vicsek.png}
+    % \end{figure}
+\end{frame}
+
+% =========================================================
+% 6. CONCLUSIONES
+% =========================================================
+
+\section{Conclusiones}
+
+\begin{frame}{Conclusiones}
+    % Contenido.
+\end{frame}
+
+% =========================================================
+% REFERENCIAS
+% =========================================================
+
+\begin{frame}[allowframebreaks]{Referencias}
+    \begin{thebibliography}{9}
+
+    \bibitem{vicsek1995}
+    T. Vicsek, A. Czirók, E. Ben-Jacob, I. Cohen y O. Shochet,
+    ``Novel type of phase transition in a system of self-driven particles'',
+    Physical Review Letters,
+    vol. 75, nro. 6, p. 1226 (1995).
+
+    \bibitem{loscar2021}
+    E. S. Loscar, G. Baglietto y F. Vazquez,
+    ``Noisy multistate voter model for flocking in finite dimensions'',
+    Physical Review E,
+    vol. 104, nro. 3, p. 034111 (2021).
+
+    \end{thebibliography}
+\end{frame}
+
+\end{document}
