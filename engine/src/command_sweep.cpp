@@ -1,4 +1,5 @@
 #include <atomic>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -142,8 +143,18 @@ int runSweep(const Arguments& arguments) {
   std::atomic<std::size_t> done{0};
   std::mutex console;
 
+  // Una excepcion que escapa del cuerpo de un std::thread llama a
+  // std::terminate y aborta el barrido sin explicar por que. Se guarda la
+  // primera que aparezca, se corta el reparto de trabajo y se relanza en el
+  // hilo principal despues del join.
+  std::atomic<bool> failed{false};
+  std::exception_ptr failure;
+  std::mutex failureGuard;
+
   const auto worker = [&]() {
-    for (std::size_t index = next++; index < runs.size(); index = next++) {
+   try {
+    for (std::size_t index = next++; index < runs.size() && !failed;
+         index = next++) {
       const Run& run = runs[index];
       FlockParameters parameters = base;
       parameters.model = run.model;
@@ -172,6 +183,13 @@ int runSweep(const Arguments& arguments) {
         std::cout << finished << "/" << runs.size() << "\r" << std::flush;
       }
     }
+   } catch (...) {
+     const std::lock_guard<std::mutex> lock(failureGuard);
+     if (!failure) {
+       failure = std::current_exception();
+     }
+     failed = true;
+   }
   };
 
   std::vector<std::thread> pool;
@@ -182,6 +200,9 @@ int runSweep(const Arguments& arguments) {
     thread.join();
   }
   std::cout << "\n";
+  if (failure) {
+    std::rethrow_exception(failure);
+  }
 
   std::ofstream index(directory / "index.txt");
   if (!index) {

@@ -210,3 +210,18 @@ de la transición con ρ, comparación cuantitativa estándar vs. votante, relac
 - [ ] Portada con título, materia, comisión S2, grupo 10 e integrantes con legajo.
 - [ ] Compilado en LaTeX; archivo nombrado `SdS_TP2_2026Q2G10S2_Informe.pdf`.
 - [ ] Entrega por campus antes del 04/09/2026, 13:00 h.
+
+---
+
+## 4. Notas de la cátedra (clase de consulta)
+
+Indicaciones dadas verbalmente y que condicionan el armado de la presentación:
+
+- **Polarización:** el estudio es cómo cambia *v*<sub>a</sub> según varía *η*. Se
+  muestran **dos animaciones**, una con *η* bajo y otra con *η* alto, después
+  **dos evoluciones temporales**, y recién entonces la curva de *v*<sub>a</sub>
+  promedio en función de *η*.
+- **Componente gigante:** se sigue el **mismo orden** para *S* (la fracción de
+  nodos del cluster mayor) que el usado para la polarización.
+- **Animaciones:** deben estar **subidas a YouTube**. **No** subirlas en formato
+  *shorts*.

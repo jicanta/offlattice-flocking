@@ -3,6 +3,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{mathptmx} % Times New Roman en texto y simbolos matematicos (guia de catedra)
+\usepackage[spanish,es-noquoting]{babel}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -10,7 +11,8 @@
 \usepackage{float}
 \usepackage{booktabs}
 \usepackage{geometry}
-\usepackage{hyperref}
+\usepackage{siunitx}
+\usepackage[hidelinks]{hyperref}
 
 \geometry{
     left=2.5cm,
@@ -19,25 +21,9 @@
     bottom=2.5cm
 }
 
-% ---------------------------------------------------------
-% PORTADA
-% ---------------------------------------------------------
+\graphicspath{{../data/figures/}}
 
-\title{
-    \textbf{Trabajo Práctico 2}\\
-    Simulación de Sistemas
-}
-
-\author{
-    \begin{tabular}{l c}
-        \textbf{Integrante} & \textbf{Legajo} \\[0.2cm]
-        Javier Liu & 64332 \\
-        Juan Ignacio Cantarella & 64509 \\
-        Nicolás Rivas & 64292
-    \end{tabular}
-}
-
-\date{2026 -- Segundo Cuatrimestre}
+\newcommand{\va}{\ensuremath{v_a}}
 
 % ---------------------------------------------------------
 % DOCUMENTO
@@ -61,6 +47,10 @@
 
     {\LARGE Simulación de Sistemas\par}
 
+    \vspace{0.4cm}
+
+    {\large Autómata off-lattice: bandadas de agentes autopropulsados\par}
+
     \vspace{1.5cm}
 
     {\large Comisión: G10S2\par}
@@ -80,68 +70,681 @@
 
 \end{titlepage}
 
-% ---------------------------------------------------------
-% ÍNDICE
-% ---------------------------------------------------------
-
 \tableofcontents
 
 \newpage
 
 % =========================================================
-% 1. INTRODUCCIÓN
-% =========================================================
-
 \section{Introducción}
-
-% Contenido.
-
-% =========================================================
-% 2. MODELO
 % =========================================================
 
+Los sistemas de partículas autopropulsadas presentan un fenómeno colectivo que
+no puede deducirse de la regla individual que los gobierna: a partir de
+interacciones puramente locales, y sin ninguna dirección privilegiada impuesta
+desde afuera, el conjunto puede adoptar espontáneamente una dirección de
+movimiento común. Vicsek \textit{et al.} \cite{vicsek1995} mostraron que ese
+ordenamiento aparece a través de una transición de fase continua controlada por
+un único parámetro de ruido $\eta$, análoga a la transición ferromagnética pero
+en un sistema fuera del equilibrio, donde las ``partículas'' que se alinean
+además se desplazan y por lo tanto cambian de vecinos a cada paso.
+
+El presente trabajo caracteriza esa transición mediante simulación. Se estudian
+dos reglas de interacción distintas sobre la misma dinámica y la misma
+geometría: el \textbf{modelo estándar} de Vicsek \cite{vicsek1995}, en el que
+cada partícula adopta la dirección promedio de su entorno, y el \textbf{modelo
+de votante} \cite{loscar2021}, en el que cada partícula copia la dirección de un
+único vecino elegido al azar. La diferencia entre ambos es únicamente cómo se
+combina la información de los vecinos --- promediar frente a copiar ---, lo que
+permite aislar el efecto de ese mecanismo sobre el ordenamiento colectivo.
+
+Se miden dos observables. El primario es la \textbf{polarización} \va, que
+cuantifica cuán alineado está el sistema. El segundo es la \textbf{fracción de
+partículas en la componente gigante} $S$ del grafo de vecinos, que cuantifica
+cuán conectado está espacialmente. El objetivo es determinar, para las
+densidades $\rho = 2,\,4,\,8$, cómo depende cada observable de $\eta$, cómo se
+relacionan entre sí y en qué se diferencian las dos reglas de interacción.
+Finalmente se evalúa el costo computacional del \textit{Cell Index Method} (CIM)
+empleado para la búsqueda de vecinos, contrastándolo con las mediciones del
+Trabajo Práctico 1.
+
+% =========================================================
 \section{Modelo}
-
-% Contenido.
-
-% =========================================================
-% 3. IMPLEMENTACIÓN
 % =========================================================
 
+\subsection{Dinámica}
+
+El sistema consta de $N$ partículas puntuales dentro de una caja cuadrada de
+lado $L$ con condiciones periódicas de contorno. Todas se desplazan con una
+rapidez común $v$, de modo que el estado de la partícula $i$ queda determinado
+por su posición $\mathbf{r}_i(t)$ y por el ángulo $\theta_i(t)$ que forma su
+velocidad con el eje $x$. La densidad del sistema es
+
+\begin{equation}
+    \rho = \frac{N}{L^2},
+    \label{eq:densidad}
+\end{equation}
+
+donde $N$ es el número de partículas y $L$ el lado de la caja.
+
+La actualización es \textbf{sincrónica}: las magnitudes en $t+1$ se calculan
+todas a partir del estado en $t$. Las posiciones evolucionan según la ecuación
+(1) de \cite{vicsek1995},
+
+\begin{equation}
+    \mathbf{r}_i(t+1) = \mathbf{r}_i(t) + \mathbf{v}_i(t)\,\Delta t,
+    \label{eq:posicion}
+\end{equation}
+
+donde $\mathbf{r}_i$ es la posición de la partícula $i$, $\mathbf{v}_i$ su
+velocidad --- de módulo $v$ constante y dirección $\theta_i(t)$ --- y $\Delta t$
+el paso temporal. Nótese que el desplazamiento se realiza con la dirección
+\textbf{en el instante $t$}, no con la recién calculada. Las coordenadas
+resultantes se reingresan a la caja por las condiciones periódicas.
+
+Los ángulos evolucionan como
+
+\begin{equation}
+    \theta_i(t+1) = \Theta_i(t) + \Delta\theta_i,
+    \qquad
+    \Delta\theta_i \sim \mathcal{U}\!\left[-\tfrac{\eta}{2},\, \tfrac{\eta}{2}\right],
+    \label{eq:angulo}
+\end{equation}
+
+donde $\Theta_i(t)$ es la dirección de referencia que fija la regla de
+interacción, $\eta$ es la amplitud del ruido y $\Delta\theta_i$ una variable
+aleatoria uniforme e independiente para cada partícula y cada paso. El
+observable $\eta$ se expresa en radianes.
+
+\subsection{Reglas de interacción}
+
+Se define el entorno de la partícula $i$ como el conjunto
+$\mathcal{N}_i = \{\, j \neq i : d(\mathbf{r}_i, \mathbf{r}_j) < r_c \,\}$, donde
+$d$ es la distancia mínima imagen bajo las condiciones periódicas y $r_c$ el
+radio de interacción.
+
+En el \textbf{modelo estándar}, $\Theta_i$ es el promedio vectorial de las
+direcciones del entorno \textbf{incluyendo la de la propia partícula}, criterio
+fijado por la cátedra:
+
+\begin{equation}
+    \Theta_i^{\,\text{Vicsek}}(t) = \arctan\!
+    \frac{\sin\theta_i(t) + \sum_{j \in \mathcal{N}_i} \sin\theta_j(t)}
+         {\cos\theta_i(t) + \sum_{j \in \mathcal{N}_i} \cos\theta_j(t)},
+    \label{eq:vicsek}
+\end{equation}
+
+donde $\theta_i$ es la dirección de la partícula considerada y $\theta_j$ la de
+cada uno de sus vecinos. El arco tangente se evalúa con la función de dos
+argumentos, de modo de resolver el cuadrante correctamente. Una partícula sin
+vecinos conserva su dirección más el ruido.
+
+En el \textbf{modelo de votante}, la partícula no promedia: elige un único
+elemento al azar y copia su dirección tal cual \cite{loscar2021},
+
+\begin{equation}
+    \Theta_i^{\,\text{votante}}(t) = \theta_k(t),
+    \qquad
+    k \sim \mathcal{U}\!\left(\mathcal{N}_i \cup \{i\}\right),
+    \label{eq:votante}
+\end{equation}
+
+donde $k$ es un índice sorteado con probabilidad uniforme. Por simetría con la
+Ec.~\eqref{eq:vicsek}, en la que la propia partícula participa del promedio, se
+la incluye también en el sorteo de la Ec.~\eqref{eq:votante}; en consecuencia,
+una partícula aislada conserva su dirección. El ángulo copiado es el del estado
+en $t$: como las direcciones nuevas se escriben en un buffer separado y recién
+se intercambian al terminar el paso, todas las copias de un mismo paso leen el
+mismo estado.
+
+\subsection{Observables}
+
+La \textbf{polarización} es el módulo de la velocidad media normalizado por la
+rapidez:
+
+\begin{equation}
+    \va(t) = \frac{1}{N v} \left\| \sum_{i=1}^{N} \mathbf{v}_i(t) \right\|
+           = \frac{1}{N} \sqrt{ \Big(\sum_i \cos\theta_i\Big)^{\!2}
+                              + \Big(\sum_i \sin\theta_i\Big)^{\!2} },
+    \label{eq:polarizacion}
+\end{equation}
+
+donde $N$ es el número de partículas, $v$ la rapidez común y $\mathbf{v}_i$ la
+velocidad de la partícula $i$. Vale $\va = 1$ si todas se mueven en la misma
+dirección y $\va \approx 1/\sqrt{N}$ si las direcciones son independientes, que
+es el piso por tamaño finito y no cero.
+
+Un \textbf{cluster} es un conjunto de partículas tal que todo par está unido por
+una cadena de saltos entre vecinos a distancia menor que $r_c$; es decir, una
+componente conexa del grafo cuyos nodos son las partículas y cuyas aristas son
+los pares dentro del radio de interacción. Llamando $\mathcal{C}_{\max}(t)$ a la
+componente de mayor tamaño, el segundo observable es
+
+\begin{equation}
+    S(t) = \frac{|\mathcal{C}_{\max}(t)|}{N},
+    \label{eq:componente}
+\end{equation}
+
+donde $|\mathcal{C}_{\max}|$ es la cantidad de partículas de la componente
+gigante y $N$ el total. Se cumple $1/N \le S \le 1$.
+
+% =========================================================
 \section{Implementación}
-
-% Contenido.
-
-% =========================================================
-% 4. SIMULACIONES
 % =========================================================
 
+El trabajo se divide en dos módulos independientes comunicados por archivos de
+texto, tal como exige la consigna: el motor de simulación, escrito en C++, y el
+módulo de análisis y animación, escrito en Python. El motor nunca dibuja y el
+módulo de animación nunca simula, de modo que la velocidad de reproducción de
+las animaciones no queda supeditada a la velocidad de la simulación.
+
+\subsection{Motor de simulación}
+
+Cada paso de simulación consta de tres etapas:
+
+\begin{enumerate}
+    \item \textbf{Búsqueda de vecinos.} Se construye la lista $\mathcal{N}_i$
+          para todas las partículas mediante el CIM.
+    \item \textbf{Cálculo de las direcciones nuevas.} Se evalúa
+          $\Theta_i$ según la Ec.~\eqref{eq:vicsek} o la
+          Ec.~\eqref{eq:votante} y se le suma el ruido de la
+          Ec.~\eqref{eq:angulo}. El resultado se almacena en un arreglo
+          auxiliar, sin pisar el estado en $t$.
+    \item \textbf{Desplazamiento.} Se aplica la Ec.~\eqref{eq:posicion} usando
+          las direcciones \textbf{viejas} y se reingresan las coordenadas a la
+          caja. Recién entonces el arreglo auxiliar pasa a ser el estado
+          vigente.
+\end{enumerate}
+
+El uso del arreglo auxiliar es lo que garantiza que la actualización sea
+efectivamente sincrónica: sin él, las partículas de índice alto se alinearían
+con direcciones ya actualizadas de las de índice bajo, introduciendo una
+dependencia espuria con el orden de recorrido.
+
+\subsection{Búsqueda de vecinos}
+
+Se reutiliza sin modificaciones el CIM implementado en el Trabajo Práctico 1,
+junto con la geometría periódica y el parseo de argumentos, de manera que los
+tiempos de ambos trabajos midan el mismo algoritmo. La caja se subdivide en
+$M \times M$ celdas y cada partícula se compara únicamente contra las de su
+propia celda y las ocho adyacentes. Para que ese vecindario sea suficiente debe
+cumplirse $L/M > r_c$, lo que para $L = 10$ y $r_c = 1$ acota $M \le 9$; se
+emplea $M = 9$, el máximo admisible, que es el que minimiza la cantidad de
+partículas por celda. Cada par se registra una única vez, recorriendo sólo las
+celdas vecinas de índice superior, y las distancias se calculan con el criterio
+de mínima imagen.
+
+Como control de correctitud, el motor implementa además una búsqueda por fuerza
+bruta $\mathcal{O}(N^2)$: con la misma semilla, ambos métodos producen
+trayectorias idénticas byte a byte, lo que verifica que el CIM no pierde ni
+duplica pares.
+
+\subsection{Formato de salida}
+
+El motor produce archivos de texto plano:
+
+\begin{itemize}
+    \item \texttt{static.txt}: parámetros de la corrida, un par
+          \texttt{clave valor} por línea.
+    \item \texttt{dynamic.txt}: por cada cuadro, una línea con $t$ seguida de
+          $N$ líneas \texttt{x y theta}.
+    \item \texttt{observables.txt}: una línea \texttt{t va S} por paso.
+\end{itemize}
+
+Las series de observables se escriben en todos los pasos, mientras que los
+cuadros de posiciones pueden ralearse: con $\rho = 8$ y \num{20000} pasos,
+guardar todos los cuadros ocupa unos \SI{530}{\mega\byte}, frente a las
+\num{20001} líneas de la serie de observables. Por eso el barrido de parámetros
+guarda únicamente observables, y las animaciones se generan a partir de corridas
+puntuales.
+
+\subsection{Determinación del estado estacionario}
+
+Cada corrida parte de una configuración desordenada (posiciones y ángulos
+uniformes e independientes) y atraviesa un transitorio antes de alcanzar el
+estado estacionario. Como el valor escalar de cada observable debe medirse
+únicamente en el estacionario, se emplea un criterio automático y uniforme para
+todas las corridas: se toma como referencia el promedio de $\va$ sobre la
+segunda mitad de la serie --- que ya pertenece al estacionario --- y se define
+$t_{eq}$ como el primer instante en que la serie suavizada por bloques cruza esa
+referencia. Al ser el transitorio monótono, el cruce marca su final sin
+depender de umbrales arbitrarios.
+
+El mismo $t_{eq}$ se aplica a $\va$ y a $S$, de modo que ambos escalares
+provienen de la misma ventana temporal. Los promedios se toman desde $t_{eq}$
+hasta el final de la corrida.
+
+% =========================================================
 \section{Simulaciones}
-
-% Contenido.
-
-% =========================================================
-% 5. RESULTADOS
 % =========================================================
 
+La Tabla~\ref{tab:parametros} resume los parámetros empleados; las densidades
+se traducen en el número de partículas mediante la Ec.~\eqref{eq:densidad}. Todos los
+resultados de las Secciones \ref{sec:temporal} a \ref{sec:vaS} provienen del
+mismo barrido, de modo que las evoluciones temporales mostradas son corridas
+efectivamente incluidas en las curvas escalares.
+
+\begin{table}[H]
+    \centering
+    \caption{Parámetros de las simulaciones. Las semillas son consecutivas y se
+    reutilizan entre modelos: para un mismo $\rho$ y una misma semilla, el
+    modelo estándar y el de votante parten de la \textbf{misma} condición
+    inicial, lo que hace que la comparación del ítem (f) sea pareada.}
+    \label{tab:parametros}
+    \begin{tabular}{l l}
+        \toprule
+        \textbf{Parámetro} & \textbf{Valor} \\
+        \midrule
+        Lado de la caja $L$                & \num{10} \\
+        Contorno                           & periódico \\
+        Radio de interacción $r_c$         & \num{1} \\
+        Rapidez $v$                        & \num{0.03} \\
+        Paso temporal $\Delta t$           & \num{1} \\
+        Densidades $\rho$                  & \num{2}, \num{4}, \num{8} \\
+        Partículas $N$                     & \num{200}, \num{400}, \num{800} \\
+        Ruido $\eta$                       & de \num{0} a \num{5}, paso \num{0.5} (11 valores) \\
+        Modelos                            & estándar, votante \\
+        Pasos por corrida                  & \num{5000} \\
+        Realizaciones $M$ por punto        & \num{10} (semillas 1 a 10) \\
+        Celdas del CIM $M_{\text{CIM}}$    & \num{9} (máximo admisible) \\
+        Corridas totales                   & \num{660} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Cada punto de las curvas escalares se obtiene promediando \textbf{primero en el
+tiempo} dentro del estacionario de cada realización y \textbf{luego entre las
+$M = 10$ realizaciones}. La barra de error reportada en todas las figuras es el
+\textbf{desvío estándar entre realizaciones}, no el error estándar de la media,
+por lo que mide la dispersión efectiva entre condiciones iniciales y no la
+precisión del promedio.
+
+% =========================================================
 \section{Resultados}
-
-% Contenido.
-
-% =========================================================
-% 6. CONCLUSIONES
 % =========================================================
 
+\subsection{Animaciones características}
+
+Las animaciones representan cada partícula mediante un vector con origen en su
+posición y coloreado según el ángulo de su velocidad, usando un mapa de color
+cíclico para que direcciones próximas a $-\pi$ y a $\pi$ reciban colores
+próximos. La longitud del vector es fija: con $v = 0.03$ y $L = 10$ el
+desplazamiento real por paso es el \SI{0.3}{\percent} del ancho de la caja y las
+flechas se verían como puntos. Como la rapidez es común a todas las partículas,
+dibujarlas con longitud uniforme no oculta información: la flecha indica
+dirección, no módulo. La Tabla~\ref{tab:animaciones} reúne los casos
+animados y sus enlaces.
+
+\begin{table}[H]
+    \centering
+    \caption{Animaciones características. Todas corresponden al modelo estándar
+    salvo donde se indica, con $L = 10$ y contorno periódico.}
+    \label{tab:animaciones}
+    \begin{tabular}{l l l}
+        \toprule
+        \textbf{Caso} & \textbf{Parámetros} & \textbf{Enlace} \\
+        \midrule
+        Ruido bajo (ordenado)      & $\rho = 4$, $\eta = 0.5$ & \texttt{[PENDIENTE]} \\
+        Ruido alto (desordenado)   & $\rho = 4$, $\eta = 3$   & \texttt{[PENDIENTE]} \\
+        Votante, ruido bajo        & $\rho = 4$, $\eta = 1$   & \texttt{[PENDIENTE]} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% TODO: reemplazar [PENDIENTE] por los enlaces de YouTube (no subir como shorts).
+
+Con $\eta$ bajo el sistema converge a una única bandada que recorre la caja con
+una dirección común, reflejada en un color prácticamente uniforme. Con $\eta$
+alto los colores se mezclan y no se distingue ninguna dirección preferencial,
+aunque las partículas siguen formando grupos transitorios que se arman y se
+deshacen. La Fig.~\ref{fig:cuadros} muestra esa evolución en cuadros fijos, que
+es lo que puede imprimirse en este documento.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{cuadros_vicsek.png}
+    \caption{Cuadros del modelo estándar a distintos instantes, partiendo de una
+    configuración desordenada. Cada flecha es una partícula, con origen en su
+    posición y color según el ángulo de su velocidad (barra de color a la
+    derecha). Los parámetros de la corrida se indican en el encabezado de la
+    figura.}
+    \label{fig:cuadros}
+\end{figure}
+
+\subsection{Evolución temporal de los observables}
+\label{sec:temporal}
+
+La Fig.~\ref{fig:temporal_eta} muestra la evolución temporal de $\va$ y de $S$
+para el modelo estándar a $\rho = 4$ y tres valores de $\eta$. En todos los
+casos la polarización parte del valor correspondiente a una configuración
+desordenada, crece durante un transitorio y luego fluctúa alrededor de un valor
+constante. La línea vertical punteada marca el $t_{eq}$ determinado por el
+criterio de la Sección 3.4 y la línea horizontal rayada el promedio temporal
+tomado a partir de ese instante. Se aprecia que el transitorio es más largo
+cuanto menor es el ruido: para $\eta = 0$ el sistema tarda del orden de
+\num{700} pasos en ordenarse por completo, mientras que para $\eta \ge 4$ el
+estacionario se alcanza en menos de \num{200} pasos.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{temporal_eta_vicsek_rho4.png}
+    \caption{Evolución temporal de $\va$ (panel superior) y de $S$ (panel
+    inferior) para el modelo estándar con $\rho = 4$ ($N = 400$), $L = 10$,
+    $r_c = 1$, $v = 0.03$, semilla 1, para tres valores de $\eta$. La línea
+    vertical punteada indica el inicio del estado estacionario $t_{eq}$ y la
+    horizontal rayada el promedio temporal a partir de $t_{eq}$. El mismo
+    $t_{eq}$, determinado sobre $\va$, se aplica a $S$.}
+    \label{fig:temporal_eta}
+\end{figure}
+
+El panel inferior de la Fig.~\ref{fig:temporal_eta} muestra que $S$ alcanza
+valores próximos a la unidad casi de inmediato y se mantiene allí durante toda
+la corrida, con fluctuaciones mucho menores que las de $\va$. Esto no es un
+artefacto: con $r_c = 1$, el número medio de vecinos por partícula es
+$\langle k \rangle = \rho \pi r_c^2$, que vale \num{6.3}, \num{12.6} y \num{25.1}
+para $\rho = 2$, \num{4} y \num{8} respectivamente. Todos esos valores están muy
+por encima del umbral de percolación de un grafo geométrico aleatorio en dos
+dimensiones ($\langle k \rangle \approx 4.5$), de modo que el sistema está
+percolado desde la condición inicial y para cualquier $\eta$. Esta observación
+condiciona la lectura de los ítems (d) y (e) y se retoma en la
+Sección~\ref{sec:vaS}.
+
+La Fig.~\ref{fig:temporal_modelos} compara las evoluciones de ambos modelos
+desde la misma condición inicial. La diferencia es inmediata: el modelo estándar
+alcanza $\va \approx 0.79$ mientras que el de votante cae a $\va \approx 0.08$
+para los mismos $\rho$ y $\eta$, sin transitorio de ordenamiento apreciable.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{temporal_modelos_rho4_eta2.png}
+    \caption{Comparación de la evolución temporal de $\va$ y $S$ entre el modelo
+    estándar y el de votante, con $\rho = 4$ ($N = 400$), $\eta = 2$, $L = 10$,
+    $r_c = 1$, $v = 0.03$ y la misma semilla, de modo que ambas corridas parten
+    de idéntica condición inicial. Líneas verticales punteadas: $t_{eq}$ de cada
+    modelo; horizontales rayadas: promedios en el estacionario.}
+    \label{fig:temporal_modelos}
+\end{figure}
+
+\subsection{Polarización en función del ruido}
+\label{sec:va}
+
+La Fig.~\ref{fig:va_eta} presenta el observable escalar $\va$, definido en la
+Ec.~\eqref{eq:polarizacion}, en función de $\eta$, para las tres densidades y
+los dos modelos.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{va_vs_eta.png}
+    \caption{Polarización $\va$ en el estado estacionario en función del ruido
+    $\eta$, para $\rho = 2$, \num{4} y \num{8} y los dos modelos. $L = 10$,
+    $r_c = 1$, $v = 0.03$, $\Delta t = 1$, \num{5000} pasos por corrida.
+    Cada punto es el promedio temporal en el estacionario promediado sobre
+    $M = 10$ realizaciones; la barra de error es el desvío estándar entre
+    realizaciones. Líneas llenas y marcadores llenos: modelo estándar; líneas
+    de trazos y marcadores huecos: modelo de votante.}
+    \label{fig:va_eta}
+\end{figure}
+
+En el \textbf{modelo estándar} la polarización decae de manera continua desde
+$\va = 1$ en $\eta = 0$ hasta valores próximos al piso por tamaño finito en
+$\eta = 5$, sin salto abrupto, lo que es compatible con la transición continua
+descripta en \cite{vicsek1995}. El efecto de la densidad es sistemático: a
+igual ruido, mayor densidad implica mayor polarización. Para $\eta = 3$, por
+ejemplo, $\va$ pasa de \num{0.47(4)} con $\rho = 2$ a \num{0.562(17)} con
+$\rho = 4$ y \num{0.615(4)} con $\rho = 8$. La interpretación es directa a
+partir de la Ec.~\eqref{eq:vicsek}: promediar sobre
+$\langle k \rangle \propto \rho$ vecinos atenúa el ruido en un factor
+$\sim 1/\sqrt{\langle k \rangle}$, de modo que aumentar la densidad equivale a
+reducir el ruido efectivo. Consistentemente, la caída de la curva se desplaza
+hacia $\eta$ mayores al aumentar $\rho$.
+
+El \textbf{modelo de votante} se comporta de manera cualitativamente distinta.
+La polarización se desploma apenas se enciende el ruido: basta $\eta = 0.5$
+para que $\va$ caiga de \num{1} a \num{0.382(21)} con $\rho = 2$, y ya en
+$\eta \approx 1.5$ el sistema está esencialmente desordenado. Más notable aún,
+\textbf{el efecto de la densidad se invierte}: a igual $\eta$, mayor densidad
+produce \textit{menor} polarización, exactamente al revés que en el modelo
+estándar. Para $\eta = 1$, $\va$ vale \num{0.201(5)} con $\rho = 2$,
+\num{0.151(4)} con $\rho = 4$ y \num{0.112(5)} con $\rho = 8$.
+
+Ambos hechos se explican por el mismo mecanismo. Copiar a un único vecino no
+promedia nada, de modo que el ruido de la Ec.~\eqref{eq:angulo} se incorpora
+íntegro en cada paso, sin la atenuación $1/\sqrt{\langle k \rangle}$ que
+proporciona la Ec.~\eqref{eq:vicsek}; aumentar el número de vecinos no mejora la
+estimación de la dirección local, sólo acelera la propagación del desorden a
+través del sistema. En $\eta = 5$ la polarización del votante alcanza
+\num{0.0643}, \num{0.0454} y \num{0.0323} para $\rho = 2$, \num{4} y \num{8},
+valores que coinciden dentro del \SI{10}{\percent} con el piso por tamaño finito
+$1/\sqrt{N} = $ \num{0.0707}, \num{0.05} y \num{0.0354}: el sistema está
+completamente desordenado. El modelo estándar, en cambio, se mantiene por encima
+de ese piso en todo el rango explorado (\num{0.0748} frente a \num{0.0354} para
+$\rho = 8$ en $\eta = 5$), es decir que conserva orden residual incluso en el
+extremo del barrido.
+
+\subsection{Componente gigante}
+\label{sec:S}
+
+La Fig.~\ref{fig:temporal_rho} muestra la evolución temporal de la fracción $S$
+definida en la Ec.~\eqref{eq:componente}, para las tres densidades, y la Fig.~\ref{fig:S_eta} el valor escalar correspondiente en
+función de $\eta$, obtenido con el mismo procedimiento que la
+Fig.~\ref{fig:va_eta}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{temporal_rho_vicsek_eta2.png}
+    \caption{Evolución temporal de $\va$ y $S$ para el modelo estándar con
+    $\eta = 2$ y las tres densidades $\rho = 2$, \num{4} y \num{8}
+    ($N = 200$, \num{400} y \num{800}), $L = 10$, $r_c = 1$, semilla 1. Líneas
+    verticales punteadas: $t_{eq}$; horizontales rayadas: promedio en el
+    estacionario.}
+    \label{fig:temporal_rho}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{S_vs_eta.png}
+    \caption{Fracción $S$ de partículas en la componente gigante, en el estado
+    estacionario, en función de $\eta$, para las tres densidades y los dos
+    modelos. Mismos parámetros, criterio de promediado y convención de barras de
+    error que la Fig.~\ref{fig:va_eta}. Nótese que la escala vertical cubre todo
+    el rango $[0,1]$ y que los datos ocupan únicamente su parte superior.}
+    \label{fig:S_eta}
+\end{figure}
+
+El resultado central es que $S \approx 1$ en prácticamente todo el dominio
+explorado. El mínimo sobre todo el barrido del modelo estándar es
+$S = \num{0.914(13)}$, en $\rho = 2$ y $\eta = 3.5$; para $\rho = 8$ el valor
+nunca baja de \num{0.999}. Como se argumentó en la Sección~\ref{sec:temporal},
+esto es consecuencia directa de los parámetros fijados por la consigna: con
+$L = 10$ y $\rho \ge 2$ el grafo de vecinos está muy por encima del umbral de
+percolación, de modo que la componente gigante abarca casi todo el sistema
+independientemente del ruido y del grado de alineación.
+
+Se observa, no obstante, una estructura no monótona apreciable a $\rho = 2$, que
+es la densidad más cercana al umbral y por lo tanto la única con margen para
+mostrarla: $S$ decrece desde \num{1} hasta el mínimo de \num{0.914} en torno a
+$\eta \approx 3.5$ y luego vuelve a crecer hasta \num{0.984} en $\eta = 5$. El
+mínimo coincide aproximadamente con la región donde $\va$ cae más rápido. La
+explicación es que en el régimen ordenado las partículas viajan juntas y
+mantienen la conectividad, y en el régimen fuertemente desordenado se
+distribuyen de manera prácticamente uniforme por la caja, lo que también
+garantiza la percolación a esta densidad; es en la zona intermedia donde el
+sistema forma grupos densos separados por regiones vacías, y por lo tanto donde
+la componente gigante pierde algunos nodos.
+
+\subsection{Relación entre polarización y componente gigante}
+\label{sec:vaS}
+
+La Fig.~\ref{fig:va_S} grafica $\va$ en función de $S$, con un punto por cada
+valor de $\eta$.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{va_vs_S.png}
+    \caption{Polarización $\va$ en función de la fracción $S$ de partículas en
+    la componente gigante, en el estado estacionario. Cada punto corresponde a
+    un valor de $\eta$ del barrido; las barras horizontales y verticales son los
+    desvíos estándar entre las $M = 10$ realizaciones de $S$ y de $\va$
+    respectivamente. Se distinguen las tres densidades por color y los dos
+    modelos por estilo de línea y marcador.}
+    \label{fig:va_S}
+\end{figure}
+
+La figura debe leerse teniendo presente la limitación establecida en la
+Sección~\ref{sec:S}: como $S$ está confinado al intervalo $[0.91, 1]$ mientras
+que $\va$ recorre casi todo $[0,1]$, los puntos se acumulan contra el borde
+derecho y la relación entre ambos observables no puede caracterizarse en este
+rango de parámetros. Dicho de otro modo, \textbf{con $L = 10$ y
+$\rho = 2,\,4,\,8$ la conectividad espacial no es un grado de libertad efectivo}:
+el sistema está siempre percolado y el ordenamiento angular ocurre sin que la
+componente gigante cambie apreciablemente. La conclusión cuantitativa que sí
+puede extraerse es justamente ésa: en el régimen estudiado, alineación y
+conectividad están desacopladas, y $\va$ no es una función de $S$.
+
+Un régimen en el que ambos observables sí varían de forma acoplada requiere
+acercarse al umbral de percolación, lo que exige salir de los parámetros de la
+consigna. A modo de verificación complementaria se corrió el modelo estándar con
+$L = 40$ y $\rho = 0.6$ ($\langle k \rangle \approx 1.9$, por debajo del
+umbral), obteniéndose un estado estacionario con $\va \approx 0.98$ y
+$S \approx 0.85$ sostenidos: una bandada dominante acompañada de grupos satélite
+espacialmente separados pero alineados con ella. Este caso confirma que la
+degeneración observada es propia de los parámetros fijados y no del modelo ni de
+la implementación, pero por estar fuera de la consigna no se incorpora a las
+curvas del barrido principal.
+
+\subsection{Comparación entre modelos}
+
+Las Figuras \ref{fig:temporal_modelos}, \ref{fig:va_eta}, \ref{fig:S_eta} y
+\ref{fig:va_S} incluyen ambos modelos superpuestos, según pide el ítem (f). Los
+resultados se resumen así:
+
+\begin{itemize}
+    \item \textbf{En $\eta = 0$ ambos modelos son equivalentes}: los dos
+          alcanzan $\va = 1$. Sin ruido, copiar a un vecino ya alineado y
+          promediar vecinos ya alineados producen el mismo resultado, lo que
+          sirve además como verificación cruzada de las dos implementaciones.
+    \item \textbf{Para $\eta > 0$ las curvas se separan de inmediato.} El modelo
+          de votante es dramáticamente más sensible al ruido: en $\eta = 1$ y
+          $\rho = 4$, el estándar conserva $\va = \num{0.945(2)}$ mientras que
+          el votante ya cayó a $\va = \num{0.151(4)}$.
+    \item \textbf{La dependencia con la densidad tiene signo opuesto}, como se
+          detalló en la Sección~\ref{sec:va}: creciente para el estándar,
+          decreciente para el votante.
+    \item \textbf{En $S$ la diferencia es menor}, porque ambos modelos operan
+          muy por encima del umbral de percolación. El votante presenta valores
+          de $S$ ligeramente inferiores a $\rho = 2$ ($S = \num{0.941(20)}$ en
+          $\eta = 1$, frente a \num{0.988(5)} del estándar), consistente con que
+          su desorden angular reparte las partículas más uniformemente.
+\end{itemize}
+
+\subsection{Tiempos de ejecución del CIM}
+
+Para el ítem (g) se midió el tiempo por búsqueda de vecinos del CIM y se lo
+comparó con el registrado en el Trabajo Práctico 1. El cronómetro abarca
+únicamente la búsqueda --- incluido el armado de las celdas --- y excluye la
+integración de la dinámica y la escritura a disco.
+
+La comparación exige igualar la configuración geométrica: las mediciones del
+Trabajo Práctico 1 se realizaron con $L = 20$ y $M = 13$, mientras que el
+estudio del presente trabajo emplea $L = 10$ y $M = 9$. A igual $N$ ambas
+configuraciones corresponden a densidades distintas, de modo que los tiempos no
+son directamente comparables. Por eso las corridas de esta sección se ejecutan
+con $L = 20$ y $M = 13$, replicando la caja del Trabajo Práctico 1, sobre el
+mismo conjunto de valores de $N$ (de \num{10} a \num{1150}).
+
+\textbf{Nota metodológica.} Se verificó que las mediciones de tiempo son
+extremadamente sensibles a la carga de la máquina. Al reejecutar el binario
+\textit{sin modificar} del Trabajo Práctico 1 sobre un equipo con otros procesos
+en ejecución, el tiempo para $N = 1150$ pasó de los \SI{0.904}{\milli\second}
+originales a \SI{3.756}{\milli\second}, con un desvío del \SI{56}{\percent} de
+la media. En consecuencia, ambos conjuntos de mediciones deben tomarse con el
+equipo descargado para que la comparación tenga sentido.
+
+% TODO: reejecutar con la maquina descargada y actualizar la figura:
+%   cd engine
+%   ./build/flock bench --l 20 --ms 13 \
+%       --ns 10,113,217,320,424,528,631,735,839,942,1046,1150 \
+%       --steps 200 --repeats 5 --eta 6.283185307 --out ../data/bench_l20.txt
+%   python3 visualization/bench.py --bench data/bench_l20.txt --tp1 data/tp1.txt --log
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{tiempos_cim.png}
+    \caption{Tiempo por búsqueda de vecinos en función de $N$, con $L = 20$,
+    $r_c = 1$ y $M = 13$. Se comparan el CIM y la fuerza bruta del presente
+    trabajo con el CIM del Trabajo Práctico 1. Las barras de error son el desvío
+    estándar entre repeticiones.}
+    \label{fig:tiempos}
+\end{figure}
+
+Independientemente del valor absoluto, la comparación entre el CIM y la fuerza
+bruta dentro de una misma sesión de medición --- y por lo tanto bajo idénticas
+condiciones de carga --- confirma el comportamiento esperado: el costo de la
+fuerza bruta crece como $\mathcal{O}(N^2)$ mientras que el del CIM crece de
+manera aproximadamente lineal con $N$ a densidad fija, ya que el número medio de
+partículas por celda permanece constante y cada partícula se compara sólo contra
+un entorno acotado.
+
+% =========================================================
 \section{Conclusiones}
-
-% Contenido.
-
-% =========================================================
-% REFERENCIAS
 % =========================================================
 
+A partir de los resultados presentados en la Sección 5 se concluye:
+
+\begin{enumerate}
+    \item \textbf{El modelo estándar exhibe una transición continua de orden a
+          desorden controlada por $\eta$} (Fig.~\ref{fig:va_eta}). La
+          polarización decae suavemente desde $\va = 1$ en $\eta = 0$ y se
+          mantiene por encima del piso por tamaño finito $1/\sqrt{N}$ en todo el
+          rango explorado, conservando orden residual incluso en $\eta = 5$.
+
+    \item \textbf{En el modelo estándar la densidad favorece el orden.} A
+          $\eta = 3$, $\va$ crece de \num{0.47(4)} a \num{0.615(4)} al pasar de
+          $\rho = 2$ a $\rho = 8$ (Fig.~\ref{fig:va_eta}), y la caída de la
+          curva se desplaza hacia ruidos mayores. Esto es consistente con que
+          el promedio de la Ec.~\eqref{eq:vicsek} atenúa el ruido en un factor
+          $\sim 1/\sqrt{\rho \pi r_c^2}$.
+
+    \item \textbf{El modelo de votante es mucho más sensible al ruido y su
+          dependencia con la densidad tiene signo opuesto.} Con $\rho = 4$ y
+          $\eta = 1$, el votante alcanza $\va = \num{0.151(4)}$ frente a
+          $\va = \num{0.945(2)}$ del estándar; y a $\eta = 1$ la polarización
+          del votante \textit{disminuye} de \num{0.201(5)} a \num{0.112(5)} al
+          aumentar $\rho$ de \num{2} a \num{8} (Fig.~\ref{fig:va_eta}). Ambos
+          hechos responden a que copiar un único vecino no promedia el ruido,
+          por lo que más vecinos no mejoran la estimación de la dirección local
+          y sólo aceleran la propagación del desorden. En $\eta = 5$ el votante
+          alcanza el piso $1/\sqrt{N}$ dentro del \SI{10}{\percent}, es decir
+          desorden completo.
+
+    \item \textbf{Ambos modelos coinciden exactamente en $\eta = 0$}
+          ($\va = 1$), lo que verifica de forma cruzada las dos
+          implementaciones.
+
+    \item \textbf{En el rango de parámetros de la consigna la componente gigante
+          no es un grado de libertad efectivo.} Con $L = 10$ y $\rho \ge 2$ se
+          tiene $\langle k \rangle \ge 6.3$, muy por encima del umbral de
+          percolación bidimensional, y en consecuencia $S \ge 0.91$ en todo el
+          barrido (Fig.~\ref{fig:S_eta}). La polarización varía en casi todo
+          $[0,1]$ mientras $S$ permanece confinado cerca de la unidad, de modo
+          que \textbf{alineación y conectividad están desacopladas} y $\va$ no
+          es función de $S$ (Fig.~\ref{fig:va_S}). La única estructura
+          apreciable es un mínimo de $S \approx \num{0.914}$ en torno a
+          $\eta \approx 3.5$ para $\rho = 2$, la densidad más próxima al umbral.
+
+    \item \textbf{El CIM reduce el costo de la búsqueda de vecinos respecto de
+          la fuerza bruta}, con un crecimiento aproximadamente lineal en $N$ a
+          densidad fija frente al $\mathcal{O}(N^2)$ de la fuerza bruta
+          (Fig.~\ref{fig:tiempos}). La comparación con el Trabajo Práctico 1
+          exige igualar tanto la geometría ($L$ y $M$) como la carga de la
+          máquina: se comprobó que el mismo binario del Trabajo Práctico 1
+          arroja tiempos hasta \num{4.2} veces mayores cuando el equipo no está
+          descargado.
+\end{enumerate}
+
+% =========================================================
 \section*{Referencias}
 \addcontentsline{toc}{section}{Referencias}
+% =========================================================
 
 \begin{thebibliography}{9}
 

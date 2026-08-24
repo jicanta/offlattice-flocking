@@ -15,13 +15,16 @@ def leer_datos(nombre_archivo):
     """
     Lee un archivo con formato:
 
-        step polarizacion
+        step polarizacion [fraccion_componente_gigante]
+
+    La tercera columna es la que agrega el motor para el item (d) y aca se
+    ignora: este script solo grafica la polarizacion.
 
     Ejemplo:
 
-        0 0.1163246464
-        1 0.2667016356
-        2 0.303589255
+        0 0.1163246464 0.995
+        1 0.2667016356 0.995
+        2 0.303589255 0.9975
         ...
     """
 
