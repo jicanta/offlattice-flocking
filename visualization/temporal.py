@@ -1,148 +1,181 @@
-"""Items (b) y (d): evolucion temporal de va y de S, con el inicio del
-estacionario marcado con una linea vertical.
+"""Items (b), (d) y (f): evolucion temporal de va y de S.
 
-Los datos salen del barrido (data/sweep), asi que las mismas corridas que
-alimentan las curvas de los items (c), (d) y (e) son las que se muestran aca.
+Dos tipos de figura, siempre con dos paneles (va arriba, S abajo):
 
-    python3 visualization/temporal.py --mode eta   --model vicsek --rho 4 --etas 0.5,2,4
-    python3 visualization/temporal.py --mode rho   --model vicsek --eta 2
-    python3 visualization/temporal.py --mode model --rho 4 --eta 2
+* Un caso, todas sus realizaciones: las M curvas en gris, el promedio en
+  color, la linea vertical en t_eq, y la linea horizontal con su banda que
+  son el valor escalar y su desvio, calculados tal como se usan luego en las
+  curvas contra eta. Es la figura que explicita como se calcula el escalar.
+* Varios casos superpuestos: solo la curva promedio de cada caso, con su t_eq
+  y su promedio estacionario. Sirve para comparar ruidos, densidades o
+  modelos.
+
+Sin argumentos genera el juego completo de figuras del informe. Con --model,
+--rho y --eta genera una figura puntual.
+
+    python3 visualization/temporal.py
+    python3 visualization/temporal.py --model voter --rho 4 --eta 0.5
+    python3 visualization/temporal.py --model vicsek --rho 4 --etas 0.5,2,4
 """
 
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
+from functools import lru_cache
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 import common
 
-COLUMN = {"va": 1, "S": 2}
-LABEL = {"va": "$v_a$", "S": "$S$"}
+GREY = "#9a9a9a"
 
 
-def close(first: float, second: float) -> bool:
-    return abs(first - second) < 1e-9
+class Cases:
+    """Carga (y recuerda) las realizaciones de cada caso del barrido."""
+
+    def __init__(self, sweep):
+        self.grouped = common.group_runs(common.read_index(sweep))
+
+    @lru_cache(maxsize=None)
+    def stack(self, model: str, rho: float, eta: float) -> np.ndarray:
+        return common.load_case(common.find_case(self.grouped, model, rho, eta))
+
+    def realizations(self) -> int:
+        return min(len(group) for group in self.grouped.values())
 
 
-def pick(runs: list[dict], **filters) -> list[dict]:
-    chosen = []
-    for run in runs:
-        if all(
-            (close(run[key], value) if isinstance(value, float) else run[key] == value)
-            for key, value in filters.items()
-        ):
-            chosen.append(run)
-    return chosen
+def new_figure():
+    figure, panels = plt.subplots(2, 1, sharex=True, figsize=(7.6, 6.4))
+    panels[0].set_ylabel(common.LABEL["va"])
+    panels[0].set_ylim(0.0, 1.05)
+    panels[1].set_ylabel(common.LABEL["S"])
+    panels[1].set_xlabel("$t$ [s]")
+    return figure, panels
 
 
-def series(arguments) -> tuple[list[tuple], str, str]:
-    """Devuelve [(etiqueta, color, tabla)], el titulo y el nombre del archivo."""
-    runs = common.read_index(arguments.sweep)
-    chosen: list[tuple] = []
+def single_case(cases: Cases, model: str, rho: float, eta: float, folder) -> None:
+    stack = cases.stack(model, rho, eta)
+    result = common.analyse_case(stack)
+    time = stack[0, :, 0]
+    start = result["start"]
 
-    if arguments.mode == "eta":
-        wanted = [float(piece) for piece in arguments.etas.split(",")]
-        colors = plt.cm.viridis(np.linspace(0.05, 0.85, len(wanted)))
-        for noise, color in zip(wanted, colors):
-            found = pick(runs, model=arguments.model, rho=arguments.rho,
-                         eta=noise, seed=arguments.seed)
-            if not found:
-                raise SystemExit(f"no hay corrida con eta={noise} en el barrido")
-            chosen.append((f"$\\eta$ = {noise:g}", color, common.read_observables(found[0]["path"])))
-        title = (f"{common.MODEL_STYLE[arguments.model]['label']}, "
-                 f"$\\rho$ = {arguments.rho:g}, semilla {arguments.seed}")
-        name = f"temporal_eta_{arguments.model}_rho{arguments.rho:g}.png"
+    figure, panels = new_figure()
+    color = common.MODEL_STYLE[model]["color"]
+    for axes, observable in zip(panels, ("va", "S")):
+        column = common.COLUMN[observable]
+        for index in range(stack.shape[0]):
+            axes.plot(time, stack[index, :, column], color=GREY, linewidth=0.5, alpha=0.45,
+                      label=f"realizaciones ($M$ = {result['M']})" if index == 0 else None)
+        axes.plot(time, stack[:, :, column].mean(axis=0), color=color, linewidth=1.6,
+                  label="promedio de las realizaciones")
+        axes.axvline(time[start], color="black", linestyle=":", linewidth=1.4,
+                     label=f"$t_{{eq}}$ = {time[start]:.0f}")
+        mean, deviation = result[observable], result[f"{observable}_std"]
+        axes.hlines(mean, time[start], time[-1], color="black", linestyle="--", linewidth=1.3,
+                    label=f"$\\langle {common.LABEL[observable][1:-1]} \\rangle$ = "
+                          f"{mean:.3f} $\\pm$ {deviation:.3f}")
+        axes.fill_between([time[start], time[-1]], mean - deviation, mean + deviation,
+                          color=color, alpha=0.18, linewidth=0)
+    panels[0].legend(loc="best", ncol=2, fontsize=10)
+    common.save(figure, folder,
+                f"va_S_vs_t_{model}_rho{common.number(rho)}_eta{common.number(eta)}_M{result['M']}.png")
 
-    elif arguments.mode == "rho":
-        wanted = [float(piece) for piece in arguments.rhos.split(",")]
-        for density in wanted:
-            found = pick(runs, model=arguments.model, rho=density,
-                         eta=arguments.eta, seed=arguments.seed)
-            if not found:
-                raise SystemExit(f"no hay corrida con rho={density} en el barrido")
-            chosen.append((f"$\\rho$ = {density:g} ($N$ = {found[0]['N']})",
-                           common.density_color(density),
-                           common.read_observables(found[0]["path"])))
-        title = (f"{common.MODEL_STYLE[arguments.model]['label']}, "
-                 f"$\\eta$ = {arguments.eta:g}, semilla {arguments.seed}")
-        name = f"temporal_rho_{arguments.model}_eta{arguments.eta:g}.png"
 
-    else:
-        for model in ("vicsek", "voter"):
-            found = pick(runs, model=model, rho=arguments.rho,
-                         eta=arguments.eta, seed=arguments.seed)
-            if not found:
-                raise SystemExit(f"no hay corrida del modelo {model} en el barrido")
-            style = common.MODEL_STYLE[model]
-            chosen.append((style["label"],
-                           "#1f77b4" if model == "vicsek" else "#d62728",
-                           common.read_observables(found[0]["path"])))
-        title = (f"$\\rho$ = {arguments.rho:g}, $\\eta$ = {arguments.eta:g}, "
-                 f"semilla {arguments.seed}")
-        name = f"temporal_modelos_rho{arguments.rho:g}_eta{arguments.eta:g}.png"
+def overlay(cases: Cases, entries: list[tuple], folder, name: str) -> None:
+    """entries: [(model, rho, eta, etiqueta, color)]."""
+    figure, panels = new_figure()
+    realizations = None
+    for model, rho, eta, label, color in entries:
+        stack = cases.stack(model, rho, eta)
+        result = common.analyse_case(stack)
+        realizations = result["M"] if realizations is None else min(realizations, result["M"])
+        time = stack[0, :, 0]
+        start = result["start"]
+        style = common.MODEL_STYLE[model]["linestyle"]
+        for axes, observable in zip(panels, ("va", "S")):
+            column = common.COLUMN[observable]
+            axes.plot(time, stack[:, :, column].mean(axis=0), color=color, linewidth=1.3,
+                      linestyle=style, label=label)
+            axes.axvline(time[start], color=color, linestyle=":", linewidth=1.2)
+            axes.hlines(result[observable], time[start], time[-1], color=color,
+                        linestyle="--", linewidth=1.0, alpha=0.8)
+    # La leyenda va fuera del area de datos: las curvas ocupan todo el ancho.
+    panels[0].legend(loc="lower center", bbox_to_anchor=(0.5, 1.01),
+                     ncol=min(len(entries), 5), frameon=False, fontsize=11)
+    common.save(figure, folder, name.replace("{M}", str(realizations)))
 
-    return chosen, title, name
+
+def standard_set(cases: Cases, figures) -> None:
+    low, high = 0.5, 4.0
+    eta_set = [0.5, 1.0, 2.0, 3.0, 4.0]
+    rhos = [2.0, 4.0, 8.0]
+    eta_colors = plt.cm.viridis(np.linspace(0.05, 0.85, len(eta_set)))
+
+    for model in ("vicsek", "voter"):
+        # (b) para Vicsek; (f) repite (b) para el votante.
+        item = common.folder("b" if model == "vicsek" else "f", figures)
+        for rho in rhos:
+            for eta in (low, high):
+                single_case(cases, model, rho, eta, item)
+            overlay(cases,
+                    [(model, rho, eta, f"$\\eta$ = {eta:g}", color)
+                     for eta, color in zip(eta_set, eta_colors)],
+                    item,
+                    f"va_S_vs_t_{model}_rho{common.number(rho)}_etas{common.joined(eta_set)}_promedioM{{M}}.png")
+        # (d) S(t) para las tres densidades; (f) lo repite para el votante.
+        item = common.folder("d" if model == "vicsek" else "f", figures)
+        for eta in (low, 2.0, high):
+            overlay(cases,
+                    [(model, rho, eta, f"$\\rho$ = {rho:g}", common.density_color(rho))
+                     for rho in rhos],
+                    item,
+                    f"va_S_vs_t_{model}_eta{common.number(eta)}_rhos{common.joined(rhos)}_promedioM{{M}}.png")
+
+    # (f) comparacion directa entre modelos, misma densidad y mismo ruido.
+    item = common.folder("f", figures)
+    for rho in rhos:
+        for eta in (low, 2.0):
+            overlay(cases,
+                    [(model, rho, eta, common.MODEL_LABEL[model], common.MODEL_STYLE[model]["color"])
+                     for model in ("vicsek", "voter")],
+                    item,
+                    f"va_S_vs_t_vicsek_vs_voter_rho{common.number(rho)}_eta{common.number(eta)}_promedioM{{M}}.png")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--sweep", type=Path, default=common.DATA / "sweep")
-    parser.add_argument("--mode", choices=("eta", "rho", "model"), default="eta")
-    parser.add_argument("--model", default="vicsek", choices=("vicsek", "voter"))
-    parser.add_argument("--rho", type=float, default=4.0)
-    parser.add_argument("--eta", type=float, default=2.0)
-    parser.add_argument("--etas", default="0.5,2,4")
-    parser.add_argument("--rhos", default="2,4,8")
-    parser.add_argument("--seed", type=int, default=1)
-    parser.add_argument("--observable", choices=("va", "S", "both"), default="both")
-    parser.add_argument("--teq", type=int, default=-1,
-                        help="forzar el inicio del estacionario (-1 = criterio automatico)")
+    parser.add_argument("--model", choices=("vicsek", "voter"))
+    parser.add_argument("--rho", type=float)
+    parser.add_argument("--eta", type=float, help="un caso con todas sus realizaciones")
+    parser.add_argument("--etas", help="lista separada por coma: superpone las curvas promedio")
+    parser.add_argument("--item", default="b", choices=tuple(common.FOLDER_NAME),
+                        help="carpeta de destino de la figura puntual")
     common.add_common_arguments(parser)
     arguments = parser.parse_args()
 
     common.use_report_style()
-    chosen, title, name = series(arguments)
-    observables = ("va", "S") if arguments.observable == "both" else (arguments.observable,)
-
-    figure, panels = plt.subplots(len(observables), 1, sharex=True,
-                                  figsize=(7.6, 3.2 * len(observables)))
-    panels = np.atleast_1d(panels)
-
-    # El estacionario se define con la polarizacion, que es el observable
-    # primario, y ese mismo t_eq se usa para S: asi las dos series se promedian
-    # sobre la misma ventana temporal.
-    for axes, observable in zip(panels, observables):
-        column = COLUMN[observable]
-        for label, color, table in chosen:
-            time = table[:, 0]
-            values = table[:, column]
-            axes.plot(time, values, color=color, linewidth=1.0, alpha=0.85, label=label)
-
-            start = (arguments.teq if arguments.teq >= 0
-                     else common.steady_state_start(table[:, COLUMN["va"]]))
-            index = min(start, len(time) - 1)
-            axes.axvline(time[index], color=color, linestyle=":", linewidth=1.4)
-            mean = values[index:].mean()
-            axes.hlines(mean, time[index], time[-1], color=color,
-                        linestyle="--", linewidth=1.2)
-        axes.set_ylabel(LABEL[observable])
-        axes.set_ylim(0.0, 1.05)
-
-    panels[-1].set_xlabel("$t$ [s]")
-    figure.suptitle(title, fontsize=12, y=1.05)
-    panels[0].legend(loc="lower center", bbox_to_anchor=(0.5, 1.01),
-                     ncol=len(chosen), frameon=False)
-    figure.text(0.5, -0.02,
-                "punteada vertical: inicio del estacionario · rayada horizontal: "
-                "promedio temporal en el estacionario",
-                ha="center", fontsize=9.5)
-    common.save(figure, name, arguments.out)
-    if arguments.show:
-        plt.show()
+    cases = Cases(arguments.sweep)
+    if arguments.model is None:
+        standard_set(cases, arguments.figures)
+        return
+    if arguments.rho is None:
+        raise SystemExit("--rho es obligatorio junto con --model")
+    folder = common.folder(arguments.item, arguments.figures)
+    if arguments.etas:
+        etas = [float(piece) for piece in arguments.etas.split(",")]
+        colors = plt.cm.viridis(np.linspace(0.05, 0.85, len(etas)))
+        overlay(cases,
+                [(arguments.model, arguments.rho, eta, f"$\\eta$ = {eta:g}", color)
+                 for eta, color in zip(etas, colors)],
+                folder,
+                f"va_S_vs_t_{arguments.model}_rho{common.number(arguments.rho)}"
+                f"_etas{common.joined(etas)}_promedioM{{M}}.png")
+    elif arguments.eta is not None:
+        single_case(cases, arguments.model, arguments.rho, arguments.eta, folder)
+    else:
+        raise SystemExit("indicar --eta (un caso) o --etas (superposicion)")
 
 
 if __name__ == "__main__":

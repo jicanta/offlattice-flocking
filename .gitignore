@@ -5,9 +5,8 @@ build/
 # Python
 __pycache__/
 .venv/
+.ruff_cache/
 
 # Datos y figuras generadas
 data/*
 !data/.gitkeep
-visualization/polarizacion_temporal.png
-visualization/animacion.mp4

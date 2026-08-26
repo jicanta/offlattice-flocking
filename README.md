@@ -6,12 +6,19 @@ Method.
 
 ```
 tp-2/
+├── Makefile          # todo el flujo: build, sweep, animations, bench, figures
 ├── engine/           # C++: dinámica, CIM, fuerza bruta, timing
 │   ├── include/      # flock, observables, neighbor_search, geometry, io…
 │   └── src/          # main + un archivo por comando (simulate, sweep, bench)
-├── visualization/    # Python: animaciones y figuras del informe
-├── data/             # salida generada (ignorado por git)
-└── INFORME.md        # formato y estructura del informe
+├── visualization/    # Python: resumen del barrido, animaciones y figuras
+├── reference/        # tiempos del TP1 para el ítem (g)
+├── report/           # informe y presentación en LaTeX
+├── data/             # salida generada (ignorada por git)
+│   ├── sweep/        #   series t va S de cada corrida del barrido + resumen.csv
+│   ├── runs/<caso>/  #   corridas con posiciones para las animaciones
+│   ├── bench/        #   tiempos del CIM
+│   └── figures/      #   una carpeta por ítem del enunciado (a … g)
+└── INFORME.md        # formato del informe y notas de la cátedra
 ```
 
 El CIM, la geometría periódica y el parseo de argumentos se reutilizan tal cual
@@ -25,194 +32,107 @@ escribe en `data/` y la animación y las figuras solo leen de ahí.
 `L=10`, `rc=1`, `v=0.03`, `dt=1`, contorno periódico, partículas puntuales.
 Densidades del estudio: `rho=2, 4, 8`, es decir `N=200, 400, 800`.
 
-## Compilación
+## Flujo completo
 
 ```bash
-cd engine
-make
+pip install -r requirements.txt
+make sweep        # barrido: 2 modelos x 3 densidades x 21 ruidos x 20 semillas
+make animations   # corridas características + mp4 + tiras de cuadros
+make bench        # tiempos del CIM con la caja del TP1 (máquina descargada)
+make figures      # resumen.csv + todas las figuras en data/figures/<item>/
 ```
 
-El binario queda en `engine/build/flock`. Los comandos de abajo se ejecutan
-desde `engine/`, por eso las rutas por defecto apuntan a `../data/`.
+`make all` encadena los cuatro. Las variables del barrido se pueden pisar:
+`make sweep SEEDS=30 ETAS=0:5:0.5 STEPS=8000`. El barrido reparte las corridas
+entre todos los núcleos y tarda del orden de una hora con los valores por
+defecto.
 
-## Uso
+## Convenciones del análisis
 
-Correr el modelo estándar y guardar la trayectoria:
+Están implementadas una sola vez en `visualization/common.py` y las usan todas
+las figuras:
+
+- **Caso** = (modelo, ρ, η). Cada caso tiene `M` realizaciones con semillas
+  distintas (`M = 20` por defecto), que sólo difieren en la condición inicial y
+  en la secuencia de ruido.
+- **Inicio del estacionario `t_eq`**: se determina sobre la curva *promedio* de
+  las `M` realizaciones de `va(t)` (primer bloque de 50 pasos que cruza la media
+  de la segunda mitad). Es único por caso, el mismo para `va` y para `S`, y no
+  depende de la semilla.
+- **Valor escalar y barra de error**: promedio y desvío estándar (`ddof=1`) de
+  *todas* las muestras con `t ≥ t_eq` de las `M` realizaciones. Es la misma
+  definición en `va` vs `η`, `S` vs `η`, `va` vs `S` y en las bandas de las
+  evoluciones temporales. Para los tiempos del CIM, la barra es el desvío
+  estándar entre repeticiones.
+- **Sin títulos en las figuras**: los parámetros van en el nombre del archivo
+  (`va_vs_eta_vicsek_rho2-4-8_M20.png`) y en el epígrafe del informe.
+
+## Motor
 
 ```bash
-./build/flock simulate --model vicsek --rho 4 --eta 1.5 --steps 5000 --seed 1
-```
-
-Correr el modelo de votante desde la misma condición inicial:
-
-```bash
-./build/flock simulate --model voter --rho 4 --eta 1.5 --steps 5000 --seed 1
+cd engine && make            # binario en engine/build/flock
+./build/flock simulate --model vicsek --rho 4 --eta 1.5 --steps 5000 --seed 1 --dir ../data/runs/prueba
+./build/flock sweep --rhos 2,4,8 --etas 0:5:0.25 --seeds 20 --steps 5000
+./build/flock bench --l 20 --ms 13 --ns 100,200,400,800 --steps 200 --repeats 5
 ```
 
 `--n` tiene prioridad sobre `--rho`. `--m` por defecto usa el máximo admitido,
 `M = 9` para `L=10` y `rc=1`. `--method brute` corre fuerza bruta y sirve como
 referencia de tiempos y de correctitud: con la misma semilla ambos métodos
-producen trayectorias idénticas.
+producen trayectorias idénticas. `--voter-strict` excluye a la partícula del
+sorteo del modelo de votante; por defecto participa, lo que además define el
+caso de una partícula aislada: conserva su dirección.
 
-`--voter-strict` excluye a la partícula del sorteo del modelo de votante. Por
-defecto participa, lo que además define el caso de una partícula aislada:
-conserva su dirección.
+Salida:
 
-Barrer el espacio de parámetros que necesitan las curvas de los ítems (c), (d)
-y (e). Cada corrida escribe solo su serie temporal de observables, no las
-posiciones, y las corridas se reparten entre todos los núcleos:
-
-```bash
-./build/flock sweep --rhos 2,4,8 --etas 0:5:0.25 --seeds 5 --steps 20000
-```
-
-Medir el costo de la búsqueda de vecinos para el ítem (g):
-
-```bash
-./build/flock bench --ns 100,200,400,800,1600,3200 --steps 200 --repeats 3
-```
-
-## Salida
-
-- `data/static.txt` — parámetros de la corrida, un `clave valor` por línea.
-- `data/dynamic.txt` — por cuadro: una línea con `t` y luego `N` líneas `x y theta`.
-- `data/observables.txt` — una línea `t va S` por paso.
-- `data/sweep/` — una serie `t va S` por corrida del barrido, más `index.txt`
-  con una línea por corrida (`model rho N eta seed steps L rc v dt archivo`).
-- `data/bench.txt` — una línea por medición: `método N M L rc pasos repetición
-  ms_totales ms_por_búsqueda`.
+- `static.txt` — parámetros de la corrida, un `clave valor` por línea.
+- `dynamic.txt` — por cuadro: una línea con `t` y luego `N` líneas `x y theta`.
+- `observables.txt` — una línea `t va S` por paso.
+- `data/sweep/` — una serie `t va S` por corrida, más `index.txt` con una línea
+  por corrida (`model rho N eta seed steps L rc v dt archivo`).
+- `data/bench/bench_l20.txt` — una línea por medición: `método N M L rc pasos
+  repetición ms_totales ms_por_búsqueda`.
 
 `--save-every k` ralea únicamente los cuadros de posiciones: los observables se
-escriben en todos los pasos. Con `rho=8` y 20 000 pasos, guardar cada cuadro son
-unos 530 MB, mientras que la serie de observables queda en 20 001 líneas. Por eso
-`sweep` no guarda posiciones: las animaciones salen de corridas puntuales de
-`simulate`.
+escriben en todos los pasos. `sweep` no guarda posiciones: las animaciones
+salen de corridas puntuales de `simulate --dir`.
 
-## Análisis y figuras
+## Figuras
 
-`pip install -r requirements.txt` y después, desde la raíz del repositorio:
+| Script | Ítem | Qué hace |
+|---|---|---|
+| `summarise.py` | — | barrido → `data/sweep/resumen.csv` (t_eq, ⟨va⟩ ± σ, ⟨S⟩ ± σ por caso) |
+| `animate.py` | (a) | animación y tira de cuadros de una corrida de `data/runs/` |
+| `temporal.py` | (b) (d) (f) | `va(t)` y `S(t)`: un caso con sus `M` realizaciones, o promedios superpuestos |
+| `curves.py` | (c) (d) (e) (f) | `va` vs `η`, `S` vs `η`, `va` vs `S`, y las comparaciones Vicsek–votante |
+| `bench.py` | (g) | tiempos del CIM contra `N`, con los del TP1 superpuestos |
 
-```bash
-python3 visualization/animate.py --out-file data/figures/vicsek.mp4   # (a) animación
-python3 visualization/animate.py --snapshots 0,100,2000               # (a) cuadros para el PDF
-python3 visualization/temporal.py --mode eta --model vicsek --rho 4   # (b) va(t) y S(t)
-python3 visualization/temporal.py --mode rho --model vicsek --eta 2   # (d) S(t) por densidad
-python3 visualization/temporal.py --mode model --rho 4 --eta 2        # (f) Vicsek vs votante
-python3 visualization/curves.py                                       # (c) (d) (e) + resumen.csv
-python3 visualization/bench.py --tp1 data/tp1.txt                     # (g) tiempos contra el TP1
-```
-
-`dynamic.py` y `polarization.py` son entradas sueltas para mirar una corrida
-puntual: la animación de un `dynamic.txt` y la evolución de `va` con un `t_eq`
-elegido a mano. El resto trabaja sobre el barrido completo y comparte
-`common.py`:
-
-| Script | Qué hace |
-|---|---|
-| `dynamic.py` | animación de una corrida, `-N` y `L` salen de `static.txt` |
-| `polarization.py` | `va(t)` de una corrida con `--teq` manual |
-| `animate.py` | animación y tira de cuadros para el PDF |
-| `temporal.py` | `va(t)` y `S(t)` con el `t_eq` automático |
-| `curves.py` | curvas contra `eta`, `va` contra `S` y `resumen.csv` |
-| `bench.py` | tiempos del CIM contra el TP1 |
-
-Las flechas se dibujan con longitud fija (`--flecha`, `--arrow`): con `v = 0.03`
-y `L = 10` el desplazamiento por paso es un 0.3 % de la caja, así que la flecha
-indica dirección y no módulo. Como la rapidez es común a todas las partículas,
-no se pierde información al hacerlo.
-
-### Casos característicos para las animaciones
+Sin argumentos, `temporal.py` y `curves.py` generan el juego completo de figuras
+del informe. Para una figura puntual:
 
 ```bash
-# transitorio: varios grupos, cada uno de un color, que se fusionan en uno solo
-./build/flock simulate --model vicsek --rho 2 --eta 0.3 --steps 600 --seed 8
-python3 visualization/animate.py --frames 300
-
-# estacionario heterogéneo cerca de la transición: los grupos se arman y se deshacen
-./build/flock simulate --model vicsek --rho 2 --eta 3 --steps 3000 --seed 5
-python3 visualization/animate.py --desde 1000 --stride 3 --frames 500
-
-# estacionario del votante: dominios de color que persisten indefinidamente
-./build/flock simulate --model voter --rho 4 --eta 1 --steps 3000 --seed 5
-python3 visualization/animate.py --desde 1000 --stride 3 --frames 500
+python3 visualization/temporal.py --model voter --rho 4 --eta 0.5 --item f
+python3 visualization/temporal.py --model vicsek --rho 2 --etas 0.5,1,2,3,4
+python3 visualization/animate.py --run data/runs/vicsek_rho4_eta0.5 --desde 1000
+python3 visualization/animate.py --run data/runs/vicsek_rho4_eta0.5 --snapshots 0,250,1000,3000
 ```
 
-`--desde` saltea el transitorio y anima solo el estacionario, que es lo que hay
-que mostrar cuando la animación acompaña a un valor escalar del observable.
+Las flechas se dibujan con longitud fija (`--arrow`): con `v = 0.03` y `L = 10`
+el desplazamiento por paso es un 0.3 % de la caja, así que la flecha indica
+dirección y no módulo. Como la rapidez es común a todas las partículas, no se
+pierde información al hacerlo. `--desde` saltea el transitorio y anima solo el
+estacionario.
 
 Caso complementario, **fuera de los parámetros del enunciado** (que fija
-`L = 10` y `rho = 2, 4, 8`), útil para el ítem (e) porque es el único régimen
-que da `S < 1` con `va` alto:
+`L = 10` y `rho = 2, 4, 8`), útil para discutir el ítem (e) porque es el único
+régimen que da `S < 1` con `va` alto:
 
 ```bash
-# estacionario fragmentado: bandada dominante mas grupos satelite separados
-./build/flock simulate --l 40 --rho 0.6 --eta 0.2 --steps 8000 --seed 5 --save-every 25
-python3 visualization/animate.py --desde 2000 --frames 250 --arrow 1.2
+cd engine && ./build/flock simulate --l 40 --rho 0.6 --eta 0.2 --steps 8000 --seed 5 --save-every 25 --dir ../data/runs/vicsek_L40_rho0.6_eta0.2
+python3 visualization/animate.py --run data/runs/vicsek_L40_rho0.6_eta0.2 --desde 2000 --frames 250 --arrow 1.2
 ```
-
-Da `va` ~ 0.98 con `S` ~ 0.85 sostenido hasta el final: el sistema queda
-permanentemente fragmentado en el espacio y permanentemente alineado en la
-dirección. Si se usa en el informe, hay que declarar `L` y `rho` en el epígrafe
-y rotularlo como estudio complementario, no mezclarlo con las figuras del
-barrido principal.
-
-`--arrow` (y `--flecha` en `dynamic.py`) ajusta la longitud de la flecha: en una
-caja de lado 40 el valor por defecto de 0.35 queda demasiado chico.
-
-Las figuras van a `data/figures/`. El criterio de estado estacionario vive en
-`visualization/common.py`: se toma como referencia la media de la segunda mitad de la
-corrida y el estacionario arranca en el primer bloque que cruza esa referencia.
-El mismo *t*eq se usa para `va` y para `S`. `curves.py` avisa qué puntos todavía
-derivan en el último cuarto de la corrida, es decir cuáles necesitan más pasos;
-`--teq` fuerza un valor único si se prefiere un criterio conservador y uniforme.
-
-## Modelo
-
-Actualización sincrónica. En cada paso los vecinos se calculan con las
-posiciones en `t`, de ahí salen los ángulos en `t+1` y las posiciones avanzan
-con la velocidad en `t`, como en la ecuación (1) de [1]:
-
-```
-x_i(t+1)     = x_i(t) + v_i(t) dt
-theta_i(t+1) = base_i(t) + U[-eta/2, eta/2]
-```
-
-- **Vicsek**: `base_i` es el promedio vectorial de las direcciones dentro de
-  `rc` **incluyendo a la propia partícula**, que es el criterio estándar fijado
-  por la cátedra:
-
-  ```
-  base_i = atan2( sin(theta_i) + sum_j sin(theta_j),
-                  cos(theta_i) + sum_j cos(theta_j) )
-  ```
-
-  La lista de vecinos nunca contiene a `i` (los pares se registran una sola vez,
-  con `first < second`), así que la dirección propia entra exactamente una vez y
-  no hay doble conteo. Una partícula sin vecinos conserva su dirección más el
-  ruido.
-
-- **Votante**: `base_i` es la dirección de un único vecino elegido al azar, que
-  se copia tal cual —sin promediar— tomando su ángulo `theta_j(t)` del paso
-  actual. Como las direcciones nuevas se escriben en un buffer aparte y recién
-  se intercambian al final del paso, todas las copias de un mismo paso leen el
-  estado en `t`.
-
-## Verificación
-
-- `--method cim` y `--method brute` con la misma semilla producen la misma
-  trayectoria.
-- `eta = 0` lleva `va` a 1 en ambos modelos.
-- `eta = 2*pi` deja `va` en el orden de `1/sqrt(N)`.
-- Con `N = 800` y 2000 pasos: CIM 1.36 ms por búsqueda contra 3.72 ms de fuerza
-  bruta.
 
 ## Referencias
 
-```
-[1] T. Vicsek, A. Czirok, E. Ben-Jacob, I. Cohen y O. Shochet, "Novel type of phase
-    transition in a system of self-driven particles", Physical Review Letters,
-    vol. 75, nro. 6, p. 1226 (1995).
-[2] E. S. Loscar, G. Baglietto y F. Vazquez, "Noisy multistate voter model for
-    flocking in finite dimensions", Physical Review E, vol. 104, nro. 3,
-    p. 034111 (2021).
-```
+[1] T. Vicsek, A. Czirók, E. Ben-Jacob, I. Cohen y O. Shochet, Phys. Rev. Lett. 75, 1226 (1995).
+[2] E. S. Loscar, G. Baglietto y F. Vazquez, Phys. Rev. E 104, 034111 (2021).

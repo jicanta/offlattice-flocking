@@ -225,3 +225,16 @@ Indicaciones dadas verbalmente y que condicionan el armado de la presentación:
   nodos del cluster mayor) que el usado para la polarización.
 - **Animaciones:** deben estar **subidas a YouTube**. **No** subirlas en formato
   *shorts*.
+
+## 5. Devolución de la cátedra sobre la primera versión de las figuras
+
+Comentarios recibidos y cómo quedaron resueltos en `visualization/`:
+
+| Comentario | Resolución |
+|---|---|
+| Los resultados no pueden depender de la semilla | Toda figura promedia las *M* = 20 realizaciones de cada caso; el *t*<sub>eq</sub> se determina sobre la curva promedio y es el mismo para todas las realizaciones. Ninguna figura muestra una semilla sola: las evoluciones temporales muestran las *M* realizaciones y su promedio. |
+| Estandarizar el cálculo del desvío en todas las figuras | Una sola definición (`common.steady_statistics`): desvío estándar de todas las muestras estacionarias de las *M* realizaciones. Se usa en *v*<sub>a</sub> vs *η*, *S* vs *η*, *v*<sub>a</sub> vs *S* y en las bandas de las evoluciones temporales. |
+| Las barras del votante eran demasiado cortas | Era el desvío entre promedios temporales, que colapsa la fluctuación temporal (grande en el votante). Con la definición anterior las barras reflejan la fluctuación real (p. ej. *ρ* = 4, *η* = 1: 0.15 ± 0.07 en vez de ± 0.004). |
+| *S* en el estacionario: graficar *y* sólo donde hay datos, *M* mayor, Vicsek y votante en figuras separadas | Eje *y* ajustado a los datos; *M* = 20; `d_clusters/S_vs_eta_vicsek_*.png` y `f_votante/S_vs_eta_voter_*.png`. |
+| *v*<sub>a</sub> en el estacionario: una figura por densidad, cada una con Vicsek vs votante | `f_votante/va_vs_eta_vicsek_vs_voter_rho{2,4,8}_M20.png`. |
+| Sin títulos en las figuras: la información va en el nombre del archivo | Ningún script pone título; los parámetros van en el nombre y en el epígrafe. |

@@ -1,12 +1,12 @@
 """Item (g): tiempo de la busqueda de vecinos del CIM contra N.
 
-Lee data/bench.txt (comando `flock bench`) y grafica el tiempo por busqueda
-promediado sobre las repeticiones. Con --tp1 se superponen los tiempos del TP1
-para la comparacion que pide la consigna: el archivo debe tener dos columnas,
-`N` y `ms_por_busqueda`, una linea por medicion.
+Lee la salida de `flock bench` y grafica el tiempo por busqueda promediado
+sobre las repeticiones, con el desvio estandar entre repeticiones como barra
+de error. Con --tp1 se superponen los tiempos del TP1 para la comparacion que
+pide la consigna: el archivo tiene dos columnas, `N` y `ms_por_busqueda`.
 
     python3 visualization/bench.py
-    python3 visualization/bench.py --tp1 data/tp1.txt --log
+    python3 visualization/bench.py --bench data/bench/bench_l20.txt --tp1 reference/tp1_tiempos.txt --log
 """
 
 from __future__ import annotations
@@ -28,33 +28,34 @@ STYLE = {
 
 def read_bench(path: Path) -> dict:
     rows = defaultdict(list)
+    header = {}
     for line in Path(path).read_text().splitlines():
         if not line.strip() or line.startswith("#"):
             continue
         pieces = line.split()
         method, count, cells = pieces[0], int(pieces[1]), int(pieces[2])
-        rows[(method, count, cells)].append(float(pieces[8]))
-    return rows
+        header.setdefault("L", pieces[3])
+        if method == "cim":
+            header.setdefault("M", cells)
+        rows[(method, count)].append(float(pieces[8]))
+    return rows, header
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--bench", type=Path, default=common.DATA / "bench.txt")
-    parser.add_argument("--tp1", type=Path, default=None,
+    parser.add_argument("--bench", type=Path, default=common.BENCH / "bench_l20.txt")
+    parser.add_argument("--tp1", type=Path, default=common.ROOT / "reference" / "tp1_tiempos.txt",
                         help="archivo con los tiempos del TP1: columnas N y ms")
     parser.add_argument("--log", action="store_true", help="ejes logaritmicos")
     common.add_common_arguments(parser)
     arguments = parser.parse_args()
 
     if not arguments.bench.exists():
-        raise SystemExit(
-            f"falta {arguments.bench}. Correr primero:\n"
-            "  cd engine && ./build/flock bench"
-        )
+        raise SystemExit(f"falta {arguments.bench}. Correr primero:\n  make bench")
 
     common.use_report_style()
-    rows = read_bench(arguments.bench)
+    rows, header = read_bench(arguments.bench)
     figure, axes = plt.subplots()
 
     for method in ("cim", "brute"):
@@ -63,28 +64,25 @@ def main() -> None:
             continue
         means, errors = [], []
         for count in counts:
-            samples = np.concatenate([np.array(value) for key, value in rows.items()
-                                      if key[0] == method and key[1] == count])
+            samples = np.array(rows[(method, count)])
             means.append(samples.mean())
             errors.append(samples.std(ddof=1) if len(samples) > 1 else 0.0)
         axes.errorbar(counts, means, yerr=errors, **STYLE[method])
 
-    if arguments.tp1:
-        reference = np.loadtxt(arguments.tp1)
-        reference = np.atleast_2d(reference)
+    if arguments.tp1 and arguments.tp1.exists():
+        reference = np.atleast_2d(np.loadtxt(arguments.tp1))
         axes.plot(reference[:, 0], reference[:, 1], color="#d62728", marker="s",
                   linestyle="--", label="CIM (TP1)")
 
     axes.set_xlabel("$N$")
-    axes.set_ylabel("tiempo por busqueda de vecinos [ms]")
+    axes.set_ylabel("tiempo por búsqueda de vecinos [ms]")
     if arguments.log:
         axes.set_xscale("log")
         axes.set_yscale("log")
     axes.legend()
-    axes.set_title("Costo de la busqueda de vecinos", fontsize=12)
-    common.save(figure, "tiempos_cim.png", arguments.out)
-    if arguments.show:
-        plt.show()
+    name = (f"tiempo_busqueda_vs_N_L{header.get('L', '?')}_M{header.get('M', '?')}"
+            f"_cim_bruta_tp1{'_log' if arguments.log else ''}.png")
+    common.save(figure, common.folder("g", arguments.figures), name)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <iostream>
 #include <stdexcept>
 
@@ -37,10 +38,18 @@ int runSimulate(const Arguments& arguments) {
     throw std::invalid_argument("save-every debe ser mayor que cero");
   }
 
-  const OutputPaths paths{
-      arguments.text("static", "../data/static.txt"),
-      arguments.text("dynamic", "../data/dynamic.txt"),
-      arguments.text("out", "../data/observables.txt")};
+  // --dir agrupa los tres archivos de la corrida en una carpeta, que es como
+  // los consume el modulo de animacion (data/runs/<caso>/).
+  OutputPaths paths{arguments.text("static", "../data/static.txt"),
+                    arguments.text("dynamic", "../data/dynamic.txt"),
+                    arguments.text("out", "../data/observables.txt")};
+  if (arguments.has("dir")) {
+    const std::filesystem::path directory = arguments.text("dir", "");
+    std::filesystem::create_directories(directory);
+    paths = {(directory / "static.txt").string(),
+             (directory / "dynamic.txt").string(),
+             (directory / "observables.txt").string()};
+  }
 
   Flock flock(parameters);
   TrajectoryWriter writer(paths, parameters, steps, saveEvery);

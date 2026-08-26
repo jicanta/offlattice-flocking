@@ -7,8 +7,12 @@ direccion, no modulo. El PDF de la entrega no puede llevar animaciones
 embebidas, por eso el modo --snapshots genera la tira de cuadros que si va
 impresa, con el link a la animacion aparte.
 
-    python3 visualization/animate.py --out-file data/figures/vicsek_eta0.5.mp4
-    python3 visualization/animate.py --snapshots 0,200,2000
+La corrida se lee de una carpeta con static.txt y dynamic.txt (--run), como
+las que genera `make animations` en data/runs/<caso>/. El nombre del archivo
+de salida se arma con los parametros de la corrida.
+
+    python3 visualization/animate.py --run data/runs/vicsek_rho4_eta0.5
+    python3 visualization/animate.py --run data/runs/vicsek_rho4_eta0.5 --snapshots 0,250,1000,3000
 """
 
 from __future__ import annotations
@@ -50,20 +54,27 @@ def add_colorbar(figure, artist, axes=None) -> None:
     bar.set_label("$\\theta$ [rad]")
 
 
-def subtitle(static: dict) -> str:
-    return (
-        f"{static.get('model', '?')}  ·  $N$ = {static.get('N', '?')}, "
-        f"$\\rho$ = {static.get('rho', '?')}, $\\eta$ = {static.get('eta', '?')}, "
-        f"$L$ = {static.get('L', '?')}, $r_c$ = {static.get('rc', '?')}"
-    )
+def time_label(axes, time: float):
+    """Marca de tiempo dentro del panel: no es un titulo, es parte del cuadro."""
+    return axes.text(0.02, 0.98, f"$t$ = {time:.0f}", transform=axes.transAxes,
+                     ha="left", va="top", fontsize=12,
+                     bbox={"boxstyle": "round,pad=0.25", "facecolor": "white", "alpha": 0.85,
+                           "edgecolor": "none"})
 
 
-def animate(arguments) -> None:
-    static = common.read_static(arguments.static)
+def stem(static: dict) -> str:
+    """vicsek_rho4_eta0.5 (mas L si no es la caja del enunciado)."""
+    pieces = [str(static.get("model", "run")),
+              f"rho{float(static.get('rho', 0)):g}",
+              f"eta{float(static.get('eta', 0)):g}"]
+    if float(static.get("L", 10)) != 10.0:
+        pieces.insert(1, f"L{float(static['L']):g}")
+    return "_".join(pieces)
+
+
+def animate(arguments, static: dict) -> None:
     count = int(static["N"])
     side = float(static["L"])
-    # dynamic.txt ya viene raleado por --save-every, asi que este stride es un
-    # raleo adicional solo para acortar la animacion.
     stride = max(1, arguments.stride)
 
     common.use_report_style()
@@ -73,49 +84,48 @@ def animate(arguments) -> None:
     # Se lee de a un cuadro y se corta apenas se junta lo pedido: dynamic.txt de
     # una corrida larga no entra en memoria.
     collected = []
-    for index, snapshot in enumerate(common.frames(arguments.dynamic, count)):
+    for index, snapshot in enumerate(common.frames(arguments.run / "dynamic.txt", count)):
         if snapshot[0] < arguments.desde or index % stride:
             continue
         collected.append(snapshot)
         if len(collected) >= arguments.frames:
             break
     if not collected:
-        raise SystemExit(
-            f"{arguments.dynamic} no tiene cuadros desde t = {arguments.desde:g}"
-        )
+        raise SystemExit(f"{arguments.run} no tiene cuadros desde t = {arguments.desde:g}")
 
     time, x, y, theta = collected[0]
     artist = draw(axes, x, y, theta, arguments.arrow)
     add_colorbar(figure, artist, axes)
-    title = axes.set_title(f"$t$ = {time:.0f}\n{subtitle(static)}", fontsize=11)
+    label = time_label(axes, time)
 
     def update(index):
         time, x, y, theta = collected[index]
         artist.set_offsets(np.column_stack((x, y)))
         artist.set_UVC(np.cos(theta), np.sin(theta), theta)
-        title.set_text(f"$t$ = {time:.0f}\n{subtitle(static)}")
-        return artist, title
+        label.set_text(f"$t$ = {time:.0f}")
+        return artist, label
 
     animation = FuncAnimation(figure, update, frames=len(collected),
                               interval=1000 / arguments.fps, blit=False)
 
-    destination = Path(arguments.out_file)
-    destination.parent.mkdir(parents=True, exist_ok=True)
+    folder = common.folder("a", arguments.figures)
+    folder.mkdir(parents=True, exist_ok=True)
+    suffix = f"_desde{arguments.desde:g}" if arguments.desde > 0 else ""
+    destination = folder / (arguments.name or f"{stem(static)}{suffix}.{arguments.format}")
     writer = (FFMpegWriter(fps=arguments.fps, bitrate=2400)
-              if destination.suffix == ".mp4"
-              else PillowWriter(fps=arguments.fps))
+              if destination.suffix == ".mp4" else PillowWriter(fps=arguments.fps))
     animation.save(destination, writer=writer)
-    print(f"animacion: {destination} ({len(collected)} cuadros)")
+    plt.close(figure)
+    print(f"animacion: {common.shown(destination)} ({len(collected)} cuadros)")
 
 
-def snapshots(arguments) -> None:
-    static = common.read_static(arguments.static)
+def snapshots(arguments, static: dict) -> None:
     count = int(static["N"])
     side = float(static["L"])
     wanted = sorted(float(piece) for piece in arguments.snapshots.split(","))
 
     taken: dict[float, tuple] = {}
-    for time, x, y, theta in common.frames(arguments.dynamic, count):
+    for time, x, y, theta in common.frames(arguments.run / "dynamic.txt", count):
         if time in wanted:
             taken[time] = (x, y, theta)
         if len(taken) == len(wanted):
@@ -133,22 +143,22 @@ def snapshots(arguments) -> None:
         x, y, theta = taken[time]
         artist = draw(axes, x, y, theta, arguments.arrow)
         decorate(axes, side)
-        axes.set_title(f"$t$ = {time:.0f}")
+        time_label(axes, time)
         if axes is not panels[0]:
             axes.set_ylabel("")
     add_colorbar(figure, artist, list(panels))
-    figure.suptitle(subtitle(static), fontsize=11, y=1.02)
-    common.save(figure, arguments.name, arguments.out)
+    name = arguments.name or f"cuadros_{stem(static)}_t{common.joined(wanted)}.png"
+    common.save(figure, common.folder("a", arguments.figures), name)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--static", type=Path, default=common.DATA / "static.txt")
-    parser.add_argument("--dynamic", type=Path, default=common.DATA / "dynamic.txt")
-    parser.add_argument("--out-file", type=Path, default=common.FIGURES / "animacion.mp4",
-                        help="archivo .mp4 o .gif de la animacion")
-    parser.add_argument("--frames", type=int, default=400, help="cuadros a animar")
+    parser.add_argument("--run", type=Path, required=True,
+                        help="carpeta con static.txt y dynamic.txt")
+    parser.add_argument("--format", choices=("mp4", "gif"), default="mp4")
+    parser.add_argument("--name", default="", help="nombre de salida (por defecto se arma solo)")
+    parser.add_argument("--frames", type=int, default=600, help="cuadros a animar")
     parser.add_argument("--stride", type=int, default=1,
                         help="tomar uno de cada k cuadros guardados")
     parser.add_argument("--fps", type=int, default=20)
@@ -158,17 +168,14 @@ def main() -> None:
                         help="longitud fija de la flecha, en unidades de la caja")
     parser.add_argument("--snapshots", type=str, default="",
                         help="tiempos separados por coma: genera un PNG en vez de la animacion")
-    parser.add_argument("--name", type=str, default="cuadros.png",
-                        help="nombre del PNG en modo --snapshots")
     common.add_common_arguments(parser)
     arguments = parser.parse_args()
 
+    static = common.read_static(arguments.run / "static.txt")
     if arguments.snapshots:
-        snapshots(arguments)
+        snapshots(arguments, static)
     else:
-        animate(arguments)
-    if arguments.show:
-        plt.show()
+        animate(arguments, static)
 
 
 if __name__ == "__main__":
