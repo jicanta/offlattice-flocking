@@ -137,16 +137,27 @@ def snapshots(arguments, static: dict) -> None:
         )
 
     common.use_report_style()
-    figure, panels = plt.subplots(1, len(wanted), figsize=(4.2 * len(wanted), 4.6))
-    panels = np.atleast_1d(panels)
-    for axes, time in zip(panels, wanted):
+    # Grilla de --columns columnas: cuatro cuadros en 2 x 2 se leen a tamano
+    # impreso, en una sola fila quedan demasiado chicos.
+    columns = max(1, min(arguments.columns, len(wanted)))
+    rows = -(-len(wanted) // columns)
+    figure, panels = plt.subplots(rows, columns, figsize=(4.6 * columns, 4.4 * rows),
+                                  squeeze=False)
+    flat = panels.ravel()
+    for axes, time in zip(flat, wanted):
         x, y, theta = taken[time]
         artist = draw(axes, x, y, theta, arguments.arrow)
         decorate(axes, side)
         time_label(axes, time)
-        if axes is not panels[0]:
-            axes.set_ylabel("")
-    add_colorbar(figure, artist, list(panels))
+    for axes in flat[len(wanted):]:
+        axes.set_visible(False)
+    for row in range(rows):
+        for column in range(1, columns):
+            panels[row, column].set_ylabel("")
+    for row in range(rows - 1):
+        for column in range(columns):
+            panels[row, column].set_xlabel("")
+    add_colorbar(figure, artist, list(flat[:len(wanted)]))
     name = arguments.name or f"cuadros_{stem(static)}_t{common.joined(wanted)}.png"
     common.save(figure, common.folder("a", arguments.figures), name)
 
@@ -168,6 +179,8 @@ def main() -> None:
                         help="longitud fija de la flecha, en unidades de la caja")
     parser.add_argument("--snapshots", type=str, default="",
                         help="tiempos separados por coma: genera un PNG en vez de la animacion")
+    parser.add_argument("--columns", type=int, default=2,
+                        help="columnas de la grilla de cuadros en modo --snapshots")
     common.add_common_arguments(parser)
     arguments = parser.parse_args()
 

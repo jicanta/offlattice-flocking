@@ -3,12 +3,13 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{mathptmx} % Times New Roman en texto y simbolos matematicos (guia de catedra)
-\usepackage[spanish,es-noquoting]{babel}
+\usepackage[spanish,es-noquoting,es-tabla]{babel}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage[section]{placeins} % los flotantes no cruzan secciones
 \usepackage{booktabs}
 \usepackage{geometry}
 \usepackage{siunitx}
@@ -23,7 +24,14 @@
 
 \graphicspath{{../data/figures/}}
 
+% Las paginas que solo tienen figuras las apilan desde arriba, no centradas.
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+
 \newcommand{\va}{\ensuremath{v_a}}
+\newcommand{\teq}{\ensuremath{t_{\mathrm{eq}}}}
+\newcommand{\Mc}{\ensuremath{M_{\mathrm{c}}}}
 
 % ---------------------------------------------------------
 % DOCUMENTO
@@ -153,7 +161,7 @@ Los ángulos evolucionan como
 donde $\Theta_i(t)$ es la dirección de referencia que fija la regla de
 interacción, $\eta$ es la amplitud del ruido y $\Delta\theta_i$ una variable
 aleatoria uniforme e independiente para cada partícula y cada paso. El
-observable $\eta$ se expresa en radianes.
+parámetro $\eta$ se expresa en radianes.
 
 \subsection{Reglas de interacción}
 
@@ -265,10 +273,10 @@ dependencia espuria con el orden de recorrido.
 Se reutiliza sin modificaciones el CIM implementado en el Trabajo Práctico 1,
 junto con la geometría periódica y el parseo de argumentos, de manera que los
 tiempos de ambos trabajos midan el mismo algoritmo. La caja se subdivide en
-$M \times M$ celdas y cada partícula se compara únicamente contra las de su
+$\Mc \times \Mc$ celdas y cada partícula se compara únicamente contra las de su
 propia celda y las ocho adyacentes. Para que ese vecindario sea suficiente debe
-cumplirse $L/M > r_c$, lo que para $L = 10$ y $r_c = 1$ acota $M \le 9$; se
-emplea $M = 9$, el máximo admisible, que es el que minimiza la cantidad de
+cumplirse $L/\Mc > r_c$, lo que para $L = 10$ y $r_c = 1$ acota $\Mc \le 9$; se
+emplea $\Mc = 9$, el máximo admisible, que es el que minimiza la cantidad de
 partículas por celda. Cada par se registra una única vez, recorriendo sólo las
 celdas vecinas de índice superior, y las distancias se calculan con el criterio
 de mínima imagen.
@@ -308,34 +316,34 @@ para todos los casos. Un \textbf{caso} es una terna $(\text{modelo}, \rho,
 \eta)$, y de cada caso se corren $M$ realizaciones que difieren sólo en la
 semilla, es decir en la condición inicial y en la secuencia de ruido.
 
-El instante $t_{eq}$ se determina sobre la \textbf{curva promedio de las $M$
+El instante $\teq$ se determina sobre la \textbf{curva promedio de las $M$
 realizaciones} de $\va(t)$: se toma como referencia la media de esa curva en
 la segunda mitad de la corrida --- que ya pertenece al estacionario --- y se
-define $t_{eq}$ como el inicio del primer bloque de \num{50} pasos cuya media
+define $\teq$ como el inicio del primer bloque de \num{50} pasos cuya media
 cruza la referencia. Al ser el transitorio monótono, el cruce marca su final
 sin depender de umbrales arbitrarios. Como se evalúa sobre el promedio y no
-sobre cada realización, $t_{eq}$ es único por caso y no depende de la semilla;
-el mismo $t_{eq}$ se aplica a $\va$ y a $S$, de modo que ambos escalares
+sobre cada realización, $\teq$ es único por caso y no depende de la semilla;
+el mismo $\teq$ se aplica a $\va$ y a $S$, de modo que ambos escalares
 provienen de la misma ventana temporal.
 
 \subsection{Valor escalar y barra de error}
 \label{sec:error}
 
 Para cada caso, el valor escalar de un observable $X \in \{\va, S\}$ es el
-promedio de \textbf{todas} las muestras con $t \ge t_{eq}$ de las $M$
+promedio de \textbf{todas} las muestras con $t \ge \teq$ de las $M$
 realizaciones, y su barra de error es el desvío estándar de esas mismas
 muestras:
 
 \begin{equation}
-    \langle X \rangle = \frac{1}{M\,T} \sum_{m=1}^{M} \sum_{t \ge t_{eq}} X_m(t),
+    \langle X \rangle = \frac{1}{M\,T} \sum_{m=1}^{M} \sum_{t \ge \teq} X_m(t),
     \qquad
-    \sigma_X = \sqrt{\frac{1}{M\,T - 1} \sum_{m=1}^{M} \sum_{t \ge t_{eq}}
+    \sigma_X = \sqrt{\frac{1}{M\,T - 1} \sum_{m=1}^{M} \sum_{t \ge \teq}
                \big(X_m(t) - \langle X \rangle\big)^2},
     \label{eq:promedio}
 \end{equation}
 
 donde $X_m(t)$ es el valor del observable en la realización $m$ al tiempo $t$
-y $T$ la cantidad de pasos posteriores a $t_{eq}$. Esta es la única definición
+y $T$ la cantidad de pasos posteriores a $\teq$. Esta es la única definición
 de barra de error empleada en el trabajo: se usa en las curvas de $\va$ y $S$
 contra $\eta$, en la de $\va$ contra $S$ y en las bandas de las evoluciones
 temporales. Se la prefiere al desvío entre los promedios temporales de cada
@@ -384,7 +392,7 @@ dispersión entre bloques.
         Modelos                            & estándar, votante \\
         Pasos por corrida                  & \num{5000} \\
         Realizaciones $M$ por caso         & \num{20} (semillas 1 a 20) \\
-        Celdas del CIM $M_{\text{CIM}}$    & \num{9} (máximo admisible) \\
+        Celdas por lado del CIM $\Mc$      & \num{9} (máximo admisible) \\
         Corridas totales del barrido       & \num{2520} \\
         Corridas para animaciones          & \num{3000} pasos, un cuadro cada \num{5} \\
         \bottomrule
@@ -393,8 +401,10 @@ dispersión entre bloques.
 
 % =========================================================
 \section{Resultados}
+\label{sec:resultados}
 % =========================================================
 
+\FloatBarrier
 \subsection{Animaciones características}
 
 Las animaciones representan cada partícula mediante un vector con origen en su
@@ -418,7 +428,7 @@ animados y sus enlaces.
         \midrule
         Estándar, ruido bajo (ordenado)      & $\rho = 4$, $\eta = 0.5$ & \texttt{[PENDIENTE]} \\
         Estándar, ruido alto (desordenado)   & $\rho = 4$, $\eta = 4$   & \texttt{[PENDIENTE]} \\
-        Estándar, mínimo de $S$              & $\rho = 2$, $\eta = 3.5$ & \texttt{[PENDIENTE]} \\
+        Estándar, zona del mínimo de $S$     & $\rho = 2$, $\eta = 3.5$ & \texttt{[PENDIENTE]} \\
         Votante, ruido bajo                  & $\rho = 4$, $\eta = 0.5$ & \texttt{[PENDIENTE]} \\
         Votante, ruido alto                  & $\rho = 4$, $\eta = 4$   & \texttt{[PENDIENTE]} \\
         \bottomrule
@@ -435,9 +445,9 @@ distingue ninguna dirección preferencial, aunque las partículas siguen
 formando grupos transitorios que se arman y se deshacen
 (Fig.~\ref{fig:cuadros_alto}).
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
-    \includegraphics[width=\textwidth]{a_animaciones/cuadros_vicsek_rho4_eta0.5_t0-250-1000-3000.png}
+    \includegraphics[width=0.8\textwidth]{a_animaciones/cuadros_vicsek_rho4_eta0.5_t0-250-1000-3000.png}
     \caption{Cuadros del modelo estándar con $\rho = 4$ ($N = 400$) y
     $\eta = 0.5$ a $t = 0$, \num{250}, \num{1000} y \num{3000}, partiendo de
     una configuración desordenada. Cada flecha es una partícula, con origen en
@@ -446,15 +456,16 @@ formando grupos transitorios que se arman y se deshacen
     \label{fig:cuadros_bajo}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
-    \includegraphics[width=\textwidth]{a_animaciones/cuadros_vicsek_rho4_eta4_t0-250-1000-3000.png}
+    \includegraphics[width=0.8\textwidth]{a_animaciones/cuadros_vicsek_rho4_eta4_t0-250-1000-3000.png}
     \caption{Cuadros del modelo estándar con $\rho = 4$ ($N = 400$) y
     $\eta = 4$, mismos instantes y misma convención que la
     Fig.~\ref{fig:cuadros_bajo}.}
     \label{fig:cuadros_alto}
 \end{figure}
 
+\FloatBarrier
 \subsection{Evolución temporal de los observables}
 \label{sec:temporal}
 
@@ -462,26 +473,28 @@ Las Figuras \ref{fig:temporal_bajo} y \ref{fig:temporal_alto} muestran, para
 el modelo estándar con $\rho = 4$, la evolución temporal de $\va$ y de $S$ de
 las $M = 20$ realizaciones junto con su promedio, para un ruido bajo y uno
 alto. Son las figuras que explicitan el cálculo del escalar: la línea vertical
-punteada es el $t_{eq}$ obtenido sobre la curva promedio según la
+punteada es el $\teq$ obtenido sobre la curva promedio según la
 Sección~\ref{sec:teq}, la línea horizontal rayada es $\langle X \rangle$ y la
 banda sombreada es $\langle X \rangle \pm \sigma_X$, calculados con la
-Ec.~\eqref{eq:promedio} sobre todas las muestras posteriores a $t_{eq}$.
+Ec.~\eqref{eq:promedio} sobre todas las muestras posteriores a $\teq$.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.9\textwidth]{b_evolucion_temporal/va_S_vs_t_vicsek_rho4_eta0.5_M20.png}
+    \includegraphics[width=0.78\textwidth]{b_evolucion_temporal/va_S_vs_t_vicsek_rho4_eta0.5_M20.png}
     \caption{Evolución temporal de $\va$ (arriba) y $S$ (abajo) para el modelo
     estándar con $\rho = 4$ ($N = 400$), $\eta = 0.5$. Gris: las $M = 20$
-    realizaciones; color: su promedio; punteada vertical: $t_{eq}$;
+    realizaciones; color: su promedio; punteada vertical: $\teq$;
     rayada horizontal y banda: $\langle X \rangle \pm \sigma_X$ según la
     Ec.~\eqref{eq:promedio}.}
     \label{fig:temporal_bajo}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.9\textwidth]{b_evolucion_temporal/va_S_vs_t_vicsek_rho4_eta4_M20.png}
-    \caption{Ídem Fig.~\ref{fig:temporal_bajo} para $\eta = 4$.}
+    \includegraphics[width=0.78\textwidth]{b_evolucion_temporal/va_S_vs_t_vicsek_rho4_eta4_M20.png}
+    \caption{Evolución temporal de $\va$ (arriba) y $S$ (abajo) para el modelo
+    estándar con $\rho = 4$ ($N = 400$), $\eta = 4$, con la misma convención
+    que la Fig.~\ref{fig:temporal_bajo}.}
     \label{fig:temporal_alto}
 \end{figure}
 
@@ -494,12 +507,12 @@ una barra de error mucho mayor. La Fig.~\ref{fig:temporal_etas} superpone las
 curvas promedio para cinco valores de $\eta$ y muestra cómo el valor
 estacionario decrece y el transitorio se alarga al aumentar el ruido.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.9\textwidth]{b_evolucion_temporal/va_S_vs_t_vicsek_rho4_etas0.5-1-2-3-4_promedioM20.png}
+    \includegraphics[width=0.78\textwidth]{b_evolucion_temporal/va_S_vs_t_vicsek_rho4_etas0.5-1-2-3-4_promedioM20.png}
     \caption{Curvas promedio sobre $M = 20$ realizaciones de $\va(t)$ y $S(t)$
     para el modelo estándar con $\rho = 4$ y cinco valores de $\eta$. Punteadas
-    verticales: $t_{eq}$ de cada caso; rayadas horizontales: promedio en el
+    verticales: $\teq$ de cada caso; rayadas horizontales: promedio en el
     estacionario.}
     \label{fig:temporal_etas}
 \end{figure}
@@ -515,6 +528,7 @@ percolación de un grafo geométrico aleatorio en dos dimensiones
 la condición inicial y para cualquier $\eta$. Esta observación condiciona la
 lectura de los ítems (d) y (e) y se retoma en la Sección~\ref{sec:vaS}.
 
+\FloatBarrier
 \subsection{Polarización en función del ruido}
 \label{sec:va}
 
@@ -522,7 +536,7 @@ La Fig.~\ref{fig:va_eta} presenta el observable escalar $\va$, definido en la
 Ec.~\eqref{eq:polarizacion} y promediado según la Ec.~\eqref{eq:promedio}, en
 función de $\eta$ para las tres densidades del modelo estándar.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
     \includegraphics[width=0.85\textwidth]{c_va_vs_eta/va_vs_eta_vicsek_rho2-4-8_M20.png}
     \caption{Polarización $\va$ en el estado estacionario en función del ruido
@@ -549,6 +563,7 @@ de $\va$ son mayores, y son más grandes cuanto menor es $N$: en $\eta = 3$,
 $\sigma_{\va}$ vale \num{0.12}, \num{0.08} y \num{0.03} para $N = 200$,
 \num{400} y \num{800}.
 
+\FloatBarrier
 \subsection{Componente gigante}
 \label{sec:S}
 
@@ -558,17 +573,17 @@ mismo ruido, y la Fig.~\ref{fig:S_eta} el valor escalar correspondiente en
 función de $\eta$, obtenido con el mismo procedimiento que la
 Fig.~\ref{fig:va_eta}.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.9\textwidth]{d_clusters/va_S_vs_t_vicsek_eta2_rhos2-4-8_promedioM20.png}
+    \includegraphics[width=0.78\textwidth]{d_clusters/va_S_vs_t_vicsek_eta2_rhos2-4-8_promedioM20.png}
     \caption{Curvas promedio sobre $M = 20$ realizaciones de $\va(t)$ y $S(t)$
     para el modelo estándar con $\eta = 2$ y $\rho = 2$, \num{4} y \num{8}
-    ($N = 200$, \num{400} y \num{800}). Punteadas verticales: $t_{eq}$;
+    ($N = 200$, \num{400} y \num{800}). Punteadas verticales: $\teq$;
     rayadas horizontales: promedio en el estacionario.}
     \label{fig:temporal_rho}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
     \includegraphics[width=0.85\textwidth]{d_clusters/S_vs_eta_vicsek_rho2-4-8_M20.png}
     \caption{Fracción $S$ de partículas en la componente gigante en el estado
@@ -604,13 +619,14 @@ profundas cada vez que un grupo se separa del resto: la distribución de $S$ en
 el estacionario es asimétrica, concentrada cerca de \num{1} con una cola hacia
 valores bajos, y el desvío estándar refleja esa cola.
 
+\FloatBarrier
 \subsection{Relación entre polarización y componente gigante}
 \label{sec:vaS}
 
 La Fig.~\ref{fig:va_S} grafica $\va$ en función de $S$, con un punto por cada
 valor de $\eta$ del barrido.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
     \includegraphics[width=0.85\textwidth]{e_va_vs_S/va_vs_S_vicsek_rho2-4-8_M20.png}
     \caption{Polarización $\va$ en función de la fracción $S$ de partículas en
@@ -646,32 +662,46 @@ que la degeneración observada es propia de los parámetros fijados y no del
 modelo ni de la implementación, pero por estar fuera de la consigna no se
 incorpora a las curvas del barrido principal.
 
+\FloatBarrier
 \subsection{Modelo de votante y comparación con el modelo estándar}
 \label{sec:votante}
 
 Se repitió el estudio completo con la regla de la Ec.~\eqref{eq:votante}. La
-Fig.~\ref{fig:temporal_votante} muestra la evolución temporal de un caso de
-ruido bajo con sus $M = 20$ realizaciones, y la Fig.~\ref{fig:temporal_modelos}
-compara las curvas promedio de ambos modelos partiendo de las mismas
-condiciones iniciales.
+Fig.~\ref{fig:cuadros_votante} muestra cuadros de la animación del votante
+con el mismo ruido bajo de la Fig.~\ref{fig:cuadros_bajo}: en lugar de una
+única bandada, el sistema se organiza en dominios de dirección distinta que
+persisten y se reemplazan unos a otros, sin que ninguno llegue a abarcar toda
+la caja. La Fig.~\ref{fig:temporal_votante} muestra la evolución temporal de
+ese mismo caso con sus $M = 20$ realizaciones, y la
+Fig.~\ref{fig:temporal_modelos} compara las curvas promedio de ambos modelos
+partiendo de las mismas condiciones iniciales.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.9\textwidth]{f_votante/va_S_vs_t_voter_rho4_eta0.5_M20.png}
+    \includegraphics[width=0.8\textwidth]{a_animaciones/cuadros_voter_rho4_eta0.5_t0-250-1000-3000.png}
+    \caption{Cuadros del modelo de votante con $\rho = 4$ ($N = 400$) y
+    $\eta = 0.5$ a $t = 0$, \num{250}, \num{1000} y \num{3000}, con la misma
+    convención que la Fig.~\ref{fig:cuadros_bajo}.}
+    \label{fig:cuadros_votante}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.78\textwidth]{f_votante/va_S_vs_t_voter_rho4_eta0.5_M20.png}
     \caption{Evolución temporal de $\va$ y $S$ para el modelo de votante con
     $\rho = 4$ ($N = 400$) y $\eta = 0.5$, con la misma convención que la
     Fig.~\ref{fig:temporal_bajo}: $M = 20$ realizaciones en gris, promedio en
-    color, $t_{eq}$, y $\langle X \rangle \pm \sigma_X$.}
+    color, $\teq$, y $\langle X \rangle \pm \sigma_X$.}
     \label{fig:temporal_votante}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.9\textwidth]{f_votante/va_S_vs_t_vicsek_vs_voter_rho4_eta0.5_promedioM20.png}
+    \includegraphics[width=0.78\textwidth]{f_votante/va_S_vs_t_vicsek_vs_voter_rho4_eta0.5_promedioM20.png}
     \caption{Curvas promedio sobre $M = 20$ realizaciones de $\va(t)$ y $S(t)$
     para el modelo estándar y el de votante con $\rho = 4$ y $\eta = 0.5$. Las
     realizaciones de igual semilla parten de la misma condición inicial.
-    Punteadas verticales: $t_{eq}$; rayadas horizontales: promedio en el
+    Punteadas verticales: $\teq$; rayadas horizontales: promedio en el
     estacionario.}
     \label{fig:temporal_modelos}
 \end{figure}
@@ -682,24 +712,39 @@ mínimas, mientras que el de votante se estabiliza en $\va \approx 0.3$ y cada
 realización oscila entre \num{0.1} y \num{0.7}: el estado estacionario del
 votante no es una bandada única sino una sucesión de dominios de dirección que
 se forman, crecen y se disuelven, lo que se traduce en $\sigma_{\va}$ del
-mismo orden que $\langle \va \rangle$. La Fig.~\ref{fig:va_eta_modelos}
-presenta la comparación cuantitativa en función de $\eta$, una figura por
-densidad, y la Fig.~\ref{fig:va_eta_votante} las tres densidades del votante
-juntas.
+mismo orden que $\langle \va \rangle$. Las Figuras \ref{fig:va_eta_modelos_rho2} a
+\ref{fig:va_eta_modelos_rho8} presentan la comparación cuantitativa en función
+de $\eta$, una figura por densidad, y la Fig.~\ref{fig:va_eta_votante} las
+tres densidades del votante juntas.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.49\textwidth]{f_votante/va_vs_eta_vicsek_vs_voter_rho2_M20.png}
-    \includegraphics[width=0.49\textwidth]{f_votante/va_vs_eta_vicsek_vs_voter_rho4_M20.png}\\[0.3cm]
-    \includegraphics[width=0.49\textwidth]{f_votante/va_vs_eta_vicsek_vs_voter_rho8_M20.png}
+    \includegraphics[width=0.72\textwidth]{f_votante/va_vs_eta_vicsek_vs_voter_rho2_M20.png}
     \caption{Polarización en el estacionario en función de $\eta$ para el
-    modelo estándar y el de votante, con $\rho = 2$ (arriba, izquierda),
-    $\rho = 4$ (arriba, derecha) y $\rho = 8$ (abajo). Mismos parámetros y
-    barra de error que la Fig.~\ref{fig:va_eta}.}
-    \label{fig:va_eta_modelos}
+    modelo estándar y el de votante con $\rho = 2$ ($N = 200$). Mismos
+    parámetros y barra de error que la Fig.~\ref{fig:va_eta}.}
+    \label{fig:va_eta_modelos_rho2}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.72\textwidth]{f_votante/va_vs_eta_vicsek_vs_voter_rho4_M20.png}
+    \caption{Polarización en el estacionario en función de $\eta$ para el
+    modelo estándar y el de votante con $\rho = 4$ ($N = 400$). Mismos
+    parámetros y barra de error que la Fig.~\ref{fig:va_eta}.}
+    \label{fig:va_eta_modelos_rho4}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.72\textwidth]{f_votante/va_vs_eta_vicsek_vs_voter_rho8_M20.png}
+    \caption{Polarización en el estacionario en función de $\eta$ para el
+    modelo estándar y el de votante con $\rho = 8$ ($N = 800$). Mismos
+    parámetros y barra de error que la Fig.~\ref{fig:va_eta}.}
+    \label{fig:va_eta_modelos_rho8}
+\end{figure}
+
+\begin{figure}[!htb]
     \centering
     \includegraphics[width=0.85\textwidth]{f_votante/va_vs_eta_voter_rho2-4-8_M20.png}
     \caption{Polarización en el estacionario en función de $\eta$ para el
@@ -744,10 +789,19 @@ Se destacan cuatro hechos:
           rango (\num{0.079} frente a \num{0.0354} para $\rho = 8$).
 \end{itemize}
 
-Las Figuras \ref{fig:S_eta_votante} y \ref{fig:va_S_votante} repiten los
-ítems (d) y (e) para el votante.
+Las Figuras \ref{fig:temporal_rho_votante}, \ref{fig:S_eta_votante} y
+\ref{fig:va_S_votante} repiten los ítems (d) y (e) para el votante.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.78\textwidth]{f_votante/va_S_vs_t_voter_eta0.5_rhos2-4-8_promedioM20.png}
+    \caption{Curvas promedio sobre $M = 20$ realizaciones de $\va(t)$ y $S(t)$
+    para el modelo de votante con $\eta = 0.5$ y $\rho = 2$, \num{4} y \num{8}.
+    Misma convención que la Fig.~\ref{fig:temporal_rho}.}
+    \label{fig:temporal_rho_votante}
+\end{figure}
+
+\begin{figure}[!htb]
     \centering
     \includegraphics[width=0.85\textwidth]{f_votante/S_vs_eta_voter_rho2-4-8_M20.png}
     \caption{Fracción $S$ en la componente gigante en el estacionario en
@@ -756,7 +810,7 @@ Las Figuras \ref{fig:S_eta_votante} y \ref{fig:va_S_votante} repiten los
     \label{fig:S_eta_votante}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
     \includegraphics[width=0.85\textwidth]{f_votante/va_vs_S_voter_rho2-4-8_M20.png}
     \caption{Polarización $\va$ en función de $S$ para el modelo de votante.
@@ -765,8 +819,10 @@ Las Figuras \ref{fig:S_eta_votante} y \ref{fig:va_S_votante} repiten los
 \end{figure}
 
 En $S$ la diferencia entre modelos es menor, porque ambos operan muy por
-encima del umbral de percolación: para $\rho \ge 4$ el votante tiene
-$S > 0.99$ en todo el barrido. A $\rho = 2$ el mínimo de $S$ del votante,
+encima del umbral de percolación: la Fig.~\ref{fig:temporal_rho_votante}
+muestra que, a diferencia de $\va$, $S(t)$ del votante se mantiene próximo a
+la unidad en las tres densidades, y para $\rho \ge 4$ el valor estacionario
+es $S > 0.99$ en todo el barrido. A $\rho = 2$ el mínimo de $S$ del votante,
 \num{0.94(10)}, aparece en $\eta \approx 0.75$ en vez de en $\eta \approx 3.75$,
 es decir que se corre hacia ruidos menores exactamente como lo hace la caída
 de $\va$: en los dos modelos la fragmentación máxima ocurre en la zona de
@@ -775,6 +831,7 @@ muestra, como la Fig.~\ref{fig:va_S}, que $\va$ no es función de $S$: la
 polarización cae de \num{1} a \num{0.06} mientras $S$ se mueve dentro de
 $[0.94, 1]$.
 
+\FloatBarrier
 \subsection{Tiempos de ejecución del CIM}
 \label{sec:tiempos}
 
@@ -784,11 +841,11 @@ comparó con el registrado en el Trabajo Práctico 1. El cronómetro abarca
 integración de la dinámica y la escritura a disco.
 
 La comparación exige igualar la configuración geométrica: las mediciones del
-Trabajo Práctico 1 se realizaron con $L = 20$ y $M = 13$, mientras que el
-estudio del presente trabajo emplea $L = 10$ y $M = 9$. A igual $N$ ambas
+Trabajo Práctico 1 se realizaron con $L = 20$ y $\Mc = 13$, mientras que el
+estudio del presente trabajo emplea $L = 10$ y $\Mc = 9$. A igual $N$ ambas
 configuraciones corresponden a densidades distintas, de modo que los tiempos no
 son directamente comparables. Por eso las corridas de esta sección se ejecutan
-con $L = 20$ y $M = 13$, replicando la caja del Trabajo Práctico 1, sobre el
+con $L = 20$ y $\Mc = 13$, replicando la caja del Trabajo Práctico 1, sobre el
 mismo conjunto de valores de $N$ (de \num{10} a \num{1150}), con \num{200}
 pasos y \num{5} repeticiones por punto.
 
@@ -802,41 +859,43 @@ equipo descargado para que la comparación tenga sentido.
 
 % Para regenerar con la maquina descargada:  make bench && python3 visualization/bench.py --log
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
     \includegraphics[width=0.85\textwidth]{g_tiempos_cim/tiempo_busqueda_vs_N_L20_M13_cim_bruta_tp1_log.png}
     \caption{Tiempo por búsqueda de vecinos en función de $N$, con $L = 20$,
-    $r_c = 1$ y $M = 13$, en ejes logarítmicos. Se comparan el CIM y la fuerza
+    $r_c = 1$ y $\Mc = 13$, en ejes logarítmicos. Se comparan el CIM y la fuerza
     bruta del presente trabajo con el CIM del Trabajo Práctico 1. Las barras
     de error son el desvío estándar entre \num{5} repeticiones.}
     \label{fig:tiempos}
 \end{figure}
 
 La Fig.~\ref{fig:tiempos} confirma el comportamiento esperado. El costo de
-la fuerza bruta crece como $\mathcal{O}(N^2)$: de \SI{0.042}{\milli\second}
-en $N = 113$ a \SI{6.4}{\milli\second} en $N = 1150$, un factor \num{153}
+la fuerza bruta crece como $\mathcal{O}(N^2)$: de \SI{0.035}{\milli\second}
+en $N = 113$ a \SI{5.3}{\milli\second} en $N = 1150$, un factor \num{149}
 para un factor \num{10} en $N$. El del CIM crece de manera aproximadamente
-lineal, de \SI{0.034}{\milli\second} a \SI{0.64}{\milli\second} (factor
-\num{19}), ya que a densidad fija el número medio de partículas por celda
+lineal, de \SI{0.025}{\milli\second} a \SI{0.53}{\milli\second} (factor
+\num{22}), ya que a densidad fija el número medio de partículas por celda
 permanece constante y cada partícula se compara sólo contra un entorno
 acotado. Para $N$ pequeño la fuerza bruta es más rápida, porque el costo fijo
 de armar las $13 \times 13$ celdas supera al de comparar unas pocas decenas
-de pares; el cruce se produce en $N \approx 110$, y en $N = 1150$ el CIM ya
+de pares; el cruce se produce en $N \approx 90$, y en $N = 1150$ el CIM ya
 es \num{10} veces más rápido.
 
 La comparación con el Trabajo Práctico 1 es directa porque el algoritmo es el
 mismo: las dos curvas de CIM coinciden dentro de la barra de error hasta
 $N \approx 400$ y el presente trabajo resulta algo más rápido para $N$
-grande (\SI{0.64}{\milli\second} frente a \SI{0.90}{\milli\second} en
-$N = 1150$, un \SI{30}{\percent}), diferencia atribuible a que las
+grande (\SI{0.53}{\milli\second} frente a \SI{0.90}{\milli\second} en
+$N = 1150$, un \SI{41}{\percent}), diferencia atribuible a que las
 mediciones se tomaron en distintos equipos y condiciones de carga, y no a
-un cambio en el método.
+un cambio en el método. Las mediciones de esta sección se repitieron con
+distintos niveles de carga del equipo: los tiempos absolutos variaron hasta
+un \SI{20}{\percent}, pero los cocientes entre métodos y la forma de las curvas no.
 
 % =========================================================
 \section{Conclusiones}
 % =========================================================
 
-A partir de los resultados presentados en la Sección 5 se concluye:
+A partir de los resultados presentados en la Sección~\ref{sec:resultados} se concluye:
 
 \begin{enumerate}
     \item \textbf{El modelo estándar exhibe una transición continua de orden a
@@ -860,7 +919,7 @@ A partir de los resultados presentados en la Sección 5 se concluye:
           $\eta \approx 3.2$ del estándar; y a $\eta = 1$ la polarización del
           votante \textit{disminuye} de \num{0.20(10)} a \num{0.11(6)} al
           aumentar $\rho$ de \num{2} a \num{8}
-          (Figs.~\ref{fig:va_eta_modelos} y \ref{fig:va_eta_votante}). Ambos
+          (Figs.~\ref{fig:va_eta_modelos_rho2} a \ref{fig:va_eta_votante}). Ambos
           hechos responden a que copiar un único vecino no promedia el ruido.
           Su estacionario es intrínsecamente fluctuante --- dominios de
           dirección que se forman y disuelven, Fig.~\ref{fig:temporal_votante}
@@ -888,17 +947,16 @@ A partir de los resultados presentados en la Sección 5 se concluye:
           de la fuerza bruta}, con un crecimiento aproximadamente lineal en
           $N$ a densidad fija frente al $\mathcal{O}(N^2)$ de la fuerza bruta
           (Fig.~\ref{fig:tiempos}). La comparación con el Trabajo Práctico 1
-          exige igualar tanto la geometría ($L$ y $M$) como la carga de la
+          exige igualar tanto la geometría ($L$ y $\Mc$) como la carga de la
           máquina: se comprobó que el mismo binario del Trabajo Práctico 1
           arroja tiempos hasta \num{4.2} veces mayores cuando el equipo no
           está descargado. Con la caja del Trabajo Práctico 1 ($L = 20$,
-          $M = 13$) ambas implementaciones coinciden dentro de la barra de
+          $\Mc = 13$) ambas implementaciones coinciden dentro de la barra de
           error hasta $N \approx 400$, y en $N = 1150$ el CIM es \num{10}
           veces más rápido que la fuerza bruta.
 \end{enumerate}
 
 % =========================================================
-\section*{Referencias}
 \addcontentsline{toc}{section}{Referencias}
 % =========================================================
 

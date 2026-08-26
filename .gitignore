@@ -10,3 +10,10 @@ __pycache__/
 # Datos y figuras generadas
 data/*
 !data/.gitkeep
+
+# LaTeX
+report/*.pdf
+report/*.log
+report/*.aux
+report/*.out
+report/*.toc
