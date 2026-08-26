@@ -111,6 +111,10 @@ def main() -> None:
         d = common.folder("d" if model == "vicsek" else "f", arguments.figures)
         e = common.folder("e" if model == "vicsek" else "f", arguments.figures)
         against_noise(records, [model], rhos, "va", c, f"va_vs_eta_{model}_{tag}.png")
+        if model == "voter":
+            # La curva del votante va tambien en (c), junto a la de Vicsek.
+            against_noise(records, [model], rhos, "va",
+                          common.folder("c", arguments.figures), f"va_vs_eta_{model}_{tag}.png")
         against_noise(records, [model], rhos, "S", d, f"S_vs_eta_{model}_{tag}.png")
         against_fraction(records, [model], rhos, e, f"va_vs_S_{model}_{tag}.png")
 
