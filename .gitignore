@@ -17,3 +17,6 @@ report/*.log
 report/*.aux
 report/*.out
 report/*.toc
+
+# Entregable generado por `make entrega`
+SdS_TP2_*.zip

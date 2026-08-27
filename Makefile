@@ -73,3 +73,23 @@ figures: summary
 
 clean-figures:
 	rm -rf data/figures
+
+# --------------------------------------------------------------------------
+# Entrega
+# --------------------------------------------------------------------------
+
+# Zip del punto (c) del enunciado: solo el codigo fuente, sin historial, sin
+# documentos y sin salida de simulaciones. Queda en el orden de las decenas
+# de kb, como pide la consigna.
+GRUPO   ?= 10
+COMISION?= S2
+ZIP     := SdS_TP2_2026Q2G$(GRUPO)$(COMISION)_Codigo.zip
+
+entrega:
+	rm -f $(ZIP)
+	zip -q -r $(ZIP) Makefile requirements.txt \
+	    engine/Makefile engine/include engine/src \
+	    visualization/*.py \
+	    -x '*/__pycache__/*' '*.pyc'
+	@echo "$(ZIP)  ($$(du -h $(ZIP) | cut -f1))"
+	@unzip -l $(ZIP) | tail -n +4 | head -n -2 | awk '{print "  " $$4}'

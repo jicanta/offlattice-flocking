@@ -25,10 +25,25 @@ from functools import lru_cache
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.lines import Line2D
 
 import common
 
 GREY = "#9a9a9a"
+
+# Fases distintas del punteado de las verticales: dos casos con el mismo t_eq
+# caerian en el mismo pixel y el ultimo dibujado taparia al anterior.
+DASH_PHASES = [(phase, (1, 5)) for phase in (0, 2, 4, 1, 3, 5)]
+
+# Que significan la vertical punteada y la horizontal a trazos. En las figuras
+# de un solo caso cada trazo ya lleva su etiqueta; en las superpuestas no se
+# puede, porque habria una por serie, asi que se explican una sola vez.
+CONVENTION = [
+    Line2D([], [], color=GREY, linestyle=":", linewidth=1.2,
+           label="inicio del estacionario ($t_{eq}$)"),
+    Line2D([], [], color=GREY, linestyle="--", linewidth=1.0,
+           label="promedio en el estacionario"),
+]
 
 
 class Cases:
@@ -86,7 +101,7 @@ def overlay(cases: Cases, entries: list[tuple], folder, name: str) -> None:
     """entries: [(model, rho, eta, etiqueta, color)]."""
     figure, panels = new_figure()
     realizations = None
-    for model, rho, eta, label, color in entries:
+    for index, (model, rho, eta, label, color) in enumerate(entries):
         stack = cases.stack(model, rho, eta)
         result = common.analyse_case(stack)
         realizations = result["M"] if realizations is None else min(realizations, result["M"])
@@ -95,14 +110,21 @@ def overlay(cases: Cases, entries: list[tuple], folder, name: str) -> None:
         style = common.MODEL_STYLE[model]["linestyle"]
         for axes, observable in zip(panels, ("va", "S")):
             column = common.COLUMN[observable]
+            # El t_eq va en la etiqueta: si dos verticales coinciden, el valor
+            # sigue estando escrito aunque una tape a la otra.
             axes.plot(time, stack[:, :, column].mean(axis=0), color=color, linewidth=1.3,
-                      linestyle=style, label=label)
-            axes.axvline(time[start], color=color, linestyle=":", linewidth=1.2)
+                      linestyle=style,
+                      label=f"{label} · $t_{{eq}}$ = {time[start]:.0f}")
+            axes.axvline(time[start], color=color, linewidth=1.2,
+                         linestyle=DASH_PHASES[index % len(DASH_PHASES)])
             axes.hlines(result[observable], time[start], time[-1], color=color,
                         linestyle="--", linewidth=1.0, alpha=0.8)
-    # La leyenda va fuera del area de datos: las curvas ocupan todo el ancho.
+    # Dos leyendas en paneles distintos: las series arriba del area de datos,
+    # porque las curvas ocupan todo el ancho, y la convencion de trazos dentro
+    # del panel de S, que es el que suele tener lugar libre.
     panels[0].legend(loc="lower center", bbox_to_anchor=(0.5, 1.01),
-                     ncol=min(len(entries), 5), frameon=False, fontsize=11)
+                     ncol=min(len(entries), 3), frameon=False, fontsize=11)
+    panels[1].legend(handles=CONVENTION, loc="best", fontsize=9)
     common.save(figure, folder, name.replace("{M}", str(realizations)))
 
 

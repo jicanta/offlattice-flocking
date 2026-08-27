@@ -42,7 +42,9 @@ make bench        # tiempos del CIM con la caja del TP1 (máquina descargada)
 make figures      # resumen.csv + todas las figuras en data/figures/<item>/
 ```
 
-`make all` encadena los cuatro. Las variables del barrido se pueden pisar:
+`make all` encadena los cuatro. `make entrega` arma el zip de código del punto
+(c) del enunciado —solo fuentes, sin historial ni salida de simulaciones— con el
+nombre que pide la cátedra. Las variables del barrido se pueden pisar:
 `make sweep SEEDS=30 ETAS=0:5:0.5 STEPS=8000`. El barrido reparte las corridas
 entre todos los núcleos y tarda del orden de una hora con los valores por
 defecto.
