@@ -786,8 +786,9 @@ las tres densidades de la consigna.
 La Fig.~\ref{fig:temporal_baja} muestra la evolución temporal a $\eta = 2$.
 A diferencia de la Fig.~\ref{fig:temporal_rho}, ahora $S(t)$ tiene un
 transitorio propio y bien visible: parte de $S$ entre \num{0.14} y \num{0.18}
---- el grafo inicial está fragmentado en muchos grupos pequeños, de dos a cinco
-partículas --- y crece durante \num{1750} a \num{3650} pasos hasta estabilizarse
+--- el grafo inicial está fragmentado, y su mayor componente reúne en promedio
+\num{4.6}, \num{2.3} y \num{2.0} partículas, con moda \num{4}, \num{2} y
+\num{2} --- y crece durante \num{1750} a \num{3650} pasos hasta estabilizarse
 entre \num{0.53} y \num{0.67}. Ese crecimiento es la agregación progresiva: dos partículas que se
 encuentran se alinean, y al alinearse dejan de separarse, de modo que los
 grupos se fusionan y no vuelven a romperse salvo por acción del ruido. El
@@ -832,10 +833,14 @@ presentar un mínimo. Dos hechos:
           \num{2.32} y \num{2.12} para $\rho = 1/\pi$, $1/2\pi$ y $1/3\pi$. Con
           menos vecinos, hace falta menos ruido para romper el grupo. En
           $\eta = 5$ las tres densidades convergen a $S \approx 0.2$
-          (\num{0.199}, \num{0.201} y \num{0.229}), que para $N = 32$, \num{16}
-          y \num{11} corresponde a componentes gigantes de \num{6.4}, \num{3.2}
-          y \num{2.5} partículas: el sistema queda reducido a pares y tríos
-          efímeros.
+          (\num{0.199}, \num{0.201} y \num{0.229}). Como $S$ es un promedio
+          sobre las muestras estacionarias de las $M$ realizaciones, el producto
+          $S\,N$ es el \textbf{tamaño medio} de la componente gigante ---
+          \num{6.4}, \num{3.2} y \num{2.5} partículas para $N = 32$, \num{16} y
+          \num{11} ---, mientras que el tamaño instantáneo es necesariamente
+          entero: su moda vale \num{6}, \num{3} y \num{2} partículas. El sistema
+          queda reducido a grupos de unas pocas partículas que se arman y se
+          deshacen.
 \end{itemize}
 
 \begin{figure}[!htb]
