@@ -16,6 +16,7 @@ Sin argumentos genera el juego completo de figuras del informe. Con --model,
     python3 visualization/temporal.py
     python3 visualization/temporal.py --model voter --rho 4 --eta 0.5
     python3 visualization/temporal.py --model vicsek --rho 4 --etas 0.5,2,4
+    python3 visualization/temporal.py --model vicsek --eta 2 --rhos 2,4,8 --item d
 """
 
 from __future__ import annotations
@@ -94,7 +95,8 @@ def single_case(cases: Cases, model: str, rho: float, eta: float, folder) -> Non
                           color=color, alpha=0.18, linewidth=0)
     panels[0].legend(loc="best", ncol=2, fontsize=10)
     common.save(figure, folder,
-                f"va_S_vs_t_{model}_rho{common.number(rho)}_eta{common.number(eta)}_M{result['M']}.png")
+                f"va_S_vs_t_{model}_rho{common.density_number(rho)}"
+                f"_eta{common.number(eta)}_M{result['M']}.png")
 
 
 def overlay(cases: Cases, entries: list[tuple], folder, name: str) -> None:
@@ -144,15 +146,18 @@ def standard_set(cases: Cases, figures) -> None:
                     [(model, rho, eta, f"$\\eta$ = {eta:g}", color)
                      for eta, color in zip(eta_set, eta_colors)],
                     item,
-                    f"va_S_vs_t_{model}_rho{common.number(rho)}_etas{common.joined(eta_set)}_promedioM{{M}}.png")
+                    f"va_S_vs_t_{model}_rho{common.density_number(rho)}"
+                    f"_etas{common.joined(eta_set)}_promedioM{{M}}.png")
         # (d) S(t) para las tres densidades; (f) lo repite para el votante.
         item = common.folder("d" if model == "vicsek" else "f", figures)
         for eta in (low, 2.0, high):
             overlay(cases,
-                    [(model, rho, eta, f"$\\rho$ = {rho:g}", common.density_color(rho))
+                    [(model, rho, eta, f"$\\rho$ = {common.density_label(rho)}",
+                      common.density_color(rho))
                      for rho in rhos],
                     item,
-                    f"va_S_vs_t_{model}_eta{common.number(eta)}_rhos{common.joined(rhos)}_promedioM{{M}}.png")
+                    f"va_S_vs_t_{model}_eta{common.number(eta)}"
+                    f"_rhos{common.joined_densities(rhos)}_promedioM{{M}}.png")
 
     # (f) comparacion directa entre modelos, misma densidad y mismo ruido.
     item = common.folder("f", figures)
@@ -162,7 +167,8 @@ def standard_set(cases: Cases, figures) -> None:
                     [(model, rho, eta, common.MODEL_LABEL[model], common.MODEL_STYLE[model]["color"])
                      for model in ("vicsek", "voter")],
                     item,
-                    f"va_S_vs_t_vicsek_vs_voter_rho{common.number(rho)}_eta{common.number(eta)}_promedioM{{M}}.png")
+                    f"va_S_vs_t_vicsek_vs_voter_rho{common.density_number(rho)}"
+                    f"_eta{common.number(eta)}_promedioM{{M}}.png")
 
 
 def main() -> None:
@@ -172,6 +178,8 @@ def main() -> None:
     parser.add_argument("--rho", type=float)
     parser.add_argument("--eta", type=float, help="un caso con todas sus realizaciones")
     parser.add_argument("--etas", help="lista separada por coma: superpone las curvas promedio")
+    parser.add_argument("--rhos", help="lista separada por coma: superpone las curvas promedio "
+                                       "de esas densidades a un mismo --eta (figura del item d)")
     parser.add_argument("--item", default="b", choices=tuple(common.FOLDER_NAME),
                         help="carpeta de destino de la figura puntual")
     common.add_common_arguments(parser)
@@ -182,9 +190,21 @@ def main() -> None:
     if arguments.model is None:
         standard_set(cases, arguments.figures)
         return
+    folder = common.folder(arguments.item, arguments.figures)
+    if arguments.rhos:
+        if arguments.eta is None:
+            raise SystemExit("--rhos necesita un --eta")
+        rhos = [float(piece) for piece in arguments.rhos.split(",")]
+        overlay(cases,
+                [(arguments.model, rho, arguments.eta,
+                  f"$\\rho$ = {common.density_label(rho)}", common.density_color(rho))
+                 for rho in rhos],
+                folder,
+                f"va_S_vs_t_{arguments.model}_eta{common.number(arguments.eta)}"
+                f"_rhos{common.joined_densities(rhos)}_promedioM{{M}}.png")
+        return
     if arguments.rho is None:
         raise SystemExit("--rho es obligatorio junto con --model")
-    folder = common.folder(arguments.item, arguments.figures)
     if arguments.etas:
         etas = [float(piece) for piece in arguments.etas.split(",")]
         colors = plt.cm.viridis(np.linspace(0.05, 0.85, len(etas)))
@@ -192,7 +212,7 @@ def main() -> None:
                 [(arguments.model, arguments.rho, eta, f"$\\eta$ = {eta:g}", color)
                  for eta, color in zip(etas, colors)],
                 folder,
-                f"va_S_vs_t_{arguments.model}_rho{common.number(arguments.rho)}"
+                f"va_S_vs_t_{arguments.model}_rho{common.density_number(arguments.rho)}"
                 f"_etas{common.joined(etas)}_promedioM{{M}}.png")
     elif arguments.eta is not None:
         single_case(cases, arguments.model, arguments.rho, arguments.eta, folder)

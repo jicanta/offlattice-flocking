@@ -2,12 +2,12 @@
 
 Lee data/sweep/resumen.csv (lo escribe summarise.py) y genera:
 
-  c_va_vs_eta/   va contra eta, Vicsek, una curva por densidad
-  d_clusters/    S contra eta, Vicsek, una curva por densidad
-  e_va_vs_S/     va contra S, Vicsek, una curva por densidad
-  f_votante/     lo mismo para el votante, mas las comparaciones:
-                 va contra eta por densidad (Vicsek y votante en la misma
-                 figura) y va contra S por densidad.
+  c_va_vs_eta/   va contra eta, una curva por densidad (Vicsek y votante)
+  d_clusters/    S contra eta, una curva por densidad (Vicsek y votante)
+  e_va_vs_S/     va contra S, una curva por densidad (Vicsek y votante)
+  f_votante/     las mismas figuras del votante, mas las comparaciones de
+                 (c), (d) y (e) con los dos modelos superpuestos, una figura
+                 por densidad.
 
 Todas las barras de error son el desvio estandar del observable sobre las
 muestras estacionarias de las M realizaciones (common.steady_statistics).
@@ -45,9 +45,9 @@ def against_noise(records, models, rhos, observable, folder, name) -> None:
             points = common.series_by(records, model, rho)
             if not points:
                 continue
-            label = (f"$\\rho$ = {rho:g}" if len(models) == 1
+            label = (f"$\\rho$ = {common.density_label(rho)}" if len(models) == 1
                      else f"{common.MODEL_LABEL[model]}" if len(rhos) == 1
-                     else f"$\\rho$ = {rho:g} · {common.MODEL_LABEL[model]}")
+                     else f"$\\rho$ = {common.density_label(rho)} · {common.MODEL_LABEL[model]}")
             color = common.density_color(rho) if len(rhos) > 1 else common.MODEL_STYLE[model]["color"]
             draw_against_noise(axes, points, observable, color, model, label)
     axes.set_xlabel("$\\eta$ [rad]")
@@ -69,9 +69,9 @@ def against_fraction(records, models, rhos, folder, name) -> None:
             if not points:
                 continue
             style = common.MODEL_STYLE[model]
-            label = (f"$\\rho$ = {rho:g}" if len(models) == 1
+            label = (f"$\\rho$ = {common.density_label(rho)}" if len(models) == 1
                      else f"{common.MODEL_LABEL[model]}" if len(rhos) == 1
-                     else f"$\\rho$ = {rho:g} · {common.MODEL_LABEL[model]}")
+                     else f"$\\rho$ = {common.density_label(rho)} · {common.MODEL_LABEL[model]}")
             color = common.density_color(rho) if len(rhos) > 1 else style["color"]
             # Las barras (sobre todo sigma_S a rho = 2) son grandes frente al
             # rango de S: se dibujan tenues y sin remate para que los puntos
@@ -97,33 +97,58 @@ def against_fraction(records, models, rhos, folder, name) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--items", default="c,d,e,f",
+                        help="items del enunciado a generar, separados por coma. "
+                             "El estudio extendido de clusters usa --items d,e,f, "
+                             "porque las densidades 1/(k*pi) solo entran ahi.")
     common.add_common_arguments(parser)
     arguments = parser.parse_args()
+
+    items = {piece.strip() for piece in arguments.items.split(",") if piece.strip()}
+    unknown = items - set(common.FOLDER_NAME)
+    if unknown:
+        raise SystemExit(f"item desconocido: {', '.join(sorted(unknown))}")
 
     common.use_report_style()
     records = common.read_summary(arguments.sweep / "resumen.csv")
     realizations = min(record["M"] for record in records)
     rhos = sorted({record["rho"] for record in records})
-    tag = f"rho{common.joined(rhos)}_M{realizations}"
+    tag = f"rho{common.joined_densities(rhos)}_M{realizations}"
+    figures = arguments.figures
+
+    # Cada figura se dibuja en la carpeta de su item; ademas, las del votante se
+    # duplican en la del item (f), que es donde el enunciado pide repetir (c),
+    # (d) y (e) para la segunda regla de interaccion. Un item que no se pidio no
+    # se dibuja en ninguna de las dos carpetas.
+    def destinations(item: str, model: str) -> list:
+        if item not in items:
+            return []
+        wanted = [item] + (["f"] if model == "voter" and "f" in items else [])
+        return [common.folder(name, figures) for name in dict.fromkeys(wanted)]
 
     for model in ("vicsek", "voter"):
-        c = common.folder("c" if model == "vicsek" else "f", arguments.figures)
-        d = common.folder("d" if model == "vicsek" else "f", arguments.figures)
-        e = common.folder("e" if model == "vicsek" else "f", arguments.figures)
-        against_noise(records, [model], rhos, "va", c, f"va_vs_eta_{model}_{tag}.png")
-        if model == "voter":
-            # La curva del votante va tambien en (c), junto a la de Vicsek.
-            against_noise(records, [model], rhos, "va",
-                          common.folder("c", arguments.figures), f"va_vs_eta_{model}_{tag}.png")
-        against_noise(records, [model], rhos, "S", d, f"S_vs_eta_{model}_{tag}.png")
-        against_fraction(records, [model], rhos, e, f"va_vs_S_{model}_{tag}.png")
+        for item, observable in (("c", "va"), ("d", "S")):
+            for destination in destinations(item, model):
+                against_noise(records, [model], rhos, observable, destination,
+                              f"{observable}_vs_eta_{model}_{tag}.png")
+        for destination in destinations("e", model):
+            against_fraction(records, [model], rhos, destination,
+                             f"va_vs_S_{model}_{tag}.png")
 
-    f = common.folder("f", arguments.figures)
+    if "f" not in items:
+        return
+    f = common.folder("f", figures)
     for rho in rhos:
-        against_noise(records, ["vicsek", "voter"], [rho], "va", f,
-                      f"va_vs_eta_vicsek_vs_voter_rho{common.number(rho)}_M{realizations}.png")
-        against_fraction(records, ["vicsek", "voter"], [rho], f,
-                         f"va_vs_S_vicsek_vs_voter_rho{common.number(rho)}_M{realizations}.png")
+        token = common.density_number(rho)
+        if "c" in items:
+            against_noise(records, ["vicsek", "voter"], [rho], "va", f,
+                          f"va_vs_eta_vicsek_vs_voter_rho{token}_M{realizations}.png")
+        if "d" in items:
+            against_noise(records, ["vicsek", "voter"], [rho], "S", f,
+                          f"S_vs_eta_vicsek_vs_voter_rho{token}_M{realizations}.png")
+        if "e" in items:
+            against_fraction(records, ["vicsek", "voter"], [rho], f,
+                             f"va_vs_S_vicsek_vs_voter_rho{token}_M{realizations}.png")
 
 
 if __name__ == "__main__":

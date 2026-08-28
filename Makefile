@@ -2,10 +2,11 @@
 #
 #   make build        compila el motor (engine/build/flock)
 #   make sweep        barrido de parametros para los items (b) a (f)
+#   make clusters     barrido extra de baja densidad para el item (d)
 #   make animations   corridas caracteristicas + animaciones del item (a)
 #   make bench        tiempos del CIM para el item (g)
 #   make figures      todas las figuras a partir de lo simulado
-#   make all          sweep + animations + bench + figures
+#   make all          sweep + clusters + animations + bench + figures
 #
 # Las variables de abajo se pueden pisar: make sweep SEEDS=30 ETAS=0:5:0.5
 
@@ -16,6 +17,7 @@ ETAS    ?= 0:5:0.25
 RHOS    ?= 2,4,8
 STEPS   ?= 5000
 SWEEP   := data/sweep
+CLUSTERS:= data/sweep_clusters
 RUNS    := data/runs
 BENCH   := data/bench
 
@@ -25,9 +27,20 @@ ANIM_STEPS := 3000
 ANIM_SAVE  := 5
 SNAPSHOTS  := 0,250,1000,3000
 
-.PHONY: all build sweep animations bench summary figures clean-figures
+# Densidades del estudio extendido de clusters: rho = 1/(k*pi) da <k> = 1/k
+# vecinos en promedio, por debajo del umbral de percolacion. Los valores van
+# con seis cifras, que es la precision con la que el motor los escribe en
+# index.txt; asi el analisis los reencuentra exactamente.
+CRHOS   ?= 0.31831,0.159155,0.106103
+CRHO_ETAS := 0.5 2 4
+# A baja densidad los encuentros entre particulas son mucho mas raros y el
+# transitorio de coalescencia se alarga: con 5000 pasos cuatro casos todavia
+# derivan y con 20000 no queda ninguno.
+CSTEPS  ?= 20000
 
-all: sweep animations bench figures
+.PHONY: all build sweep clusters animations bench summary figures cluster-figures clean-figures
+
+all: sweep clusters animations bench figures
 
 build:
 	$(MAKE) -C engine
@@ -39,6 +52,13 @@ build:
 sweep: build
 	cd engine && ./build/flock sweep --models vicsek,voter --rhos $(RHOS) \
 	    --etas $(ETAS) --seeds $(SEEDS) --seed 1 --steps $(STEPS) --dir ../$(SWEEP)
+
+# El enunciado fija rho = 2, 4, 8 para todo el trabajo; solo el estudio de
+# clusters (item d, y el (e) que se apoya en el) se extiende a estas tres
+# densidades bajas, que son las unicas en las que S deja de valer ~1.
+clusters: build
+	cd engine && ./build/flock sweep --models vicsek,voter --rhos $(CRHOS) \
+	    --etas $(ETAS) --seeds $(SEEDS) --seed 1 --steps $(CSTEPS) --dir ../$(CLUSTERS)
 
 animations: build
 	@for spec in $(ANIM_CASES); do \
@@ -66,10 +86,22 @@ bench: build
 summary:
 	$(PY) visualization/summarise.py
 
-figures: summary
+figures: summary cluster-figures
 	$(PY) visualization/temporal.py
 	$(PY) visualization/curves.py
 	-$(PY) visualization/bench.py --log
+
+# Solo los items (d) y (e): las densidades bajas no entran en las curvas de
+# polarizacion contra ruido del item (c).
+cluster-figures:
+	$(PY) visualization/summarise.py --sweep $(CLUSTERS)
+	$(PY) visualization/curves.py --sweep $(CLUSTERS) --items d,e,f
+	@for eta in $(CRHO_ETAS); do \
+	    $(PY) visualization/temporal.py --sweep $(CLUSTERS) --model vicsek \
+	        --eta $$eta --rhos $(CRHOS) --item d; \
+	    $(PY) visualization/temporal.py --sweep $(CLUSTERS) --model voter \
+	        --eta $$eta --rhos $(CRHOS) --item f; \
+	done
 
 clean-figures:
 	rm -rf data/figures
@@ -87,7 +119,7 @@ ZIP     := SdS_TP2_2026Q2G$(GRUPO)$(COMISION)_Codigo.zip
 
 entrega:
 	rm -f $(ZIP)
-	zip -q -r $(ZIP) Makefile requirements.txt \
+	zip -q -r $(ZIP) Makefile requirements.txt README.md \
 	    engine/Makefile engine/include engine/src \
 	    visualization/*.py \
 	    -x '*/__pycache__/*' '*.pyc'

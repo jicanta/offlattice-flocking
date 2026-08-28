@@ -15,6 +15,7 @@ tp-2/
 ├── report/           # informe y presentación en LaTeX
 ├── data/             # salida generada (ignorada por git)
 │   ├── sweep/        #   series t va S de cada corrida del barrido + resumen.csv
+│   ├── sweep_clusters/ # idem, densidades bajas del estudio extendido (ítem d)
 │   ├── runs/<caso>/  #   corridas con posiciones para las animaciones
 │   ├── bench/        #   tiempos del CIM
 │   └── figures/      #   una carpeta por ítem del enunciado (a … g)
@@ -32,17 +33,28 @@ escribe en `data/` y la animación y las figuras solo leen de ahí.
 `L=10`, `rc=1`, `v=0.03`, `dt=1`, contorno periódico, partículas puntuales.
 Densidades del estudio: `rho=2, 4, 8`, es decir `N=200, 400, 800`.
 
+**Estudio extendido de clusters (solo ítems d y e).** El enunciado pide
+extender el estudio de clusters a `rho = 1/pi, 1/2pi, 1/3pi`, que con `rc=1`
+dan `<k> = rho*pi*rc^2 = 1, 0.5, 0.33` vecinos en promedio: por debajo del
+umbral de percolación (`<k> ≈ 4.5`), que es donde `S` deja de valer ~1 y el
+ítem (e) pasa a tener contenido. Con `L=10` corresponden a `N=32, 16, 11`. Van
+en un barrido aparte (`data/sweep_clusters/`) y con 20000 pasos por corrida,
+porque a baja densidad los encuentros son raros y el transitorio de agregación
+es un orden de magnitud más largo. Las curvas de `va` vs `eta` del ítem (c)
+conservan solo `rho = 2, 4, 8`.
+
 ## Flujo completo
 
 ```bash
 pip install -r requirements.txt
 make sweep        # barrido: 2 modelos x 3 densidades x 21 ruidos x 20 semillas
+make clusters     # barrido extra de baja densidad para el ítem (d), 20000 pasos
 make animations   # corridas características + mp4 + tiras de cuadros
 make bench        # tiempos del CIM con la caja del TP1 (máquina descargada)
 make figures      # resumen.csv + todas las figuras en data/figures/<item>/
 ```
 
-`make all` encadena los cuatro. `make entrega` arma el zip de código del punto
+`make all` encadena los cinco. `make entrega` arma el zip de código del punto
 (c) del enunciado —solo fuentes, sin historial ni salida de simulaciones— con el
 nombre que pide la cátedra. Las variables del barrido se pueden pisar:
 `make sweep SEEDS=30 ETAS=0:5:0.5 STEPS=8000`. El barrido reparte las corridas
@@ -106,7 +118,7 @@ salen de corridas puntuales de `simulate --dir`.
 | `summarise.py` | — | barrido → `data/sweep/resumen.csv` (t_eq, ⟨va⟩ ± σ, ⟨S⟩ ± σ por caso) |
 | `animate.py` | (a) | animación y tira de cuadros de una corrida de `data/runs/` |
 | `temporal.py` | (b) (d) (f) | `va(t)` y `S(t)`: un caso con sus `M` realizaciones, o promedios superpuestos |
-| `curves.py` | (c) (d) (e) (f) | `va` vs `η`, `S` vs `η`, `va` vs `S`, y las comparaciones Vicsek–votante |
+| `curves.py` | (c) (d) (e) (f) | `va` vs `η`, `S` vs `η`, `va` vs `S` para cada modelo (en `c/`, `d/`, `e/` y `f/`), más las tres comparaciones Vicsek–votante por densidad en `f/` |
 | `bench.py` | (g) | tiempos del CIM contra `N`, con los del TP1 superpuestos |
 
 Sin argumentos, `temporal.py` y `curves.py` generan el juego completo de figuras
@@ -117,22 +129,21 @@ python3 visualization/temporal.py --model voter --rho 4 --eta 0.5 --item f
 python3 visualization/temporal.py --model vicsek --rho 2 --etas 0.5,1,2,3,4
 python3 visualization/animate.py --run data/runs/vicsek_rho4_eta0.5 --desde 1000
 python3 visualization/animate.py --run data/runs/vicsek_rho4_eta0.5 --snapshots 0,250,1000,3000
+python3 visualization/temporal.py --sweep data/sweep_clusters --model vicsek --eta 2 --rhos 0.31831,0.159155,0.106103 --item d
+python3 visualization/curves.py --sweep data/sweep_clusters --items d,e,f
 ```
+
+`--items` limita qué ítems genera `curves.py`; el barrido extendido usa
+`d,e,f`. Las densidades `1/(k*pi)` se pasan con seis cifras significativas
+—que es la precisión con la que el motor las escribe en `index.txt`— y en las
+leyendas y los nombres de archivo aparecen como `1/π`, `1/2π`, `1/3π` y
+`1pi`, `1-2pi`, `1-3pi`.
 
 Las flechas se dibujan con longitud fija (`--arrow`): con `v = 0.03` y `L = 10`
 el desplazamiento por paso es un 0.3 % de la caja, así que la flecha indica
 dirección y no módulo. Como la rapidez es común a todas las partículas, no se
 pierde información al hacerlo. `--desde` saltea el transitorio y anima solo el
 estacionario.
-
-Caso complementario, **fuera de los parámetros del enunciado** (que fija
-`L = 10` y `rho = 2, 4, 8`), útil para discutir el ítem (e) porque es el único
-régimen que da `S < 1` con `va` alto:
-
-```bash
-cd engine && ./build/flock simulate --l 40 --rho 0.6 --eta 0.2 --steps 8000 --seed 5 --save-every 25 --dir ../data/runs/vicsek_L40_rho0.6_eta0.2
-python3 visualization/animate.py --run data/runs/vicsek_L40_rho0.6_eta0.2 --desde 2000 --frames 250 --arrow 1.2
-```
 
 ## Referencias
 

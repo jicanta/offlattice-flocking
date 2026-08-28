@@ -35,6 +35,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
 SWEEP = DATA / "sweep"
+SWEEP_CLUSTERS = DATA / "sweep_clusters"
 RUNS = DATA / "runs"
 BENCH = DATA / "bench"
 FIGURES = DATA / "figures"
@@ -101,12 +102,33 @@ MODEL_STYLE = {
 }
 MODEL_LABEL = {"vicsek": "Vicsek", "voter": "votante"}
 
+# Densidades del estudio extendido de clusters. Con rho = 1/(k*pi) y rc = 1 el
+# numero medio de vecinos es <k> = rho*pi*rc^2 = 1/k, es decir por debajo del
+# umbral de percolacion, que es el regimen donde S deja de estar pegado a 1.
+# Las claves son los valores con seis cifras significativas, que son los que el
+# motor escribe en index.txt: asi la busqueda por caso es exacta.
+CLUSTER_DENSITY = {
+    0.31831: {"label": r"$1/\pi$", "token": "1pi", "color": "#9467bd"},
+    0.159155: {"label": r"$1/2\pi$", "token": "1-2pi", "color": "#8c564b"},
+    0.106103: {"label": r"$1/3\pi$", "token": "1-3pi", "color": "#e377c2"},
+}
+CLUSTER_RHOS = sorted(CLUSTER_DENSITY, reverse=True)
+
 
 def density_color(density: float) -> str:
     if density in DENSITY_COLOR:
         return DENSITY_COLOR[density]
-    palette = ["#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22"]
-    return palette[int(density) % len(palette)]
+    if density in CLUSTER_DENSITY:
+        return CLUSTER_DENSITY[density]["color"]
+    palette = ["#7f7f7f", "#bcbd22", "#17becf", "#ff7f0e", "#8c564b"]
+    return palette[hash(round(density, 6)) % len(palette)]
+
+
+def density_label(density: float) -> str:
+    r"""Etiqueta de la densidad para las leyendas: 4 -> '4', 1/pi -> '$1/\pi$'."""
+    if density in CLUSTER_DENSITY:
+        return CLUSTER_DENSITY[density]["label"]
+    return f"{density:g}"
 
 
 def number(value: float) -> str:
@@ -114,8 +136,19 @@ def number(value: float) -> str:
     return f"{value:g}"
 
 
+def density_number(density: float) -> str:
+    """Como number(), pero las densidades 1/(k*pi) van como '1pi', '1-2pi'."""
+    if density in CLUSTER_DENSITY:
+        return CLUSTER_DENSITY[density]["token"]
+    return number(density)
+
+
 def joined(values) -> str:
     return "-".join(number(value) for value in values)
+
+
+def joined_densities(values) -> str:
+    return "-".join(density_number(value) for value in values)
 
 
 def save(figure, folder: Path, name: str) -> Path:
