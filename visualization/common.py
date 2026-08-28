@@ -201,10 +201,8 @@ def read_index(directory: Path = SWEEP) -> list[dict]:
     """index.txt del sweep: una corrida por linea."""
     path = Path(directory) / "index.txt"
     if not path.exists():
-        raise SystemExit(
-            f"falta {path}. Correr primero:\n"
-            "  make sweep"
-        )
+        target = "make clusters" if Path(directory).name == SWEEP_CLUSTERS.name else "make sweep"
+        raise SystemExit(f"falta {path}. Correr primero:\n  {target}")
     runs = []
     for line in path.read_text().splitlines():
         if not line.strip() or line.startswith("#"):
@@ -383,7 +381,7 @@ def read_summary(path: Path = SUMMARY) -> list[dict]:
     if not path.exists():
         raise SystemExit(
             f"falta {path}. Correr primero:\n"
-            "  python3 visualization/summarise.py   (o make summary)"
+            f"  python3 visualization/summarise.py --sweep {path.parent}"
         )
     records = []
     with open(path, newline="") as handle:

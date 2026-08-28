@@ -186,10 +186,20 @@ def main() -> None:
     arguments = parser.parse_args()
 
     common.use_report_style()
-    cases = Cases(arguments.sweep)
+    # Sin --model se genera el juego completo del informe. Cualquier otra opcion
+    # de seleccion queda sin efecto en ese modo, asi que se rechaza en vez de
+    # ignorarla en silencio.
+    selectors = {"--rho": arguments.rho, "--eta": arguments.eta,
+                 "--etas": arguments.etas, "--rhos": arguments.rhos}
     if arguments.model is None:
-        standard_set(cases, arguments.figures)
+        given = [name for name, value in selectors.items() if value is not None]
+        if given:
+            raise SystemExit(f"{', '.join(given)} necesita --model; sin --model se "
+                             "genera el juego completo de figuras del informe")
+        standard_set(Cases(arguments.sweep), arguments.figures)
         return
+
+    cases = Cases(arguments.sweep)
     folder = common.folder(arguments.item, arguments.figures)
     if arguments.rhos:
         if arguments.eta is None:

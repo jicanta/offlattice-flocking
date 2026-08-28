@@ -110,7 +110,11 @@ cuantifica cuán alineado está el sistema. El segundo es la \textbf{fracción d
 partículas en la componente gigante} $S$ del grafo de vecinos, que cuantifica
 cuán conectado está espacialmente. El objetivo es determinar, para las
 densidades $\rho = 2,\,4,\,8$, cómo depende cada observable de $\eta$, cómo se
-relacionan entre sí y en qué se diferencian las dos reglas de interacción.
+relacionan entre sí y en qué se diferencian las dos reglas de interacción. El
+estudio de clusters se extiende además a $\rho = 1/\pi,\ 1/2\pi,\ 1/3\pi$, las
+únicas densidades del trabajo para las que el grafo de vecinos queda por debajo
+del umbral de percolación y la componente gigante se convierte en un observable
+con rango propio.
 Finalmente se evalúa el costo computacional del \textit{Cell Index Method} (CIM)
 empleado para la búsqueda de vecinos, contrastándolo con las mediciones del
 Trabajo Práctico 1.
@@ -403,9 +407,9 @@ El barrido extendido, en cambio, sí necesita corridas más largas. A
 $\rho \le 1/\pi$ los encuentros entre partículas son mucho más raros --- la
 frecuencia de encuentro es proporcional a $\rho\,v\,r_c$ --- y el transitorio
 de agregación se alarga en la misma proporción: con \num{5000} pasos cuatro de
-los \num{126} casos no superan el control de deriva y los $\teq$ medidos llegan
-a \num{3650} pasos, demasiado cerca del final de la corrida como para promediar
-con confianza. Con \num{20000} pasos no queda ningún caso pendiente, y ésa es
+los \num{126} casos del barrido extendido no superan el control de deriva, y el
+mayor $\teq$ medido es de \num{4300} pasos, que sobre una corrida de \num{5000}
+deja sólo \num{700} pasos de ventana de promediado. Con \num{20000} pasos no queda ningún caso pendiente, y ésa es
 la longitud que se usa en la Sección~\ref{sec:baja}.
 
 \begin{table}[H]
@@ -438,9 +442,10 @@ la longitud que se usa en la Sección~\ref{sec:baja}.
         \quad Corridas totales             & \num{2520} \\
         \midrule
         \multicolumn{2}{l}{\textit{Barrido extendido de clusters (ítems d y e)}} \\
-        \quad Densidades $\rho$            & $1/\pi$, $1/2\pi$, $1/3\pi$ \\
+        \quad Densidades $\rho$ nominales  & $1/\pi$, $1/2\pi$, $1/3\pi$ \\
         \quad Partículas $N$               & \num{32}, \num{16}, \num{11} \\
-        \quad Vecinos medios $\langle k \rangle$ & \num{1}, \num{0.5}, \num{0.333} \\
+        \quad Densidades $\rho$ simuladas   & \num{0.32}, \num{0.16}, \num{0.11} \\
+        \quad Vecinos medios $\langle k \rangle$ & \num{1.005}, \num{0.503}, \num{0.346} \\
         \quad Pasos por corrida            & \num{20000} \\
         \quad Corridas totales             & \num{2520} \\
         \bottomrule
@@ -742,17 +747,27 @@ $\langle k \rangle \approx 4.5$. Para que el observable de la consigna sea
 informativo, el estudio de clusters se extiende a las densidades
 
 \begin{equation}
-    \rho_k = \frac{1}{k\,\pi\,r_c^2}, \qquad k = 1,\,2,\,3
+    \rho_n = \frac{1}{n\,\pi\,r_c^2}, \qquad n = 1,\,2,\,3
     \quad \Longrightarrow \quad
-    \langle k \rangle = \rho_k\,\pi r_c^2 = \frac{1}{k},
+    \langle k \rangle = \rho_n\,\pi r_c^2 = \frac{1}{n},
     \label{eq:densidades_bajas}
 \end{equation}
 
-donde $k$ es el índice que numera las tres densidades y $r_c = 1$ el radio de
-interacción. Es decir $\rho = 1/\pi,\ 1/2\pi,\ 1/3\pi$, que con $L = 10$
-corresponden a $N = 32$, \num{16} y \num{11} partículas y a un vecino medio por
-partícula o menos: el grafo de vecinos instantáneo está fragmentado desde la
-condición inicial. La extensión se aplica \textbf{sólo} a los ítems (d) y (e);
+donde $n$ es el índice que numera las tres densidades, $r_c$ el radio de
+interacción y $\langle k \rangle$ el número medio de vecinos definido en la
+Sección~\ref{sec:temporal}. Es decir $\rho = 1/\pi,\ 1/2\pi,\ 1/3\pi$, que con $L = 10$
+corresponden a $N = \rho L^2 = \num{31.8}$, \num{15.9} y \num{10.6}. Como $N$
+debe ser entero se simulan $N = 32$, \num{16} y \num{11} partículas, de modo
+que las densidades efectivas son \num{0.32}, \num{0.16} y \num{0.11} y los
+vecinos medios realmente simulados $\langle k \rangle = \num{1.005}$,
+\num{0.503} y \num{0.346}, en lugar de los \num{1}, \num{0.5} y \num{0.333}
+nominales; el redondeo es del \SI{0.5}{\percent} en los dos primeros casos y
+del \SI{3.7}{\percent} en el tercero, y no afecta ninguna de las conclusiones
+que siguen, que son cualitativas o monótonas en $\rho$. En los tres casos hay
+aproximadamente un vecino por partícula o menos, de manera que el grafo de
+vecinos instantáneo está fragmentado desde la condición inicial: en $t = 0$ la
+componente gigante abarca entre el \SI{14}{\percent} y el \SI{18}{\percent} de
+las partículas. La extensión se aplica \textbf{sólo} a los ítems (d) y (e);
 las curvas de polarización contra ruido de la Sección~\ref{sec:va} conservan
 las tres densidades de la consigna.
 
@@ -770,15 +785,18 @@ las tres densidades de la consigna.
 
 La Fig.~\ref{fig:temporal_baja} muestra la evolución temporal a $\eta = 2$.
 A diferencia de la Fig.~\ref{fig:temporal_rho}, ahora $S(t)$ tiene un
-transitorio propio y bien visible: parte de $S \approx 0.15$ --- el grafo
-inicial está fragmentado en muchos grupos pequeños --- y crece durante unos
-\num{2000} a \num{3700} pasos hasta estabilizarse entre \num{0.53} y
-\num{0.67}. Ese crecimiento es la agregación progresiva: dos partículas que se
+transitorio propio y bien visible: parte de $S$ entre \num{0.14} y \num{0.18}
+--- el grafo inicial está fragmentado en muchos grupos pequeños, de dos a cinco
+partículas --- y crece durante \num{1750} a \num{3650} pasos hasta estabilizarse
+entre \num{0.53} y \num{0.67}. Ese crecimiento es la agregación progresiva: dos partículas que se
 encuentran se alinean, y al alinearse dejan de separarse, de modo que los
 grupos se fusionan y no vuelven a romperse salvo por acción del ruido. El
 estacionario es el equilibrio entre esa agregación y la fragmentación que
-induce $\eta$. Los $\teq$ son un orden de magnitud mayores que los del barrido
-principal, lo que justifica las corridas de \num{20000} pasos.
+induce $\eta$. A este mismo ruido el barrido principal equilibra en
+\num{950}, \num{650} y \num{200} pasos para $\rho = 2$, \num{4} y \num{8}: los
+$\teq$ de las densidades bajas ---\num{3650}, \num{1750} y \num{3250} pasos---
+son entre \num{1.8} y \num{18} veces mayores, lo que justifica las corridas de
+\num{20000} pasos.
 
 \begin{figure}[!htb]
     \centering
@@ -800,7 +818,7 @@ presentar un mínimo. Dos hechos:
     \item \textbf{En $\eta = 0$ el sistema percola igual}, con
           $S = \num{1.000(1)}$, \num{0.997(14)} y \num{0.991(40)} para
           $\rho = 1/\pi$, $1/2\pi$ y $1/3\pi$, pese a que $\langle k \rangle$
-          vale \num{1}, \num{0.5} y \num{0.33}. No es una contradicción con el
+          vale $\approx \num{1}$, \num{0.5} y \num{0.33}. No es una contradicción con el
           umbral de percolación: ese umbral describe un grafo geométrico
           \textit{aleatorio}, y sin ruido las posiciones dejan de ser
           aleatorias. Dos partículas que se encuentran adoptan exactamente la
@@ -813,10 +831,11 @@ presentar un mínimo. Dos hechos:
           valores menores al bajar la densidad: $\eta \approx \num{2.74}$,
           \num{2.32} y \num{2.12} para $\rho = 1/\pi$, $1/2\pi$ y $1/3\pi$. Con
           menos vecinos, hace falta menos ruido para romper el grupo. En
-          $\eta = 5$ las tres densidades convergen a $S \approx 0.20$, que para
-          $N = 32$, \num{16} y \num{11} corresponde a componentes gigantes de
-          \num{6}, \num{3} y \num{2} partículas: el sistema queda reducido a
-          pares y tríos efímeros.
+          $\eta = 5$ las tres densidades convergen a $S \approx 0.2$
+          (\num{0.199}, \num{0.201} y \num{0.229}), que para $N = 32$, \num{16}
+          y \num{11} corresponde a componentes gigantes de \num{6.4}, \num{3.2}
+          y \num{2.5} partículas: el sistema queda reducido a pares y tríos
+          efímeros.
 \end{itemize}
 
 \begin{figure}[!htb]
@@ -1241,7 +1260,7 @@ A partir de los resultados presentados en la Sección~\ref{sec:resultados} se co
           $\rho = 1/\pi,\ 1/2\pi,\ 1/3\pi$ el desacople desaparece y $\va$ pasa
           a ser función de $S$} (Sección~\ref{sec:baja}). Con
           $\langle k \rangle = 1$, \num{0.5} y \num{0.33} la componente gigante
-          recorre todo el rango $[0.20,\,1]$, decrece de forma monótona con
+          recorre todo el rango $[0.19,\,1]$, decrece de forma monótona con
           $\eta$ (Fig.~\ref{fig:S_eta_baja}) y queda fuertemente correlacionada
           con la polarización: la relación $\va(S)$ es monótona creciente, casi
           colapsa las tres densidades, y el coeficiente de Pearson vale entre
