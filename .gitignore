@@ -18,5 +18,6 @@ report/*.aux
 report/*.out
 report/*.toc
 
-# Entregable generado por `make entrega`
+# Entregables generados por `make entregables`
 SdS_TP2_*.zip
+SdS_TP2_*.pdf

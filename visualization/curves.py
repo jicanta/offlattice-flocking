@@ -12,7 +12,14 @@ Lee data/sweep/resumen.csv (lo escribe summarise.py) y genera:
 Todas las barras de error son el desvio estandar del observable sobre las
 muestras estacionarias de las M realizaciones (common.steady_statistics).
 
-    python3 visualization/curves.py
+Con --sweeps se unen los resumenes de varios barridos, de modo que las
+densidades del enunciado y las de 1/(k*pi) entren en la misma figura. Es lo
+que piden los items (d) y (e): S solo recorre todo [0, 1] si se ven juntas una
+densidad muy por encima del umbral de percolacion y otra por debajo.
+
+    python3 visualization/curves.py --pares
+    python3 visualization/curves.py --sweeps data/sweep,data/sweep_clusters \
+        --rhos 8,2,0.31831,0.106103 --items d,e,f
 """
 
 from __future__ import annotations
@@ -37,7 +44,7 @@ def draw_against_noise(axes, points, observable, color, model, label):
     )
 
 
-def against_noise(records, models, rhos, observable, folder, name) -> None:
+def against_noise(records, models, rhos, observable, folder, name, full=False) -> None:
     """observable contra eta; una curva por (modelo, densidad)."""
     figure, axes = plt.subplots()
     for model in models:
@@ -45,22 +52,26 @@ def against_noise(records, models, rhos, observable, folder, name) -> None:
             points = common.series_by(records, model, rho)
             if not points:
                 continue
-            label = (f"$\\rho$ = {common.density_label(rho)}" if len(models) == 1
+            label = (common.density_legend(rho) if len(models) == 1
                      else f"{common.MODEL_LABEL[model]}" if len(rhos) == 1
-                     else f"$\\rho$ = {common.density_label(rho)} · {common.MODEL_LABEL[model]}")
+                     else f"{common.density_legend(rho)} · {common.MODEL_LABEL[model]}")
             color = common.density_color(rho) if len(rhos) > 1 else common.MODEL_STYLE[model]["color"]
             draw_against_noise(axes, points, observable, color, model, label)
-    axes.set_xlabel("$\\eta$ [rad]")
-    axes.set_ylabel(common.LABEL[observable])
-    if observable == "va":
+    axes.set_xlabel(common.AXIS_NOISE)
+    axes.set_ylabel(common.AXIS[observable])
+    # va siempre va en [0, 1]. Para S el rango util es angosto cuando todas las
+    # densidades estan por encima del umbral de percolacion, y ahi se deja que
+    # matplotlib lo ajuste a los datos en vez de dejar la figura casi vacia;
+    # cuando la figura mezcla densidades altas y bajas (full), S recorre todo
+    # el intervalo y el eje se fija en [0, 1] para que las curvas sean
+    # comparables entre si de un vistazo.
+    if observable == "va" or full:
         axes.set_ylim(0.0, 1.05)
-    # Para S el rango util es angosto y se deja que matplotlib lo ajuste a los
-    # datos, en vez de forzar [0, 1] y dejar la figura casi vacia.
     axes.legend(loc="best")
     common.save(figure, folder, name)
 
 
-def against_fraction(records, models, rhos, folder, name) -> None:
+def against_fraction(records, models, rhos, folder, name, full=False) -> None:
     """va contra S; cada punto es un eta del barrido."""
     figure, axes = plt.subplots()
     for model in models:
@@ -69,9 +80,9 @@ def against_fraction(records, models, rhos, folder, name) -> None:
             if not points:
                 continue
             style = common.MODEL_STYLE[model]
-            label = (f"$\\rho$ = {common.density_label(rho)}" if len(models) == 1
+            label = (common.density_legend(rho) if len(models) == 1
                      else f"{common.MODEL_LABEL[model]}" if len(rhos) == 1
-                     else f"$\\rho$ = {common.density_label(rho)} · {common.MODEL_LABEL[model]}")
+                     else f"{common.density_legend(rho)} · {common.MODEL_LABEL[model]}")
             color = common.density_color(rho) if len(rhos) > 1 else style["color"]
             # Las barras (sobre todo sigma_S a rho = 2) son grandes frente al
             # rango de S: se dibujan tenues y sin remate para que los puntos
@@ -86,10 +97,13 @@ def against_fraction(records, models, rhos, folder, name) -> None:
                 elinewidth=0.7, capsize=0, ecolor=to_rgba(color, 0.35),
                 label=label, zorder=3,
             )
-    axes.set_xlabel("$S$")
-    axes.set_ylabel("$v_a$")
+    axes.set_xlabel(common.AXIS["S"])
+    axes.set_ylabel(common.AXIS["va"])
     axes.set_ylim(0.0, 1.05)
-    axes.set_xlim(right=1.005)
+    # Ambos observables son fracciones: cuando la figura mezcla densidades
+    # altas y bajas, S recorre todo [0, 1] y conviene el eje entero; si no, se
+    # recorta a la izquierda para que se vea la estructura cerca de S = 1.
+    axes.set_xlim(0.0, 1.005) if full else axes.set_xlim(right=1.005)
     axes.legend(loc="best")
     common.save(figure, folder, name)
 
@@ -101,6 +115,17 @@ def main() -> None:
                         help="items del enunciado a generar, separados por coma. "
                              "El estudio extendido de clusters usa --items d,e,f, "
                              "porque las densidades 1/(k*pi) solo entran ahi.")
+    parser.add_argument("--sweeps",
+                        help="varios barridos separados por coma: sus resumenes se "
+                             "unen y las curvas de todas las densidades entran en la "
+                             "misma figura. Pisa a --sweep.")
+    parser.add_argument("--rhos",
+                        help="densidades a graficar, separadas por coma y en el orden "
+                             "en que van a la leyenda. Por defecto, todas las del "
+                             "barrido, de menor a mayor.")
+    parser.add_argument("--pares", action="store_true",
+                        help="ademas, la comparacion Vicsek-votante de a una densidad "
+                             "por figura (item f). Es lo que hace el barrido principal.")
     common.add_common_arguments(parser)
     arguments = parser.parse_args()
 
@@ -109,10 +134,24 @@ def main() -> None:
     if unknown:
         raise SystemExit(f"item desconocido: {', '.join(sorted(unknown))}")
 
-    common.use_report_style()
-    records = common.read_summary(arguments.sweep / "resumen.csv")
+    common.use_report_style(arguments.estilo)
+    sweeps = ([piece.strip() for piece in arguments.sweeps.split(",") if piece.strip()]
+              if arguments.sweeps else [arguments.sweep])
+    records = common.read_summaries(sweeps)
     realizations = min(record["M"] for record in records)
-    rhos = sorted({record["rho"] for record in records})
+    available = {record["rho"] for record in records}
+    if arguments.rhos:
+        rhos = [float(piece) for piece in arguments.rhos.split(",")]
+        missing = [rho for rho in rhos
+                   if not any(common.close(rho, other) for other in available)]
+        if missing:
+            raise SystemExit("los barridos indicados no tienen las densidades "
+                             + ", ".join(f"{rho:g}" for rho in missing))
+    else:
+        rhos = sorted(available)
+    # Cuando la figura mezcla las densidades del enunciado con las de 1/(k*pi),
+    # S recorre todo [0, 1] y los ejes se fijan en ese rango.
+    full = common.spans_both_families(rhos)
     tag = f"rho{common.joined_densities(rhos)}_M{realizations}"
     figures = arguments.figures
 
@@ -130,12 +169,12 @@ def main() -> None:
         for item, observable in (("c", "va"), ("d", "S")):
             for destination in destinations(item, model):
                 against_noise(records, [model], rhos, observable, destination,
-                              f"{observable}_vs_eta_{model}_{tag}.png")
+                              f"{observable}_vs_eta_{model}_{tag}.png", full=full)
         for destination in destinations("e", model):
             against_fraction(records, [model], rhos, destination,
-                             f"va_vs_S_{model}_{tag}.png")
+                             f"va_vs_S_{model}_{tag}.png", full=full)
 
-    if "f" not in items:
+    if "f" not in items or not arguments.pares:
         return
     f = common.folder("f", figures)
     for rho in rhos:
@@ -149,6 +188,7 @@ def main() -> None:
         if "e" in items:
             against_fraction(records, ["vicsek", "voter"], [rho], f,
                              f"va_vs_S_vicsek_vs_voter_rho{token}_M{realizations}.png")
+
 
 
 if __name__ == "__main__":

@@ -18,7 +18,8 @@ tp-2/
 │   ├── sweep_clusters/ # idem, densidades bajas del estudio extendido (ítem d)
 │   ├── runs/<caso>/  #   corridas con posiciones para las animaciones
 │   ├── bench/        #   tiempos del CIM
-│   └── figures/      #   una carpeta por ítem del enunciado (a … g)
+│   ├── figures/      #   una carpeta por ítem del enunciado (a … g)
+│   └── figuras_diapositivas/  # las mismas, con tipografía de presentación
 └── INFORME.md        # formato del informe y notas de la cátedra
 ```
 
@@ -52,11 +53,13 @@ make clusters     # barrido extra de baja densidad para el ítem (d), 20000 paso
 make animations   # corridas características + mp4 + tiras de cuadros
 make bench        # tiempos del CIM con la caja del TP1 (máquina descargada)
 make figures      # resumen.csv + todas las figuras en data/figures/<item>/
+make figuras-diapositivas   # el mismo juego con tipografía de presentación
 ```
 
-`make all` encadena los cinco. `make entrega` arma el zip de código del punto
-(c) del enunciado —solo fuentes, sin historial ni salida de simulaciones— con el
-nombre que pide la cátedra. Las variables del barrido se pueden pisar:
+`make all` encadena los cinco primeros. `make entregables` arma los tres archivos
+que se suben al campus con los nombres que pide el enunciado:
+`SdS_TP2_2026Q2G10S2_Informe.pdf`, `..._Presentación.pdf` y `..._Codigo.zip`
+—este último solo con las fuentes, sin historial ni salida de simulaciones—. Las variables del barrido se pueden pisar:
 `make sweep SEEDS=30 ETAS=0:5:0.5 STEPS=8000`. El barrido reparte las corridas
 entre todos los núcleos y tarda del orden de una hora con los valores por
 defecto.
@@ -79,7 +82,11 @@ las figuras:
   evoluciones temporales. Para los tiempos del CIM, la barra es el desvío
   estándar entre repeticiones.
 - **Sin títulos en las figuras**: los parámetros van en el nombre del archivo
-  (`va_vs_eta_vicsek_rho2-4-8_M20.png`) y en el epígrafe del informe.
+  (`va_vs_eta_vicsek_rho2-4-8_M20.png`), en el epígrafe del informe y en el
+  bloque al costado de la diapositiva.
+- **Ejes y leyendas**: rótulos en palabras y con la unidad entre paréntesis
+  (`ruido η (rad)`, `tiempo t (s)`, `posición x (m)`), como pide la guía de la
+  cátedra; `va` y `S` son adimensionales y por eso van sin unidad.
 
 ## Motor
 
@@ -117,9 +124,37 @@ salen de corridas puntuales de `simulate --dir`.
 |---|---|---|
 | `summarise.py` | — | barrido → `data/sweep/resumen.csv` (t_eq, ⟨va⟩ ± σ, ⟨S⟩ ± σ por caso) |
 | `animate.py` | (a) | animación y tira de cuadros de una corrida de `data/runs/` |
-| `temporal.py` | (b) (d) (f) | `va(t)` y `S(t)`: un caso con sus `M` realizaciones, o promedios superpuestos |
+| `temporal.py` | (b) (d) (f) | `va(t)` y `S(t)`: un caso con sus `M` realizaciones, promedios superpuestos, o una sola realización (`--seed`) |
 | `curves.py` | (c) (d) (e) (f) | `va` vs `η`, `S` vs `η`, `va` vs `S` para cada modelo (en `c/`, `d/`, `e/` y `f/`), más las tres comparaciones Vicsek–votante por densidad en `f/` |
 | `bench.py` | (g) | tiempos del CIM contra `N`, con los del TP1 superpuestos |
+
+### Dos juegos de figuras
+
+El mismo análisis se dibuja dos veces:
+
+- **`data/figures/`** — para el informe: serif, tipografía chica, los dos paneles
+  de las evoluciones temporales apilados.
+- **`data/figuras_diapositivas/`** (`--estilo diapositiva`) — para la
+  presentación: sans serif y tipografía casi al doble, de modo que al insertar la
+  figura en la diapositiva las letras se lean del tamaño del texto, como pide la
+  guía de la cátedra (al menos 20 pt). Los paneles van lado a lado, que es lo que
+  entra en 16:9.
+
+`--paneles lado` fuerza la disposición lado a lado también en el informe; las
+figuras que la usan llevan el sufijo `_lado`. Es lo que hace `make report-figures`
+y lo que permite que el informe entre en siete páginas.
+
+### Figuras que mezclan los dos barridos
+
+Los ítems (d) y (e) piden ver juntas densidades altas y bajas. `curves.py --sweeps`
+une los resúmenes de varios barridos y `--rhos` elige cuáles densidades entran y en
+qué orden; cuando la lista mezcla las dos familias, los ejes se fijan en `[0, 1]`
+para que las curvas sean comparables de un vistazo. Es `make mixed-figures`:
+
+```bash
+python3 visualization/curves.py --sweeps data/sweep,data/sweep_clusters \
+    --rhos 8,2,0.31831,0.106103 --items d,e,f
+```
 
 Sin argumentos, `temporal.py` y `curves.py` generan el juego completo de figuras
 del informe. Para una figura puntual:
@@ -127,11 +162,17 @@ del informe. Para una figura puntual:
 ```bash
 python3 visualization/temporal.py --model voter --rho 4 --eta 0.5 --item f
 python3 visualization/temporal.py --model vicsek --rho 2 --etas 0.5,1,2,3,4
+python3 visualization/temporal.py --model vicsek --rho 4 --etas 0.5,2,5 --seed 1
 python3 visualization/animate.py --run data/runs/vicsek_rho4_eta0.5 --desde 1000
 python3 visualization/animate.py --run data/runs/vicsek_rho4_eta0.5 --snapshots 0,250,1000,3000
 python3 visualization/temporal.py --sweep data/sweep_clusters --model vicsek --eta 2 --rhos 0.31831,0.159155,0.106103 --item d
 python3 visualization/curves.py --sweep data/sweep_clusters --items d,e,f
 ```
+
+`--seed` dibuja una realización concreta en vez del promedio de las `M`; el `t_eq`
+y el promedio estacionario que se marcan siguen saliendo del promedio de las `M`,
+que es la convención única del trabajo. Sirve para mostrar la fluctuación real de
+una corrida, que el promedio esconde.
 
 `--items` limita qué ítems genera `curves.py`; el barrido extendido usa
 `d,e,f`. Las densidades `1/(k*pi)` se pasan con seis cifras significativas
@@ -144,6 +185,26 @@ el desplazamiento por paso es un 0.3 % de la caja, así que la flecha indica
 dirección y no módulo. Como la rapidez es común a todas las partículas, no se
 pierde información al hacerlo. `--desde` saltea el transitorio y anima solo el
 estacionario.
+
+## Documentos
+
+`report/informe.tex` (7 páginas) y `report/presentacion.tex` (16:9, 26
+diapositivas). Se compilan con cualquier motor LaTeX; en este repositorio se usó
+`tectonic`, que baja los paquetes que falten:
+
+```bash
+make documentos          # los dos, a report/build/
+make entregables         # además los copia con el nombre de la entrega
+```
+
+Con otro motor de LaTeX alcanza con pisar la variable:
+`make documentos TEXC="latexmk -pdf -outdir"`.
+
+Los dos son autocontenidos, como pide la cátedra, y usan las mismas figuras: el
+informe las toma de `data/figures/` y la presentación de
+`data/figuras_diapositivas/`. Quedan pendientes los enlaces a las animaciones,
+marcados como `[PENDIENTE]` en el informe y `[link -- pendiente]` en la
+presentación.
 
 ## Referencias
 

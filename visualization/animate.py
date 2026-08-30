@@ -34,8 +34,8 @@ def decorate(axes, side: float) -> None:
     axes.set_xlim(0.0, side)
     axes.set_ylim(0.0, side)
     axes.set_aspect("equal")
-    axes.set_xlabel("$x$ [m]")
-    axes.set_ylabel("$y$ [m]")
+    axes.set_xlabel("posición $x$ (m)")
+    axes.set_ylabel("posición $y$ (m)")
     axes.grid(alpha=0.15)
 
 
@@ -51,13 +51,14 @@ def draw(axes, x, y, theta, arrow: float):
 def add_colorbar(figure, artist, axes=None) -> None:
     bar = figure.colorbar(artist, ax=axes, ticks=[-np.pi, -np.pi / 2, 0, np.pi / 2, np.pi])
     bar.ax.set_yticklabels(["$-\\pi$", "$-\\pi/2$", "$0$", "$\\pi/2$", "$\\pi$"])
-    bar.set_label("$\\theta$ [rad]")
+    bar.set_label("ángulo $\\theta$ (rad)")
 
 
 def time_label(axes, time: float):
     """Marca de tiempo dentro del panel: no es un titulo, es parte del cuadro."""
-    return axes.text(0.02, 0.98, f"$t$ = {time:.0f}", transform=axes.transAxes,
-                     ha="left", va="top", fontsize=12,
+    return axes.text(0.02, 0.98, f"$t$ = {time:.0f} s", transform=axes.transAxes,
+                     ha="left", va="top",
+                     fontsize=18 if common.STYLE == "diapositiva" else 12,
                      bbox={"boxstyle": "round,pad=0.25", "facecolor": "white", "alpha": 0.85,
                            "edgecolor": "none"})
 
@@ -77,7 +78,7 @@ def animate(arguments, static: dict) -> None:
     side = float(static["L"])
     stride = max(1, arguments.stride)
 
-    common.use_report_style()
+    common.use_report_style(arguments.estilo)
     figure, axes = plt.subplots(figsize=(6.4, 6.0))
     decorate(axes, side)
 
@@ -136,7 +137,7 @@ def snapshots(arguments, static: dict) -> None:
             f"no estan guardados los cuadros {missing}; revisar --save-every de la simulacion"
         )
 
-    common.use_report_style()
+    common.use_report_style(arguments.estilo)
     # Grilla de --columns columnas: cuatro cuadros en 2 x 2 se leen a tamano
     # impreso, en una sola fila quedan demasiado chicos.
     columns = max(1, min(arguments.columns, len(wanted)))

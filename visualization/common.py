@@ -62,15 +62,44 @@ def folder(item: str, root: Path = FIGURES) -> Path:
 BLOCK = 50
 
 COLUMN = {"va": 1, "S": 2}
+
+# El simbolo solo, para las leyendas y los valores escalares.
 LABEL = {"va": "$v_a$", "S": "$S$"}
+
+# Rotulo de eje. La guia de la catedra los pide "preferentemente en palabras (no
+# simbolos)" y con las unidades entre parentesis; va y S son adimensionales y por
+# eso no llevan unidad.
+AXIS = {"va": "polarización $v_a$", "S": "componente gigante $S$"}
+AXIS_TIME = "tiempo $t$ (s)"
+AXIS_NOISE = "ruido $\\eta$ (rad)"
 
 
 # --------------------------------------------------------------------------
 # Estilo
 # --------------------------------------------------------------------------
 
-def use_report_style() -> None:
-    """Tipografia y tamanos legibles a tamano impreso, como pide la catedra."""
+# Estilo con el que se dibujo la ultima figura. Lo consultan los scripts que
+# necesitan cambiar la disposicion de los paneles y no solo la tipografia.
+STYLE = "informe"
+
+STYLES = ("informe", "diapositiva")
+
+
+def use_report_style(style: str = "informe") -> None:
+    """Tipografia y tamanos de figura para el informe o para la presentacion.
+
+    La guia de la catedra pide que las letras y numeros dentro de la figura
+    tengan un tamano parecido al del resto del texto de la diapositiva. Una
+    figura pensada para el informe, reducida para entrar en un slide, queda muy
+    por debajo de eso: por eso el estilo "diapositiva" usa menos pulgadas y
+    tipografia mas grande, de modo que al insertarla al ancho del slide la
+    relacion sea la correcta. Ademas usa sans serif, que es la del tema de
+    beamer, y el informe serif, que es la del cuerpo del texto.
+    """
+    if style not in STYLES:
+        raise SystemExit(f"estilo desconocido: {style}; hay {', '.join(STYLES)}")
+    global STYLE
+    STYLE = style
     matplotlib.rcParams.update(
         {
             "figure.figsize": (7.2, 4.8),
@@ -90,6 +119,23 @@ def use_report_style() -> None:
             "grid.alpha": 0.25,
             "lines.linewidth": 1.6,
             "lines.markersize": 5,
+            "errorbar.capsize": 3,
+        }
+    )
+    if style != "diapositiva":
+        return
+    matplotlib.rcParams.update(
+        {
+            "figure.figsize": (6.6, 4.4),
+            "font.family": "sans-serif",
+            "font.sans-serif": ["DejaVu Sans"],
+            "font.size": 19,
+            "axes.labelsize": 22,
+            "xtick.labelsize": 18,
+            "ytick.labelsize": 18,
+            "legend.fontsize": 17,
+            "lines.linewidth": 2.2,
+            "lines.markersize": 7,
             "errorbar.capsize": 3,
         }
     )
@@ -129,6 +175,16 @@ def density_label(density: float) -> str:
     if density in CLUSTER_DENSITY:
         return CLUSTER_DENSITY[density]["label"]
     return f"{density:g}"
+
+
+def density_legend(density: float) -> str:
+    r"""Entrada de leyenda de una densidad, con su unidad: '$\rho$ = 8 m$^{-2}$'."""
+    return f"$\\rho$ = {density_label(density)} m$^{{-2}}$"
+
+
+def noise_legend(noise: float) -> str:
+    r"""Entrada de leyenda de un ruido, con su unidad: '$\eta$ = 0.5 rad'."""
+    return f"$\\eta$ = {noise:g} rad"
 
 
 def number(value: float) -> str:
@@ -377,6 +433,31 @@ def write_summary(records: list[dict], path: Path = SUMMARY) -> None:
     print(f"tabla: {shown(path)}")
 
 
+def read_summaries(sweeps) -> list[dict]:
+    """Une los resumenes de varios barridos en una sola lista de casos.
+
+    El estudio principal (rho = 2, 4, 8) y el extendido de baja densidad viven
+    en directorios distintos porque se corren con distinta cantidad de pasos.
+    Las figuras de los items (d) y (e) los mezclan en una sola curva por
+    densidad, y esta es la unica funcion que sabe unirlos.
+    """
+    records: list[dict] = []
+    for sweep in sweeps:
+        records.extend(read_summary(Path(sweep) / "resumen.csv"))
+    return records
+
+
+def spans_both_families(rhos) -> bool:
+    """Cierto si la lista mezcla densidades del enunciado con las de 1/(k*pi).
+
+    Cuando eso pasa, S recorre todo [0, 1] y las figuras usan el eje completo
+    en vez de ajustarlo a los datos: si no, las curvas de rho >= 2 (pegadas a
+    la unidad) y las de baja densidad no se pueden comparar a simple vista.
+    """
+    values = [float(rho) for rho in rhos]
+    return any(rho >= 1.0 for rho in values) and any(rho < 1.0 for rho in values)
+
+
 def read_summary(path: Path = SUMMARY) -> list[dict]:
     if not path.exists():
         raise SystemExit(
@@ -416,3 +497,13 @@ def add_common_arguments(parser: argparse.ArgumentParser) -> None:
                         help="directorio del barrido")
     parser.add_argument("--figures", type=Path, default=FIGURES,
                         help="raiz de las carpetas de figuras")
+    parser.add_argument("--paneles", choices=("auto", "apilados", "lado"), default="auto",
+                        help="disposicion de los dos paneles (va y S) en las figuras "
+                             "de evolucion temporal. 'auto' los apila para el informe "
+                             "y los pone lado a lado para la diapositiva; 'lado' los "
+                             "pone lado a lado siempre, que es lo que conviene cuando "
+                             "hay que ahorrar alto de pagina")
+    parser.add_argument("--estilo", choices=STYLES, default="informe",
+                        help="'diapositiva' agranda la tipografia dentro de la figura "
+                             "para que al insertarla en un slide quede del tamano del "
+                             "texto, como pide la guia de presentaciones")

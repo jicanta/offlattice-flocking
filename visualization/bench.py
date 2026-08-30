@@ -54,9 +54,13 @@ def main() -> None:
     if not arguments.bench.exists():
         raise SystemExit(f"falta {arguments.bench}. Correr primero:\n  make bench")
 
-    common.use_report_style()
+    common.use_report_style(arguments.estilo)
     rows, header = read_bench(arguments.bench)
-    figure, axes = plt.subplots()
+    # El rotulo del eje vertical es largo y va rotado: con la tipografia de la
+    # diapositiva no entra en el alto por defecto y savefig lo recorta, asi que
+    # esta figura se pide mas alta que el resto.
+    size = (6.8, 5.4) if common.STYLE == "diapositiva" else None
+    figure, axes = plt.subplots(figsize=size)
 
     for method in ("cim", "brute"):
         counts = sorted({key[1] for key in rows if key[0] == method})
@@ -74,8 +78,11 @@ def main() -> None:
         axes.plot(reference[:, 0], reference[:, 1], color="#d62728", marker="s",
                   linestyle="--", label="CIM (TP1)")
 
-    axes.set_xlabel("$N$")
-    axes.set_ylabel("tiempo por búsqueda de vecinos [ms]")
+    axes.set_xlabel("número de partículas $N$")
+    # En estilo diapositiva la tipografia es casi el doble y el rotulo largo no
+    # entra en el alto de la figura, asi que se abrevia sin perder la unidad.
+    axes.set_ylabel("tiempo de búsqueda (ms)" if common.STYLE == "diapositiva"
+                    else "tiempo por búsqueda de vecinos (ms)")
     if arguments.log:
         axes.set_xscale("log")
         axes.set_yscale("log")
