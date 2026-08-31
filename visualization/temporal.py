@@ -77,13 +77,20 @@ class Cases:
         return min(len(group) for group in self.grouped.values())
 
 
-# Disposicion de los dos paneles. La fija main() a partir de --paneles.
+# Disposicion de los paneles. main() fija ambas a partir de --paneles y de
+# --observables: con un solo observable la figura tiene un unico panel.
 SIDE_BY_SIDE = False
+OBSERVABLES: tuple = ("va", "S")
 
 
 def new_figure():
-    """Dos paneles: va arriba y S abajo, o uno al lado del otro."""
-    if SIDE_BY_SIDE:
+    """Un panel por observable: va arriba y S abajo, o uno al lado del otro."""
+    if len(OBSERVABLES) == 1:
+        size = (8.6, 4.8) if common.STYLE == "diapositiva" else (5.6, 3.3)
+        figure, axes = plt.subplots(figsize=size)
+        panels = [axes]
+        axes.set_xlabel(common.AXIS_TIME)
+    elif SIDE_BY_SIDE:
         size = (13.4, 4.8) if common.STYLE == "diapositiva" else (11.0, 3.3)
         figure, panels = plt.subplots(1, 2, figsize=size)
         for axes in panels:
@@ -91,10 +98,16 @@ def new_figure():
     else:
         figure, panels = plt.subplots(2, 1, sharex=True, figsize=(7.6, 6.4))
         panels[1].set_xlabel(common.AXIS_TIME)
-    panels[0].set_ylabel(common.AXIS["va"])
-    panels[0].set_ylim(0.0, 1.05)
-    panels[1].set_ylabel(common.AXIS["S"])
+    for axes, observable in zip(panels, OBSERVABLES):
+        axes.set_ylabel(common.AXIS[observable])
+        if observable == "va":
+            axes.set_ylim(0.0, 1.05)
     return figure, panels
+
+
+def prefix() -> str:
+    """Nombre de los observables dibujados, tal como encabeza el archivo."""
+    return "_".join(OBSERVABLES)
 
 
 def place_legend(figure, panels, columns: int) -> None:
@@ -134,7 +147,7 @@ def single_case(cases: Cases, model: str, rho: float, eta: float, folder) -> Non
 
     figure, panels = new_figure()
     color = common.MODEL_STYLE[model]["color"]
-    for axes, observable in zip(panels, ("va", "S")):
+    for axes, observable in zip(panels, OBSERVABLES):
         column = common.COLUMN[observable]
         for index in range(stack.shape[0]):
             axes.plot(time, stack[index, :, column], color=GREY, linewidth=0.5, alpha=0.45,
@@ -157,7 +170,7 @@ def single_case(cases: Cases, model: str, rho: float, eta: float, folder) -> Non
     # si no, una pisaria a la otra en la misma carpeta.
     marca = "_lado" if SIDE_BY_SIDE and common.STYLE != "diapositiva" else ""
     common.save(figure, folder,
-                f"va_S_vs_t_{model}_rho{common.density_number(rho)}"
+                f"{prefix()}_vs_t_{model}_rho{common.density_number(rho)}"
                 f"_eta{common.number(eta)}_M{result['M']}{marca}.png")
 
 
@@ -179,7 +192,7 @@ def overlay(cases: Cases, entries: list[tuple], folder, name: str, seed: int | N
         time = stack[0, :, 0]
         start = result["start"]
         style = common.MODEL_STYLE[model]["linestyle"]
-        for axes, observable in zip(panels, ("va", "S")):
+        for axes, observable in zip(panels, OBSERVABLES):
             column = common.COLUMN[observable]
             curve = (stack[:, :, column].mean(axis=0) if seed is None
                      else stack[cases.row(model, rho, eta, seed), :, column])
@@ -196,8 +209,8 @@ def overlay(cases: Cases, entries: list[tuple], folder, name: str, seed: int | N
     # ocupan todo el ancho, y la convencion de trazos dentro del panel de S,
     # que es el que suele tener lugar libre.
     place_legend(figure, panels, min(len(entries), 3))
-    panels[1].legend(handles=CONVENTION, loc="best",
-                     fontsize=13 if common.STYLE == "diapositiva" else 9)
+    panels[-1].legend(handles=CONVENTION, loc="best",
+                      fontsize=13 if common.STYLE == "diapositiva" else 9)
     common.save(figure, folder, name.replace("{M}", str(realizations)))
 
 
@@ -267,6 +280,9 @@ def main() -> None:
     parser.add_argument("--seed", type=int,
                         help="en las superposiciones, dibujar esa realizacion en vez "
                              "del promedio de las M")
+    parser.add_argument("--observables", default="va,S",
+                        help="cuales dibujar, separados por coma (va, S o ambos); "
+                             "con uno solo la figura tiene un unico panel")
     parser.add_argument("--item", default="b", choices=tuple(common.FOLDER_NAME),
                         help="carpeta de destino de la figura puntual")
     parser.add_argument("--sweeps",
@@ -279,9 +295,13 @@ def main() -> None:
               if arguments.sweeps else [arguments.sweep])
 
     common.use_report_style(arguments.estilo)
-    global SIDE_BY_SIDE
+    global SIDE_BY_SIDE, OBSERVABLES
     SIDE_BY_SIDE = (arguments.paneles == "lado"
                     or (arguments.paneles == "auto" and arguments.estilo == "diapositiva"))
+    OBSERVABLES = tuple(piece.strip() for piece in arguments.observables.split(",")
+                        if piece.strip())
+    if not OBSERVABLES or any(name not in ("va", "S") for name in OBSERVABLES):
+        raise SystemExit("--observables admite va, S o va,S")
     # Sin --model se genera el juego completo del informe. Cualquier otra opcion
     # de seleccion queda sin efecto en ese modo, asi que se rechaza en vez de
     # ignorarla en silencio.
@@ -312,7 +332,7 @@ def main() -> None:
                   common.density_legend(rho), common.density_color(rho))
                  for rho in rhos],
                 folder,
-                f"va_S_vs_t_{arguments.model}_eta{common.number(arguments.eta)}"
+                f"{prefix()}_vs_t_{arguments.model}_eta{common.number(arguments.eta)}"
                 f"_rhos{common.joined_densities(rhos)}_{suffix}.png",
                 seed=arguments.seed)
         return
@@ -325,7 +345,7 @@ def main() -> None:
                 [(arguments.model, arguments.rho, eta, common.noise_legend(eta), color)
                  for eta, color in zip(etas, colors)],
                 folder,
-                f"va_S_vs_t_{arguments.model}_rho{common.density_number(arguments.rho)}"
+                f"{prefix()}_vs_t_{arguments.model}_rho{common.density_number(arguments.rho)}"
                 f"_etas{common.joined(etas)}_{suffix}.png",
                 seed=arguments.seed)
     elif arguments.eta is not None:

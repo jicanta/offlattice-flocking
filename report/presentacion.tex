@@ -66,7 +66,7 @@
 \setbeamertemplate{frametitle}{%
     \vspace*{0.5em}%
     \hspace*{0.75cm}%
-    \parbox{0.87\paperwidth}{\raggedright
+    \parbox{\dimexpr\linewidth-0.75cm\relax}{\raggedright
         \usebeamerfont{frametitle}\usebeamercolor[fg]{frametitle}\insertframetitle\par
         \vspace{-0.2em}\textcolor{azul!30}{\rule{\linewidth}{0.9pt}}}%
 }
@@ -97,11 +97,10 @@
 % Titulo del bloque de condiciones que acompana a cada figura (1.7).
 \newcommand{\setup}[1]{{\color{azul}\bfseries #1}\par\vspace{0.15em}}
 
-% Las constantes que comparten todas las corridas.
-\newcommand{\fijos}{%
-    $L = \SI{10}{m}$, contorno periódico\\
-    $r_c = \SI{1}{m}$, $v = \SI{0.03}{m/s}$\\
-    $\Delta t = \SI{1}{s}$, $M = 20$}
+% Las constantes comunes ($L$, $r_c$, $v$, $\Delta t$, $M$) se declaran una
+% sola vez en la diapositiva del sistema particular; al costado de cada figura
+% van solo las condiciones que cambian entre corridas (regla, $\rho$, $\eta$,
+% semilla o promedio).
 
 % Figura a la izquierda, condiciones bajo las que se obtuvo a la derecha (1.7).
 \newcommand{\figpar}[3][0.66]{%
@@ -437,6 +436,10 @@
                 $M$        & $20$ realizaciones (semillas 1 a 20) \\
                 \bottomrule
             \end{tabular}}
+            \vspace{0.7em}
+
+            {\scriptsize\color{gris} $L$, $r_c$, $v$, $\Delta t$ y $M$ quedan
+            fijos en todos los resultados.}
         \end{column}
     \end{columns}
 \end{frame}
@@ -500,7 +503,6 @@
         \setup{Condiciones}
         Modelo estándar\\
         $\rho = \SI{4}{m^{-2}}$ ($N = 400$), $\eta = \SI{2}{rad}$\\
-        \fijos\\
         \SI{5e3}{s} por corrida
         \vspace{0.9em}
 
@@ -536,7 +538,6 @@
          \setup{Ambas corridas}
          Modelo estándar\\
          $\rho = \SI{4}{m^{-2}}$ ($N = 400$)\\
-         \fijos\\
          semilla 1, cuadro en \SI{3e3}{s}
          \vspace{1.0em}
 
@@ -544,24 +545,27 @@
 \end{frame}
 
 \begin{frame}{Modelo estándar: evolución temporal}
-    \figpar[0.72]{b_evolucion_temporal/va_S_vs_t_vicsek_rho4_etas0.5-2-5_semilla1.png}{%
+    \figpar[0.72]{b_evolucion_temporal/va_S_vs_t_vicsek_rho4_etas2_semilla1.png}{%
         \setup{Condiciones}
         Modelo estándar\\
         $\rho = \SI{4}{m^{-2}}$ ($N = 400$)\\
-        \fijos\\
-        \alert{una realización por curva}
+        $\eta = \SI{2}{rad}$\\
+        \alert{una sola corrida} (semilla 1)
         \vspace{1.4em}
 
-        \setup{Tres regímenes a igual $\rho$}
-        Ordena, plateau, nunca ordena. \\
-        Punteadas: \teq}
+        \setup{Transitorio y estacionario}
+        Ordena en $\approx \SI{650}{s}$ y fluctúa alrededor de $0{,}79$
+        \vspace{1.0em}
+
+        \setup{Trazos}
+        Punteada: \teq; rayada: promedio en el estacionario}
 \end{frame}
 
 \begin{frame}{Modelo estándar: polarización contra ruido}
     \figpar[0.60]{c_va_vs_eta/va_vs_eta_vicsek_rho2-4-8_M20.png}{%
         \setup{Condiciones}
         Modelo estándar\\
-        \fijos\\
+        $\rho = 2$, $4$ y $\SI{8}{m^{-2}}$\\
         barra: $\sigma_{\va}$ en el estacionario\\
         líneas: guía para el ojo
         \vspace{1.2em}
@@ -588,7 +592,6 @@
          \setup{Ambas corridas}
          Modelo de votante\\
          $\rho = \SI{4}{m^{-2}}$ ($N = 400$)\\
-         \fijos\\
          semilla 1, cuadro en \SI{3e3}{s}
          \vspace{1.0em}
 
@@ -596,23 +599,24 @@
 \end{frame}
 
 \begin{frame}{Modelo de votante: evolución temporal}
-    \figpar[0.72]{f_votante/va_S_vs_t_voter_rho4_etas0.5-2-5_semilla1.png}{%
+    \figpar[0.72]{f_votante/va_S_vs_t_voter_rho4_etas0.5_semilla1.png}{%
         \setup{Condiciones}
         Modelo de votante\\
         $\rho = \SI{4}{m^{-2}}$ ($N = 400$)\\
-        \fijos\\
-        \alert{una realización por curva}
+        $\eta = \SI{0.5}{rad}$\\
+        \alert{una sola corrida} (semilla 1)
         \vspace{1.4em}
 
         \setup{Con el $\eta$ que ordenaba al estándar}
-        $\va$ oscila con amplitud $\sim$ su media}
+        $\va$ oscila entre $0{,}1$ y $0{,}7$: \\
+        amplitud $\sim$ su media ($0{,}30$)}
 \end{frame}
 
 \begin{frame}{Modelo de votante: polarización contra ruido}
     \figpar[0.60]{c_va_vs_eta/va_vs_eta_voter_rho2-4-8_M20.png}{%
         \setup{Condiciones}
         Modelo de votante\\
-        \fijos\\
+        $\rho = 2$, $4$ y $\SI{8}{m^{-2}}$\\
         barra: $\sigma_{\va}$ en el estacionario\\
         \alert{mismos ejes y colores que el estándar}
         \vspace{1.2em}
@@ -635,7 +639,6 @@
     \figpar[0.60]{f_votante/va_vs_eta_vicsek_vs_voter_rho4_M20.png}{%
         \setup{Condiciones}
         $\rho = \SI{4}{m^{-2}}$ ($N = 400$)\\
-        \fijos\\
         barra: $\sigma_{\va}$ en el estacionario\\
         líneas: guía para el ojo
         \vspace{1.6em}
@@ -660,7 +663,6 @@
          \setup{Ambas corridas}
          Modelo estándar\\
          $\rho = 1/\pi\ \si{m^{-2}}$ ($N = 32$)\\
-         \fijos\\
          semilla 1, cuadro en \SI{2e4}{s}
          \vspace{1.2em}
 
@@ -673,7 +675,7 @@
     \figpar[0.72]{d_clusters/va_S_vs_t_vicsek_eta2_rhos8-4-2-1pi-1-3pi_promedioM20.png}{%
         \setup{Condiciones}
         Modelo estándar, $\eta = \SI{2}{rad}$\\
-        \fijos\\
+        $\rho = 8$ a $1/3\pi\ \si{m^{-2}}$, una curva por densidad\\
         curva promedio de las $M$
         \vspace{1.4em}
 
@@ -690,7 +692,6 @@
     \figpar[0.60]{f_votante/S_vs_eta_vicsek_vs_voter_rho1pi_M20.png}{%
         \setup{Condiciones}
         $\rho = 1/\pi\ \si{m^{-2}}$ ($N = 32$)\\
-        \fijos\\
         barra: $\sigma_S$ en el estacionario
         \vspace{1.2em}
 
@@ -710,7 +711,6 @@
         \setup{Condiciones}
         $\rho = 1/\pi\ \si{m^{-2}}$ ($N = 32$)\\
         un punto por cada $\eta$ del barrido\\
-        \fijos\\
         barras: $\sigma_S$ y $\sigma_{\va}$\\
         líneas: guía para el ojo, en orden de $\eta$
         \vspace{1.4em}

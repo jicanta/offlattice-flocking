@@ -50,7 +50,7 @@
     \needspace{5\baselineskip}%
     \vspace{0.7em}%
     \noindent\colorbox{azul}{\makebox[2.1em]{\color{white}\bfseries\small #1}}%
-    \colorbox{grisclaro}{\makebox[\dimexpr\linewidth-2.1em-2\fboxsep\relax][l]{%
+    \colorbox{grisclaro}{\makebox[\dimexpr\linewidth-2.1em-4\fboxsep\relax][l]{%
         \color{azul}\bfseries\small\hspace{0.4em}#2\hfill
         {\color{gris}\mdseries #3}\hspace{0.4em}}}%
     \par\vspace{0.35em}}
@@ -94,7 +94,7 @@
 separadores de sección: se pasan sin hablar. Los resultados van \textbf{por
 regla}: primero la data del estándar (animaciones de ruido bajo y alto, la
 evolución temporal) y los puntos del barrido que corresponden a esas corridas
----los aros---, después lo mismo para el votante, y recién entonces las
+(los aros), después lo mismo para el votante, y recién entonces las
 comparaciones entre reglas, cada una en una única diapositiva. Las del votante
 (16--18) repiten el formato del estándar y van más rápido.}
 \end{tcolorbox}
@@ -103,7 +103,7 @@ comparaciones entre reglas, cada una en una única diapositiva. Las del votante
 {\small\itshape Este documento no se entrega. Reúne el texto que se sacó de las
 diapositivas para cumplir con la guía de presentaciones, que pide poco texto y
 sin párrafos (1.6). Las diapositivas de resultados quedaron con la figura, el
-bloque de condiciones ---que la guía exige al costado (1.7)--- y a lo sumo un
+bloque de condiciones que la guía exige al costado (1.7) y a lo sumo un
 par de líneas: \textbf{toda la interpretación hay que decirla en voz alta}, y
 está acá abajo.}
 
@@ -117,8 +117,8 @@ está acá abajo.}
     \item \decir El fenómeno aparece en bandadas de aves, cardúmenes y colonias
           bacterianas: agentes que se autopropulsan y ajustan su dirección a la
           de sus vecinos.
-    \item \decir Lo llamativo es que la interacción es \emph{puramente local}
-          ---no hay líder ni campo externo que fije una dirección--- y aun así
+    \item \decir Lo llamativo es que la interacción es \emph{puramente local},
+          sin líder ni campo externo que fije una dirección, y aun así
           el conjunto adopta espontáneamente una dirección común.
     \item \decir Adelantar de palabra (la diapositiva no lo muestra): el modelo
           tiene un único parámetro de control, el ruido, y exhibe una
@@ -157,8 +157,8 @@ está acá abajo.}
     \item \decir El motor de simulación, en C++, sólo integra la dinámica y
           escribe \emph{estados}: posiciones y ángulos, paso a paso.
     \item \decir Los observables \textbf{no} se calculan durante la
-          simulación: los calcula \emph{después} una etapa de post-procesamiento
-          (\texttt{analyse}) que lee los estados guardados y escribe la serie
+          simulación: los calcula \emph{después} una etapa aparte, el comando
+          \texttt{analyse}, que lee los estados guardados y escribe la serie
           $t$, \va, $S$. La animación y las figuras, en Python, también leen
           sólo archivos.
     \item \decir Ésa es la separación que pide la consigna: el motor nunca
@@ -192,7 +192,7 @@ está acá abajo.}
           $\mathcal{O}(N^2)$: con la misma semilla las dos dan trayectorias
           idénticas, así que el CIM no pierde ni duplica pares.
     \item \preg \emph{¿Es el mismo CIM del TP1?} Sí, es el mismo código sin
-          modificar ---el archivo es idéntico---, junto con la geometría
+          modificar (el archivo es idéntico), junto con la geometría
           periódica. Eso es justamente lo que hace comparables los tiempos de
           la diapositiva \num{24}.
 \end{notas}
@@ -204,14 +204,14 @@ está acá abajo.}
 
 \diapo{9}{Sistema particular}{\SI{40}{s}}
 \begin{notas}
-    \item \decir La tabla separa los parámetros \textbf{del sistema} ---la caja,
+    \item \decir La tabla separa los parámetros \textbf{del sistema} (la caja,
           el radio de interacción, la rapidez, el ruido, la densidad y la
-          regla--- de los \textbf{de la simulación}: el paso temporal y las
+          regla) de los \textbf{de la simulación}: el paso temporal y las
           realizaciones.
     \item \decir Barremos el ruido de $0$ a \SI{5}{rad}, las tres densidades de
           la consigna y los dos modelos, con \num{20} realizaciones por caso.
     \item \decir Agregamos un barrido \textbf{extendido} a densidades bajas
-          ---$1/\pi$, $1/2\pi$ y $1/3\pi$--- porque son las únicas para las que
+          ($1/\pi$, $1/2\pi$ y $1/3\pi$) porque son las únicas para las que
           $\langle k\rangle$ cae por debajo del umbral de percolación y $S$ deja
           de estar pegado a la unidad. Se usa sólo en el estudio de clusters.
     \item \nums Paso del barrido de ruido: \SI{0.25}{rad} (21 valores).
@@ -249,8 +249,8 @@ está acá abajo.}
           que usamos un criterio automático y uniforme, sin umbrales elegidos a
           mano.
     \item \decir Tomamos la curva \emph{promedio} de las \num{20} realizaciones,
-          calculamos su media en la segunda mitad de la corrida ---que ya está
-          en el estacionario--- y definimos \teq{} como el inicio del primer
+          calculamos su media en la segunda mitad de la corrida, que ya está
+          en el estacionario, y definimos \teq{} como el inicio del primer
           bloque de \SI{50}{s} cuya media cruza esa referencia.
     \item \decir Como el transitorio es monótono, el cruce marca su final. Y
           como se evalúa sobre el promedio, \teq{} es único por caso, no depende
@@ -293,17 +293,18 @@ está acá abajo.}
 
 \diapo{14}{Modelo estándar: evolución temporal}{\SI{40}{s}}
 \begin{notas}
-    \item \decir Tres ruidos a la misma densidad, una sola realización cada uno,
-          para que se vea la fluctuación real y no la suavizada por el promedio.
-    \item \decir Con $\eta = \SI{0.5}{rad}$ sube a $\va \simeq 1$ en unos
-          \SI{200}{s} y prácticamente no fluctúa. Con \SI{2}{rad} hay un plateau
-          intermedio con fluctuación visible. Con \SI{5}{rad} nunca ordena:
-          oscila en torno al piso de tamaño finito.
-    \item \decir Las verticales punteadas marcan \teq{} de cada caso; las
-          horizontales, el promedio en el estacionario.
-    \item \decir A la derecha, $S$ se queda pegado a $1$ en las tres: a
+    \item \decir Una sola corrida: $\rho = \SI{4}{m^{-2}}$, $\eta = \SI{2}{rad}$,
+          semilla 1. Se ve la fluctuación real de una corrida, no la suavizada
+          por promediar.
+    \item \decir El transitorio dura unos \SI{650}{s} (la vertical punteada es
+          \teq); después la polarización fluctúa alrededor de $0{,}79$, que es
+          la horizontal rayada.
+    \item \decir A la derecha, $S$ se queda pegado a $1$ toda la corrida: a
           $\rho = \SI{4}{m^{-2}}$ el sistema está percolado desde la condición
           inicial. Lo retomamos en el estudio de clusters.
+    \item \preg Con $\eta = \SI{0.5}{rad}$ ordena en unos \SI{200}{s} y casi no
+          fluctúa; con \SI{5}{rad} nunca ordena y oscila en torno al piso de
+          tamaño finito. Esos regímenes se ven en la curva contra el ruido.
 \end{notas}
 
 \diapo{15}{Modelo estándar: polarización contra ruido}{\SI{40}{s}}
@@ -337,8 +338,9 @@ está acá abajo.}
 
 \diapo{17}{Modelo de votante: evolución temporal}{\SI{25}{s}}
 \begin{notas}
-    \item \decir Mismos tres ruidos, misma densidad, misma semilla que en el
-          estándar.
+    \item \decir Una sola corrida del votante: la misma densidad y la misma
+          semilla que el estándar, con $\eta = \SI{0.5}{rad}$, el ruido que al
+          estándar lo dejaba ordenado en $\va \simeq 0{,}99$.
     \item \decir Con $\eta = \SI{0.5}{rad}$ el votante se estabiliza en
           $\va \approx 0{,}3$ y oscila entre \num{0.1} y \num{0.7}: la amplitud
           es comparable a la media. Son los dominios de la animación.
@@ -358,8 +360,8 @@ está acá abajo.}
           a la mitad, el votante ya cayó en \SI{0.3}{rad}. Un orden de
           magnitud antes.
     \item \decir Y sobre todo, \textbf{se dan vuelta los colores}. En el
-          estándar el verde ---$\rho = \SI{8}{m^{-2}}$--- va arriba y el azul
-          ---$\rho = \SI{2}{m^{-2}}$--- abajo; en el votante es exactamente al
+          estándar el verde ($\rho = \SI{8}{m^{-2}}$) va arriba y el azul
+          ($\rho = \SI{2}{m^{-2}}$) abajo; en el votante es exactamente al
           revés.
     \item \decir Es decir que la densidad, que en el estándar \emph{favorece} el
           orden, en el votante lo \emph{destruye}: el efecto tiene signo
@@ -410,10 +412,10 @@ está acá abajo.}
     \item \decir Ésta es la figura del ítem (d): $S(t)$ para las tres densidades
           de la consigna, más las dos bajas, todas al mismo ruido
           $\eta = \SI{2}{rad}$ y promediadas sobre las \num{20} realizaciones.
-    \item \decir Las tres de la consigna ---verde, roja, azul--- están en
+    \item \decir Las tres de la consigna (verde, roja, azul) están en
           $S \simeq 1$ desde el primer paso: el sistema nace percolado. Sus
           corridas duran \SI{5e3}{s}, por eso terminan antes.
-    \item \decir Las dos bajas ---violeta y rosa--- son otra cosa: $S$ parte de
+    \item \decir Las dos bajas (violeta y rosa) son otra cosa: $S$ parte de
           \num{0.15} y sube por agregación. Dos partículas que se encuentran se
           alinean, y al alinearse dejan de separarse. La unión sólo se deshace
           por el ruido.
@@ -478,8 +480,8 @@ está acá abajo.}
 
 \diapo{24}{Tiempos de ejecución del CIM}{\SI{35}{s}}
 \begin{notas}
-    \item \decir El cronómetro abarca sólo la búsqueda de vecinos ---incluido el
-          armado de las celdas--- y excluye la dinámica y la escritura a disco.
+    \item \decir El cronómetro abarca sólo la búsqueda de vecinos, incluido el
+          armado de las celdas, y excluye la dinámica y la escritura a disco.
     \item \decir Para comparar con el TP1 hay que igualar la geometría, así que
           estas corridas replican su caja: $L = \SI{20}{m}$ y $\Mc = 13$, no las
           del resto del trabajo.

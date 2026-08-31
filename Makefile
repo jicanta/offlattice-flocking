@@ -150,8 +150,10 @@ mixed-figures:
 # Figuras que solo usan los documentos
 # --------------------------------------------------------------------------
 
-# Ruidos de la figura de evolucion temporal: ordenado, transicion y desorden,
-# una realizacion por curva. La densidad baja donde S recorre todo su rango.
+# Ruidos de la figura de evolucion temporal del informe: ordenado, transicion
+# y desorden, una realizacion por curva. En las diapositivas la evolucion
+# temporal muestra UNA sola corrida por figura (eta = 2 el estandar, 0.5 el
+# votante). La densidad baja donde S recorre todo su rango.
 TRIO      ?= 0.5,2,5
 TRIO_SEED ?= 1
 CRHO1     ?= 0.31831
@@ -202,9 +204,9 @@ figuras-diapositivas:
 	-$(PY) visualization/bench.py --log --figures $(SLIDES) --estilo diapositiva
 	$(PY) visualization/temporal.py --model vicsek --rho 4 --eta 2 --item b \
 	    --figures $(SLIDES) --estilo diapositiva
-	$(PY) visualization/temporal.py --model vicsek --rho 4 --etas $(TRIO) \
+	$(PY) visualization/temporal.py --model vicsek --rho 4 --etas 2 \
 	    --seed $(TRIO_SEED) --item b --figures $(SLIDES) --estilo diapositiva
-	$(PY) visualization/temporal.py --model voter --rho 4 --etas $(TRIO) \
+	$(PY) visualization/temporal.py --model voter --rho 4 --etas 0.5 \
 	    --seed $(TRIO_SEED) --item f --figures $(SLIDES) --estilo diapositiva
 	$(PY) visualization/temporal.py --sweeps $(SWEEP),$(CLUSTERS) --model vicsek --eta 2 \
 	    --rhos $(TEMPORAL_RHOS) --item d --figures $(SLIDES) --estilo diapositiva
