@@ -136,6 +136,9 @@ cluster-figures:
 # saturadas en S = 1 y las de 1/(k*pi) recorren todo el rango; juntas, y con el
 # eje en [0, 1], la comparacion es directa. El orden es el de la leyenda.
 MIXED_RHOS ?= 8,2,0.31831,0.106103
+# S(t) de la diapositiva del item (d): las tres densidades de la consigna y las
+# dos bajas del barrido extendido, superpuestas a un mismo ruido.
+TEMPORAL_RHOS ?= 8,4,2,0.31831,0.106103
 
 mixed-figures:
 	$(PY) visualization/curves.py --sweeps $(SWEEP),$(CLUSTERS) \
@@ -190,6 +193,8 @@ figuras-diapositivas:
 	    --seed $(TRIO_SEED) --item f --figures $(SLIDES) --estilo diapositiva
 	$(PY) visualization/temporal.py --sweep $(CLUSTERS) --model vicsek --rho $(CRHO1) \
 	    --etas $(TRIO) --item d --figures $(SLIDES) --estilo diapositiva
+	$(PY) visualization/temporal.py --sweeps $(SWEEP),$(CLUSTERS) --model vicsek --eta 2 \
+	    --rhos $(TEMPORAL_RHOS) --item d --figures $(SLIDES) --estilo diapositiva
 	@for spec in $(FRAMES); do \
 	    $(PY) visualization/animate.py --run $(RUNS)/$${spec%%:*} \
 	        --snapshots $${spec#*:} --columns 1 \

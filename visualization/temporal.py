@@ -22,6 +22,7 @@ Sin argumentos genera el juego completo de figuras del informe. Con --model,
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 from functools import lru_cache
 
 import matplotlib.pyplot as plt
@@ -50,8 +51,14 @@ CONVENTION = [
 class Cases:
     """Carga (y recuerda) las realizaciones de cada caso del barrido."""
 
-    def __init__(self, sweep):
-        self.grouped = common.group_runs(common.read_index(sweep))
+    def __init__(self, sweeps):
+        # Uno o varios barridos: con varios se superponen casos de distinta
+        # duracion (5e3 s en data/sweep, 2e4 s en data/sweep_clusters) en una
+        # misma figura, que es lo que pide el item (d) para comparar densidades.
+        if isinstance(sweeps, (str, Path)):
+            sweeps = [sweeps]
+        runs = [run for sweep in sweeps for run in common.read_index(sweep)]
+        self.grouped = common.group_runs(runs)
 
     @lru_cache(maxsize=None)
     def stack(self, model: str, rho: float, eta: float) -> np.ndarray:
@@ -262,8 +269,14 @@ def main() -> None:
                              "del promedio de las M")
     parser.add_argument("--item", default="b", choices=tuple(common.FOLDER_NAME),
                         help="carpeta de destino de la figura puntual")
+    parser.add_argument("--sweeps",
+                        help="lista separada por coma de barridos a unir; reemplaza a "
+                             "--sweep cuando una superposicion mezcla densidades del "
+                             "barrido principal y del extendido")
     common.add_common_arguments(parser)
     arguments = parser.parse_args()
+    sweeps = ([piece.strip() for piece in arguments.sweeps.split(",") if piece.strip()]
+              if arguments.sweeps else [arguments.sweep])
 
     common.use_report_style(arguments.estilo)
     global SIDE_BY_SIDE
@@ -280,10 +293,10 @@ def main() -> None:
         if given:
             raise SystemExit(f"{', '.join(given)} necesita --model; sin --model se "
                              "genera el juego completo de figuras del informe")
-        standard_set(Cases(arguments.sweep), arguments.figures)
+        standard_set(Cases(sweeps), arguments.figures)
         return
 
-    cases = Cases(arguments.sweep)
+    cases = Cases(sweeps)
     folder = common.folder(arguments.item, arguments.figures)
     # El nombre dice de donde sale cada curva: del promedio de las M
     # realizaciones o de una sola, identificada por su semilla.

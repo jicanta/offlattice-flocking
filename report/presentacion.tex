@@ -518,21 +518,36 @@
 \section{Resultados}
 % =========================================================
 
-\begin{frame}{Modelo estándar: animaciones características}
-    \dosfig
-        {a_animaciones/cuadro_vicsek_rho4_eta0.5_t3000.png}
-        {\pendiente}
-        {a_animaciones/cuadro_vicsek_rho4_eta4_t3000.png}
-        {\pendiente}
-        {\paneles{$\eta = \SI{0.5}{rad}$, ordenado}{$\eta = \SI{4}{rad}$, desordenado}
-         \setup{Ambas corridas}
-         Modelo estándar\\
-         $\rho = \SI{4}{m^{-2}}$ ($N = 400$)\\
-         \fijos\\
-         semilla 1, cuadro en \SI{3e3}{s}
-         \vspace{1.4em}
+\begin{frame}{Animaciones características}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.235\textwidth}
+            \centering\includegraphics[width=\linewidth]{a_animaciones/cuadro_vicsek_rho4_eta0.5_t3000.png}\\[0.15em]
+            \pendiente
+        \end{column}
+        \begin{column}{0.235\textwidth}
+            \centering\includegraphics[width=\linewidth]{a_animaciones/cuadro_vicsek_rho4_eta4_t3000.png}\\[0.15em]
+            \pendiente
+        \end{column}
+        \begin{column}{0.235\textwidth}
+            \centering\includegraphics[width=\linewidth]{a_animaciones/cuadro_voter_rho4_eta0.5_t3000.png}\\[0.15em]
+            \pendiente
+        \end{column}\hfill
+        \begin{column}{0.255\textwidth}
+            \raggedright\scriptsize
+            {\color{azul}\bfseries Izq.:} estándar, $\eta = \SI{0.5}{rad}$: ordenado\\
+            {\color{azul}\bfseries Centro:} estándar, $\eta = \SI{4}{rad}$: desordenado\\
+            {\color{azul}\bfseries Der.:} votante, $\eta = \SI{0.5}{rad}$: dominios
+            \vspace{0.7em}
 
-         Una flecha por partícula; color según el ángulo, longitud fija.}
+            \setup{Las tres corridas}
+            $\rho = \SI{4}{m^{-2}}$ ($N = 400$)\\
+            \fijos\\
+            semilla 1, cuadro en \SI{3e3}{s}
+            \vspace{1.0em}
+
+            Una flecha por partícula; color según el ángulo, longitud fija.
+        \end{column}
+    \end{columns}
 \end{frame}
 
 \begin{frame}{Modelo estándar: evolución temporal}
@@ -550,32 +565,19 @@
         Punteadas: \teq}
 \end{frame}
 
-\begin{frame}{Modelo de votante: animación y evolución temporal}
-    \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.24\textwidth}
-            \centering
-            \includegraphics[width=\linewidth]{a_animaciones/cuadro_voter_rho4_eta0.5_t3000.png}\\[0.2em]
-            \pendiente
-        \end{column}
-        \begin{column}{0.50\textwidth}
-            \centering
-            \includegraphics[width=\linewidth]{f_votante/va_S_vs_t_voter_rho4_etas0.5-2-5_semilla1.png}
-        \end{column}\hfill
-        \begin{column}{0.23\textwidth}
-            \raggedright\scriptsize
-            \setup{Condiciones}
-            Modelo de votante\\
-            $\rho = \SI{4}{m^{-2}}$ ($N = 400$)\\
-            \fijos\\
-            \SI{5e3}{s} por corrida\\
-            una realización por curva\\
-            cuadro: $\eta = \SI{0.5}{rad}$, semilla 1, \SI{3e3}{s}
-            \vspace{1.6em}
+\begin{frame}{Modelo de votante: evolución temporal}
+    \figpar[0.72]{f_votante/va_S_vs_t_voter_rho4_etas0.5-2-5_semilla1.png}{%
+        \setup{Condiciones}
+        Modelo de votante\\
+        $\rho = \SI{4}{m^{-2}}$ ($N = 400$)\\
+        \fijos\\
+        \SI{5e3}{s} por corrida\\
+        \alert{una realización por curva}
+        \vspace{1.4em}
 
-            \setup{Con el $\eta$ que ordenaba al estándar}
-            Sin bandada única: \alert{dominios} transitorios y $\va$ oscilante
-        \end{column}
-    \end{columns}
+        \setup{Con el $\eta$ que ordenaba al estándar}
+        Sin bandada única: \alert{dominios} transitorios \\[0.4em]
+        $\va$ oscila con amplitud $\sim$ su media}
 \end{frame}
 
 \begin{frame}{Modelo estándar: polarización contra ruido}
@@ -637,54 +639,85 @@
 \end{frame}
 
 \begin{frame}{Clusters: evolución temporal de la componente gigante}
-    \figpar[0.72]{d_clusters/va_S_vs_t_vicsek_rho1pi_etas0.5-2-5_promedioM20.png}{%
+    \figpar[0.72]{d_clusters/va_S_vs_t_vicsek_eta2_rhos8-4-2-1pi-1-3pi_promedioM20.png}{%
+        \setup{Condiciones}
+        Modelo estándar, $\eta = \SI{2}{rad}$\\
+        \fijos\\
+        \SI{5e3}{s} si $\rho \ge \SI{2}{m^{-2}}$, \SI{2e4}{s} si no\\
+        curva promedio de las $M$
+        \vspace{1.4em}
+
+        \setup{$\rho = 2$, $4$ y $\SI{8}{m^{-2}}$}
+        $S \simeq 1$ desde $t = 0$: \alert{siempre percolado}
+        \vspace{0.8em}
+
+        \setup{$1/\pi$ y $1/3\pi$}
+        $S$ parte de $0{,}15$ y crece por \alert{agregación};
+        \teq{} diez veces mayor}
+\end{frame}
+
+\begin{frame}{Modelo estándar: componente gigante contra ruido}
+    \figpar[0.60]{d_clusters/S_vs_eta_vicsek_rho8-2-1pi-1-3pi_M20.png}{%
         \setup{Condiciones}
         Modelo estándar\\
-        $\rho = 1/\pi\ \si{m^{-2}}$ ($N = 32$)\\
         \fijos\\
-        \SI{2e4}{s} por corrida\\
-        curva promedio de las $M$
-        \vspace{1.6em}
+        \SI{5e3}{s} si $\rho \ge \SI{2}{m^{-2}}$, \SI{2e4}{s} si no\\
+        barra: $\sigma_S$ en el estacionario\\
+        líneas: guía para el ojo
+        \vspace{1.4em}
 
-        \setup{$S$ con transitorio propio}
-        $0{,}15 \to$ crece por \alert{agregación} \\[0.4em]
-        $\teq = \SI{3.65e3}{s}$}
+        \setup{Dos regímenes}
+        $\rho = 8$ y $2$: \alert{pegadas a $S = 1$} \\[0.4em]
+        $1/\pi$ y $1/3\pi$: \alert{decaen} hasta $0{,}2$ \\[0.6em]
+        En $\eta = 0$ percolan igual: \alert{fragmenta el ruido}}
 \end{frame}
 
-\begin{frame}{Clusters: componente gigante contra ruido}
-    \dosfiglimpio
-        {d_clusters/S_vs_eta_vicsek_rho8-2-1pi-1-3pi_M20.png}
-        {d_clusters/S_vs_eta_voter_rho8-2-1pi-1-3pi_M20.png}
-        {\paneles{modelo estándar}{modelo de votante}
-         \setup{Ambas figuras}
-         \fijos\\
-         \SI{5e3}{s} si $\rho \ge \SI{2}{m^{-2}}$, \SI{2e4}{s} si no\\
-         mismo eje $[0,1]$ en las dos\\
-         líneas: guía para el ojo
-         \vspace{1.4em}
+\begin{frame}{Modelo de votante: componente gigante contra ruido}
+    \figpar[0.60]{d_clusters/S_vs_eta_voter_rho8-2-1pi-1-3pi_M20.png}{%
+        \setup{Condiciones}
+        Modelo de votante\\
+        \fijos\\
+        \SI{5e3}{s} si $\rho \ge \SI{2}{m^{-2}}$, \SI{2e4}{s} si no\\
+        barra: $\sigma_S$ en el estacionario\\
+        líneas: guía para el ojo\\
+        \alert{mismos ejes y colores que la anterior}
+        \vspace{1.4em}
 
-         \setup{Dos regímenes}
-         $\rho = 8$ y $2$: \alert{pegadas a $S = 1$} \\[0.4em]
-         $1/\pi$ y $1/3\pi$: \alert{decaen} hasta $0{,}2$ \\[0.6em]
-         En $\eta = 0$ percolan igual: \alert{fragmenta el ruido}}
+        \setup{Mismo cuadro, se fragmenta antes}
+        $\eta(S = 0{,}5)$ a $\rho = 1/\pi$: \SI{1.19}{rad} contra \SI{2.74}{rad} \\[0.6em]
+        Copiar a uno solo no atenúa el ruido}
 \end{frame}
 
-\begin{frame}{Polarización contra componente gigante}
-    \dosfiglimpio
-        {e_va_vs_S/va_vs_S_vicsek_rho8-2-1pi-1-3pi_M20.png}
-        {e_va_vs_S/va_vs_S_voter_rho8-2-1pi-1-3pi_M20.png}
-        {\paneles{modelo estándar}{modelo de votante}
-         \setup{Ambas figuras}
-         Un punto por cada $\eta$ del barrido\\
-         \fijos\\
-         barras: $\sigma_S$ y $\sigma_{\va}$\\
-         líneas: guía para el ojo, en orden de $\eta$
-         \vspace{1.4em}
+\begin{frame}{Modelo estándar: polarización contra componente gigante}
+    \figpar[0.60]{e_va_vs_S/va_vs_S_vicsek_rho8-2-1pi-1-3pi_M20.png}{%
+        \setup{Condiciones}
+        Modelo estándar\\
+        un punto por cada $\eta$ del barrido\\
+        \fijos\\
+        barras: $\sigma_S$ y $\sigma_{\va}$\\
+        líneas: guía para el ojo, en orden de $\eta$
+        \vspace{1.4em}
 
-         \setup{Dos regímenes}
-         $\rho = 8$ y $2$: \alert{desacopladas} \\[0.4em]
-         $1/\pi$ y $1/3\pi$: \alert{acopladas}, casi colapsan \\[0.6em]
-         Pearson $0{,}45$ y $0{,}61$ contra $0{,}985$ y $0{,}994$}
+        \setup{Dos regímenes}
+        $\rho = 8$ y $2$: \alert{desacopladas}; $\va$ no es función de $S$ \\[0.4em]
+        $1/\pi$ y $1/3\pi$: \alert{acopladas}, casi colapsan \\[0.6em]
+        Pearson $0{,}45$ y $0{,}61$ contra $0{,}985$ y $0{,}994$}
+\end{frame}
+
+\begin{frame}{Modelo de votante: polarización contra componente gigante}
+    \figpar[0.60]{e_va_vs_S/va_vs_S_voter_rho8-2-1pi-1-3pi_M20.png}{%
+        \setup{Condiciones}
+        Modelo de votante\\
+        un punto por cada $\eta$ del barrido\\
+        \fijos\\
+        barras: $\sigma_S$ y $\sigma_{\va}$\\
+        líneas: guía para el ojo, en orden de $\eta$\\
+        \alert{mismos ejes y colores que la anterior}
+        \vspace{1.4em}
+
+        \setup{Los mismos dos regímenes}
+        $\rho = 8$: Pearson $-0{,}48$; la correlación residual \alert{no es física} \\[0.6em]
+        $1/\pi$ y $1/3\pi$: $0{,}968$ y $0{,}987$}
 \end{frame}
 
 \begin{frame}{Tiempos de ejecución del CIM}
