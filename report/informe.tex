@@ -211,16 +211,21 @@ Ambos observables son adimensionales.
 \section{Implementación}
 % =========================================================
 
-El trabajo se divide en dos módulos independientes comunicados por archivos de
-texto, como exige la consigna: el motor de simulación, en C++, y el módulo de
-análisis y animación, en Python. El motor nunca dibuja y el módulo de animación
-nunca simula, de modo que la velocidad de reproducción no queda supeditada a la de
-la simulación. El motor escribe \texttt{static.txt} (parámetros de la
-corrida), \texttt{dynamic.txt} (por cuadro, una línea con $t$ y luego $N$ líneas
-\texttt{x y theta}) y \texttt{observables.txt} (una línea \texttt{t va S} por
-paso). Los observables se escriben en todos los pasos; los cuadros de posiciones
-se ralean, porque con $\rho = \SI{8}{m^{-2}}$ y \num{20000} pasos guardarlos
-todos ocupa unos \SI{530}{\mega\byte}.
+El trabajo se divide en módulos independientes comunicados por archivos de
+texto, como exige la consigna: el motor de simulación, en C++, que únicamente
+integra la dinámica y escribe estados; una etapa de análisis que calcula los
+observables \textbf{después} de simular, leyendo esos archivos; y el módulo de
+animación y figuras, en Python. El motor escribe \texttt{static.txt}
+(parámetros de la corrida) y \texttt{dynamic.txt} (por cuadro, una línea con
+$t$ y luego $N$ líneas \texttt{x y theta}); el comando de post-procesamiento
+\texttt{analyse} lee ambos y escribe \texttt{observables.txt} (una línea
+\texttt{t va S} por cuadro). Los cuadros de posiciones de las corridas para
+animación se ralean, porque con $\rho = \SI{8}{m^{-2}}$ y \num{20000} pasos
+guardarlos todos ocupa unos \SI{530}{\mega\byte}; en el barrido, donde guardar
+los estados de las \num{5040} corridas ocuparía cientos de gigabytes, cada
+corrida escribe sus estados en un archivo temporal que la etapa de análisis lee
+apenas termina la simulación y borra después de calcular la serie de
+observables.
 
 Cada paso consta de tres etapas: \textbf{(i)} se construye la lista
 $\mathcal{N}_i$ de todas las partículas mediante el CIM; \textbf{(ii)} se evalúa
@@ -241,7 +246,8 @@ celdas y cada partícula se compara únicamente contra las de su celda y las och
 adyacentes; para que ese vecindario alcance debe cumplirse $L/\Mc > r_c$, lo que
 para $L = \SI{10}{m}$ y $r_c = \SI{1}{m}$ acota $\Mc \le 9$, y se emplea el
 máximo admisible. La componente gigante de la Ec.~\eqref{eq:componente} se
-obtiene por barrido en anchura sobre esas mismas listas de vecinos. Como control
+obtiene en la etapa de análisis por barrido en anchura sobre listas de vecinos
+reconstruidas con el mismo CIM a partir de los estados guardados. Como control
 de correctitud el motor implementa además una búsqueda por fuerza bruta
 $\mathcal{O}(N^2)$: con la misma semilla ambos métodos producen trayectorias
 idénticas, lo que verifica que el CIM no pierde ni duplica pares.

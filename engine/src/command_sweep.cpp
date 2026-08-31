@@ -11,9 +11,9 @@
 #include <thread>
 #include <vector>
 
+#include "analysis.hpp"
 #include "commands.hpp"
 #include "flock.hpp"
-#include "observables.hpp"
 
 namespace {
 
@@ -162,20 +162,43 @@ int runSweep(const Arguments& arguments) {
       parameters.noise = run.noise;
       parameters.seed = run.seed;
 
-      std::ofstream output(directory / run.name);
-      if (!output) {
-        throw std::invalid_argument("no se pudo escribir " + run.name);
+      // La simulacion solo escribe estados; los observables se calculan
+      // despues, leyendo ese archivo, igual que con `flock analyse`. Guardar
+      // los estados de todas las corridas ocuparia cientos de gigabytes, asi
+      // que cada corrida se analiza apenas termina y su archivo de estados se
+      // borra. Se escriben con 17 cifras (max_digits10) para que el double
+      // que se relee sea exactamente el simulado.
+      const std::filesystem::path statesPath =
+          directory / (run.name + ".estados");
+      {
+        std::ofstream states(statesPath);
+        if (!states) {
+          throw std::invalid_argument("no se pudo escribir " +
+                                      statesPath.string());
+        }
+        states << std::setprecision(17);
+        Flock flock(parameters);
+        const auto writeFrame = [&](long step) {
+          states << step << "\n";
+          for (std::size_t index = 0; index < flock.particles().size();
+               ++index) {
+            states << flock.particles()[index].x << " "
+                   << flock.particles()[index].y << " "
+                   << flock.angles()[index] << "\n";
+          }
+        };
+        writeFrame(0);
+        for (long step = 1; step <= steps; ++step) {
+          flock.advance();
+          writeFrame(step);
+        }
       }
-      output << std::setprecision(10);
 
-      Flock flock(parameters);
-      output << 0 << " " << polarization(flock.angles()) << " "
-             << largestClusterFraction(flock.neighbors()) << "\n";
-      for (long step = 1; step <= steps; ++step) {
-        flock.advance();
-        output << step << " " << polarization(flock.angles()) << " "
-               << largestClusterFraction(flock.neighbors()) << "\n";
-      }
+      const TrajectoryInfo info{parameters.count, parameters.side,
+                                parameters.interactionRadius};
+      analyseTrajectory(statesPath.string(), info,
+                        (directory / run.name).string());
+      std::filesystem::remove(statesPath);
 
       const std::size_t finished = ++done;
       if (finished % 10 == 0 || finished == runs.size()) {

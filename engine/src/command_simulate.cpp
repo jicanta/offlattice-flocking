@@ -5,7 +5,6 @@
 #include "commands.hpp"
 #include "flock.hpp"
 #include "io.hpp"
-#include "observables.hpp"
 
 int runSimulate(const Arguments& arguments) {
   FlockParameters parameters;
@@ -38,29 +37,25 @@ int runSimulate(const Arguments& arguments) {
     throw std::invalid_argument("save-every debe ser mayor que cero");
   }
 
-  // --dir agrupa los tres archivos de la corrida en una carpeta, que es como
-  // los consume el modulo de animacion (data/runs/<caso>/).
+  // --dir agrupa los archivos de la corrida en una carpeta, que es como los
+  // consumen la animacion y `flock analyse` (data/runs/<caso>/). La simulacion
+  // solo escribe estados: los observables se calculan despues, leyendo estos
+  // archivos, con `flock analyse`.
   OutputPaths paths{arguments.text("static", "../data/static.txt"),
-                    arguments.text("dynamic", "../data/dynamic.txt"),
-                    arguments.text("out", "../data/observables.txt")};
+                    arguments.text("dynamic", "../data/dynamic.txt")};
   if (arguments.has("dir")) {
     const std::filesystem::path directory = arguments.text("dir", "");
     std::filesystem::create_directories(directory);
     paths = {(directory / "static.txt").string(),
-             (directory / "dynamic.txt").string(),
-             (directory / "observables.txt").string()};
+             (directory / "dynamic.txt").string()};
   }
 
   Flock flock(parameters);
   TrajectoryWriter writer(paths, parameters, steps, saveEvery);
   writer.writeFrame(0, flock.particles(), flock.angles());
-  writer.writeObservable(0, polarization(flock.angles()),
-                         largestClusterFraction(flock.neighbors()));
 
   for (long step = 1; step <= steps; ++step) {
     flock.advance();
-    writer.writeObservable(step, polarization(flock.angles()),
-                           largestClusterFraction(flock.neighbors()));
     if (step % saveEvery == 0) {
       writer.writeFrame(step, flock.particles(), flock.angles());
     }
@@ -80,14 +75,11 @@ int runSimulate(const Arguments& arguments) {
               << ")\n";
   }
   std::cout << "pasos: " << steps << "\n"
-            << "va final: " << polarization(flock.angles()) << "\n"
-            << "S final: " << largestClusterFraction(flock.neighbors()) << "\n"
             << "busqueda de vecinos: " << flock.neighborMilliseconds()
             << " ms en " << flock.searches() << " llamadas ("
             << flock.neighborMilliseconds() / flock.searches()
             << " ms por llamada)\n"
             << "estatico: " << paths.staticPath << "\n"
-            << "dinamico: " << paths.dynamicPath << "\n"
-            << "observable: " << paths.observablePath << "\n";
+            << "dinamico: " << paths.dynamicPath << "\n";
   return 0;
 }

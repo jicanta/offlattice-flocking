@@ -33,7 +33,6 @@ TrajectoryWriter::TrajectoryWriter(const OutputPaths& paths,
                << "seed " << parameters.seed << "\n";
 
   dynamic_ = openForWriting(paths.dynamicPath);
-  observable_ = openForWriting(paths.observablePath);
 }
 
 void TrajectoryWriter::writeFrame(long step, const Particles& particles,
@@ -43,9 +42,4 @@ void TrajectoryWriter::writeFrame(long step, const Particles& particles,
     dynamic_ << particles[index].x << " " << particles[index].y << " "
              << angles[index] << "\n";
   }
-}
-
-void TrajectoryWriter::writeObservable(long step, double polarization,
-                                       double clusterFraction) {
-  observable_ << step << " " << polarization << " " << clusterFraction << "\n";
 }

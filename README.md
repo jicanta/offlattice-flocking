@@ -8,8 +8,8 @@ Method.
 tp-2/
 ├── Makefile          # todo el flujo: build, sweep, animations, bench, figures
 ├── engine/           # C++: dinámica, CIM, fuerza bruta, timing
-│   ├── include/      # flock, observables, neighbor_search, geometry, io…
-│   └── src/          # main + un archivo por comando (simulate, sweep, bench)
+│   ├── include/      # flock, neighbor_search, geometry, io, analysis…
+│   └── src/          # main + un archivo por comando (simulate, analyse, sweep, bench)
 ├── visualization/    # Python: resumen del barrido, animaciones y figuras
 ├── reference/        # tiempos del TP1 para el ítem (g)
 ├── report/           # informe y presentación en LaTeX
@@ -26,8 +26,10 @@ tp-2/
 El CIM, la geometría periódica y el parseo de argumentos se reutilizan tal cual
 del TP1, de modo que los tiempos de ambos trabajos son comparables.
 
-El límite entre C++ y el análisis posterior son archivos de texto: el motor
-escribe en `data/` y la animación y las figuras solo leen de ahí.
+El límite entre la simulación y el análisis son archivos de texto: el motor
+solo escribe estados en `data/`, y los observables `va` y `S` se calculan
+después, leyendo esos archivos (`flock analyse`); la animación y las figuras
+también leen solo de ahí.
 
 ## Parámetros por defecto
 
@@ -93,6 +95,7 @@ las figuras:
 ```bash
 cd engine && make            # binario en engine/build/flock
 ./build/flock simulate --model vicsek --rho 4 --eta 1.5 --steps 5000 --seed 1 --dir ../data/runs/prueba
+./build/flock analyse --dir ../data/runs/prueba      # va(t) y S(t) a partir de los estados
 ./build/flock sweep --rhos 2,4,8 --etas 0:5:0.25 --seeds 20 --steps 5000
 ./build/flock bench --l 20 --ms 13 --ns 100,200,400,800 --steps 200 --repeats 5
 ```
@@ -108,15 +111,18 @@ Salida:
 
 - `static.txt` — parámetros de la corrida, un `clave valor` por línea.
 - `dynamic.txt` — por cuadro: una línea con `t` y luego `N` líneas `x y theta`.
-- `observables.txt` — una línea `t va S` por paso.
+- `observables.txt` — una línea `t va S` por cuadro; lo escribe `analyse`
+  leyendo los dos anteriores, no la simulación.
 - `data/sweep/` — una serie `t va S` por corrida, más `index.txt` con una línea
   por corrida (`model rho N eta seed steps L rc v dt archivo`).
 - `data/bench/bench_l20.txt` — una línea por medición: `método N M L rc pasos
   repetición ms_totales ms_por_búsqueda`.
 
-`--save-every k` ralea únicamente los cuadros de posiciones: los observables se
-escriben en todos los pasos. `sweep` no guarda posiciones: las animaciones
-salen de corridas puntuales de `simulate --dir`.
+`--save-every k` ralea los cuadros de `dynamic.txt`. `sweep` simula cada
+corrida guardando sus estados en un archivo temporal, los analiza recién
+después (misma etapa que `analyse`) y los borra: guardar los estados de las
+5040 corridas ocuparía cientos de gigabytes. Las animaciones salen de corridas
+puntuales de `simulate --dir`.
 
 ## Figuras
 

@@ -13,6 +13,8 @@ void printUsage() {
       << "            [--steps 1000] [--save-every 1] [--seed 1]\n"
       << "            [--method cim|brute] [--m <M>] [--voter-strict]\n"
       << "            [--dir <carpeta>] [--static ../data/static.txt]\n"
+      << "            [--dynamic ../data/dynamic.txt]\n\n"
+      << "  analyse   [--dir <carpeta>] [--static ../data/static.txt]\n"
       << "            [--dynamic ../data/dynamic.txt] [--out ../data/observables.txt]\n\n"
       << "  sweep     [--models vicsek,voter] [--rhos 2,4,8]\n"
       << "            [--etas 0:5:0.25] [--seeds 5] [--seed 1]\n"
@@ -22,12 +24,14 @@ void printUsage() {
       << "  bench     [--ns 100,200,400,800,1600,3200] [--ms <lista de M>]\n"
       << "            [--steps 200] [--repeats 3] [--no-brute] [--l 10]\n"
       << "            [--rc 1] [--eta 1.5] [--out ../data/bench.txt]\n\n"
-      << "  --dir escribe static.txt, dynamic.txt y observables.txt en esa carpeta.\n"
-      << "  --n tiene prioridad sobre --rho. --m por defecto usa el maximo\n"
-      << "  admitido. --save-every solo ralea los cuadros de posiciones: los\n"
-      << "  observables se escriben en todos los pasos. --voter-strict excluye\n"
-      << "  a la particula del sorteo del modelo de votante. sweep no guarda\n"
-      << "  posiciones: solo la serie temporal de va y S por corrida.\n";
+      << "  simulate solo escribe estados (static.txt y dynamic.txt); los\n"
+      << "  observables va y S se calculan despues con analyse, que lee esos\n"
+      << "  archivos y escribe la serie \"t va S\". sweep hace lo mismo corrida\n"
+      << "  por corrida (simula, analiza los estados y los borra) y guarda una\n"
+      << "  serie temporal por corrida. --n tiene prioridad sobre --rho. --m\n"
+      << "  por defecto usa el maximo admitido. --save-every ralea los cuadros\n"
+      << "  de dynamic.txt. --voter-strict excluye a la particula del sorteo\n"
+      << "  del modelo de votante.\n";
 }
 
 }  // namespace
@@ -37,6 +41,9 @@ int main(int argc, char** argv) {
     const Arguments arguments(argc, argv);
     if (arguments.command() == "simulate") {
       return runSimulate(arguments);
+    }
+    if (arguments.command() == "analyse") {
+      return runAnalyse(arguments);
     }
     if (arguments.command() == "sweep") {
       return runSweep(arguments);
