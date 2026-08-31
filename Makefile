@@ -8,6 +8,7 @@
 #   make figures      todas las figuras del informe
 #   make figuras-diapositivas   las mismas, con tipografia de presentacion
 #   make all          sweep + clusters + animations + bench + figures
+#   make ayudamemoria el guion del presentador (no se entrega)
 #   make entregables  los tres archivos del campus, con los nombres del enunciado
 #
 # Las variables de abajo se pueden pisar: make sweep SEEDS=30 ETAS=0:5:0.5
@@ -53,7 +54,7 @@ CSTEPS  ?= 20000
 
 .PHONY: all build sweep clusters animations bench summary figures cluster-figures \
         mixed-figures report-figures figuras-diapositivas clean-figures \
-        entrega documentos entregables
+        entrega documentos ayudamemoria entregables
 
 all: sweep clusters animations bench figures
 
@@ -231,6 +232,14 @@ entrega:
 documentos:
 	$(TEXC) report/informe.tex --outdir $(DOCS)
 	$(TEXC) report/presentacion.tex --outdir $(DOCS)
+
+# Guion de apoyo para quien expone. Queda fuera de 'entregables': la consigna
+# pide presentacion, codigo e informe, y nada mas. Reune el texto que se saco de
+# las diapositivas para cumplir con GuiaPresentaciones.pdf (1.6), que pide poco
+# texto y sin parrafos.
+ayudamemoria:
+	$(TEXC) report/ayudamemoria.tex --outdir $(DOCS)
+	@echo "  $(DOCS)/ayudamemoria.pdf"
 
 # Los tres archivos que se suben al campus, con los nombres que pide el
 # enunciado: informe y presentacion en pdf, y el codigo fuente en zip.

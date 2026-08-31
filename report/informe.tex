@@ -345,12 +345,20 @@ el modelo de votante esa fluctuación es la característica dominante del
 estacionario (Sección~\ref{sec:votante}). Para los tiempos de ejecución
 (Sección~\ref{sec:tiempos}) la barra es el desvío entre repeticiones.
 
-Con \num{5000} pasos el criterio encuentra el estacionario en los \num{126} casos
-del barrido principal; al repetir el caso más lento con \num{20000} pasos la
+Con \num{5000} pasos el criterio determina \teq{} en los \num{126} casos del
+barrido principal. Como control adicional se compara la media de la curva
+promedio en el tercer y en el cuarto cuarto de la corrida: en \num{124} casos
+difieren menos que dos desvíos entre bloques de \SI{50}{s}, y en los dos
+restantes ---$\rho = \SI{2}{m^{-2}}$, $\eta = \SI{2.5}{rad}$ y \SI{3.75}{rad},
+en plena transición--- la diferencia es de \num{0.03}, es decir
+$0{,}3\,\sigma_{\va}$, un orden por debajo de la barra que se reporta, por lo
+que se los conserva. Al repetir el caso más lento con \num{20000} pasos la
 diferencia máxima punto a punto es \num{0.22}$\,\sigma_{\va}$ y
 \num{0.10}$\,\sigma_S$. El barrido extendido sí necesita corridas largas: a
 $\rho \le 1/\pi$ los encuentros son mucho más raros y el transitorio de agregación
-se alarga en la misma proporción, con \teq{} de hasta \SI{3.65e3}{s}.
+se alarga en la misma proporción, con \teq{} de hasta \SI{5.6e3}{s} en los casos
+con ruido y de hasta \SI{1.96e4}{s} en $\eta = 0$, donde la agregación no se
+detiene hasta que todo el sistema forma un único grupo.
 
 \begin{table}[!htb]
     \centering
@@ -482,7 +490,7 @@ y \ref{sec:vaS}.
 
 \begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.70\textwidth]{b_evolucion_temporal/va_S_vs_t_vicsek_rho4_eta2_M20_lado.png}
+    \includegraphics[width=0.66\textwidth]{b_evolucion_temporal/va_S_vs_t_vicsek_rho4_eta2_M20_lado.png}
     \caption{Evolución temporal de \va{} (izquierda) y $S$ (derecha) para el
     modelo estándar con $\rho = \SI{4}{m^{-2}}$ ($N = 400$) y
     $\eta = \SI{2}{rad}$. Gris: las $M = 20$ realizaciones; azul: su promedio;
@@ -495,7 +503,7 @@ y \ref{sec:vaS}.
 
 \begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.70\textwidth]{b_evolucion_temporal/va_S_vs_t_vicsek_rho4_etas0.5-2-5_semilla1_lado.png}
+    \includegraphics[width=0.66\textwidth]{b_evolucion_temporal/va_S_vs_t_vicsek_rho4_etas0.5-2-5_semilla1_lado.png}
     \caption{Evolución temporal de \va{} y $S$ para el modelo estándar con
     $\rho = \SI{4}{m^{-2}}$ y tres ruidos, con \textbf{una única realización}
     (semilla 1) por curva. Punteadas verticales: \teq; rayadas horizontales:
@@ -559,7 +567,7 @@ Ec.~\eqref{eq:piso} (\num{0.0627}, \num{0.0443} y \num{0.0313}) dentro del
 
 \begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.70\textwidth]{f_votante/va_S_vs_t_voter_rho4_etas0.5-2-5_semilla1_lado.png}
+    \includegraphics[width=0.66\textwidth]{f_votante/va_S_vs_t_voter_rho4_etas0.5-2-5_semilla1_lado.png}
     \caption{Evolución temporal de \va{} y $S$ para el \textbf{modelo de votante}
     con $\rho = \SI{4}{m^{-2}}$ y los mismos tres ruidos, condiciones fijas y
     convención de la Fig.~\ref{fig:temporal_etas}.}
@@ -585,7 +593,7 @@ Ec.~\eqref{eq:piso} (\num{0.0627}, \num{0.0443} y \num{0.0313}) dentro del
     $v = \SI{0.03}{m/s}$, $\Delta t = \SI{1}{s}$, \SI{5e3}{s} por corrida y
     $M = 20$ por punto; barra de error $\sigma_{\va}$ de la
     Ec.~\eqref{eq:promedio}. Nótese el signo opuesto del efecto de la densidad
-    entre \textbf{(a)} y \textbf{(c)}.}
+    entre \textbf{(a)} y \textbf{(c)}. Las líneas que unen los puntos son sólo una guía para el ojo.}
     \label{fig:va_eta}
 \end{figure}
 
@@ -602,7 +610,7 @@ informativo, el estudio de clusters se extiende a las densidades
 \begin{equation}
     \rho_n = \frac{1}{n\,\pi\,r_c^2}, \quad n = 1,\,2,\,3
     \quad \Longrightarrow \quad
-    \langle k \rangle = \rho_n\,\pi r_c^2 = 1/n,
+    \langle k \rangle = \rho_n\,\pi r_c^2 = 1/n.
     \label{eq:densidades_bajas}
 \end{equation}
 
@@ -617,8 +625,9 @@ $S \approx 0{,}15$ y crece hasta estabilizarse. Ese crecimiento es la agregació
 progresiva: dos partículas que se encuentran se alinean, y al alinearse dejan de
 separarse, de modo que los grupos se fusionan y no vuelven a romperse salvo por
 acción del ruido. El estacionario es el equilibrio entre esa agregación y la
-fragmentación que induce $\eta$, y \teq{} llega a \SI{3.65e3}{s}, lo que
-justifica las corridas de \SI{2e4}{s}.
+fragmentación que induce $\eta$, y \teq{} llega a \SI{3.65e3}{s} en el caso
+$\eta = \SI{2}{rad}$ de la Fig.~\ref{fig:temporal_baja} ---y a \SI{5.6e3}{s}
+en otros puntos del barrido---, lo que justifica las corridas de \SI{2e4}{s}.
 
 \begin{figure}[!htb]
     \centering
@@ -640,7 +649,7 @@ justifica las corridas de \SI{2e4}{s}.
 
 \begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.70\textwidth]{d_clusters/va_S_vs_t_vicsek_rho1pi_etas0.5-2-5_promedioM20_lado.png}
+    \includegraphics[width=0.66\textwidth]{d_clusters/va_S_vs_t_vicsek_rho1pi_etas0.5-2-5_promedioM20_lado.png}
     \caption{Curvas promedio sobre $M = 20$ realizaciones de $\va(t)$ y $S(t)$ para
     el modelo estándar a $\rho = 1/\pi\ \si{m^{-2}}$ ($N = 32$) y los tres ruidos
     de la Fig.~\ref{fig:cuadros_baja}, sobre corridas de \SI{2e4}{s}. Punteadas
@@ -675,11 +684,11 @@ atenúa el ruido.
 
 \begin{figure}[!htb]
     \centering
-    \begin{minipage}{0.375\textwidth}\centering
+    \begin{minipage}{0.345\textwidth}\centering
         \includegraphics[width=\linewidth]{d_clusters/S_vs_eta_vicsek_rho8-2-1pi-1-3pi_M20.png}\\
         {\footnotesize\textbf{(a)} modelo estándar}
     \end{minipage}\hfill
-    \begin{minipage}{0.375\textwidth}\centering
+    \begin{minipage}{0.345\textwidth}\centering
         \includegraphics[width=\linewidth]{d_clusters/S_vs_eta_voter_rho8-2-1pi-1-3pi_M20.png}\\
         {\footnotesize\textbf{(b)} modelo de votante}
     \end{minipage}
@@ -689,7 +698,7 @@ atenúa el ruido.
     contorno periódico, $r_c = \SI{1}{m}$, $v = \SI{0.03}{m/s}$,
     $\Delta t = \SI{1}{s}$, $M = 20$ por punto; \SI{5e3}{s} por corrida si
     $\rho \ge \SI{2}{m^{-2}}$ y \SI{2e4}{s} si $\rho < \SI{1}{m^{-2}}$. Barra:
-    $\sigma_S$ de la Ec.~\eqref{eq:promedio}.}
+    $\sigma_S$ de la Ec.~\eqref{eq:promedio}. Las líneas que unen los puntos son sólo una guía para el ojo.}
     \label{fig:S_eta}
 \end{figure}
 
@@ -729,18 +738,19 @@ leerse con más precisión que la que indican sus barras.
 
 \begin{figure}[!htb]
     \centering
-    \begin{minipage}{0.375\textwidth}\centering
+    \begin{minipage}{0.345\textwidth}\centering
         \includegraphics[width=\linewidth]{e_va_vs_S/va_vs_S_vicsek_rho8-2-1pi-1-3pi_M20.png}\\
         {\footnotesize\textbf{(a)} modelo estándar}
     \end{minipage}\hfill
-    \begin{minipage}{0.375\textwidth}\centering
+    \begin{minipage}{0.345\textwidth}\centering
         \includegraphics[width=\linewidth]{e_va_vs_S/va_vs_S_voter_rho8-2-1pi-1-3pi_M20.png}\\
         {\footnotesize\textbf{(b)} modelo de votante}
     \end{minipage}
     \caption{Polarización \va{} en función de la fracción $S$ en la componente
     gigante, en el estado estacionario. Cada punto es un valor de $\eta$ del
     barrido; barras: $\sigma_S$ y $\sigma_{\va}$ de la Ec.~\eqref{eq:promedio}.
-    Mismos parámetros y duraciones que la Fig.~\ref{fig:S_eta}.}
+    Mismos parámetros y duraciones que la Fig.~\ref{fig:S_eta}. Las líneas que
+    unen los puntos, en orden de $\eta$, son sólo una guía para el ojo.}
     \label{fig:va_S}
 \end{figure}
 
@@ -763,11 +773,11 @@ descargado para que la comparación tenga sentido.
 
 \begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.38\textwidth]{g_tiempos_cim/tiempo_busqueda_vs_N_L20_M13_cim_bruta_tp1_log.png}
+    \includegraphics[width=0.34\textwidth]{g_tiempos_cim/tiempo_busqueda_vs_N_L20_M13_cim_bruta_tp1_log.png}
     \caption{Tiempo por búsqueda de vecinos en función de $N$, en ejes
     logarítmicos, con $L = \SI{20}{m}$, $r_c = \SI{1}{m}$ y $\Mc = 13$ ---la caja
     del Trabajo Práctico 1---, \SI{200}{s} por corrida y \num{5} repeticiones por
-    punto sobre un equipo descargado. Barras de error: desvío entre repeticiones.}
+    punto sobre un equipo descargado. Barras de error: desvío entre repeticiones. Las líneas que unen los puntos son sólo una guía para el ojo.}
     \label{fig:tiempos}
 \end{figure}
 
