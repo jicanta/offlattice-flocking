@@ -93,6 +93,10 @@ def new_figure():
     elif SIDE_BY_SIDE:
         size = (13.4, 4.8) if common.STYLE == "diapositiva" else (11.0, 3.3)
         figure, panels = plt.subplots(1, 2, figsize=size)
+        if common.STYLE == "diapositiva":
+            # Con la tipografia grande el rotulo del eje y del panel derecho
+            # se mete en el panel izquierdo si queda el espaciado por defecto.
+            figure.subplots_adjust(wspace=0.34)
         for axes in panels:
             axes.set_xlabel(common.AXIS_TIME)
     else:

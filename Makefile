@@ -151,12 +151,12 @@ mixed-figures:
 # --------------------------------------------------------------------------
 
 # Ruidos de la figura de evolucion temporal del informe: ordenado, transicion
-# y desorden, una realizacion por curva. En las diapositivas la evolucion
-# temporal muestra UNA sola corrida por figura (eta = 2 el estandar, 0.5 el
-# votante). La densidad baja donde S recorre todo su rango.
+# y desorden, una realizacion por curva. En las diapositivas van solo las dos
+# corridas de las animaciones, ruido bajo y alto, tambien una realizacion cada
+# una.
 TRIO      ?= 0.5,2,5
+PAR       ?= 0.5,4
 TRIO_SEED ?= 1
-CRHO1     ?= 0.31831
 
 # Cuadro suelto de cada corrida animada: caso:instante. Es lo que va impreso en
 # la diapositiva, con el link a la animacion debajo.
@@ -172,8 +172,8 @@ report-figures:
 	    --seed $(TRIO_SEED) --item b --paneles lado
 	$(PY) visualization/temporal.py --model voter --rho 4 --etas $(TRIO) \
 	    --seed $(TRIO_SEED) --item f --paneles lado
-	$(PY) visualization/temporal.py --sweep $(CLUSTERS) --model vicsek --rho $(CRHO1) \
-	    --etas $(TRIO) --item d --paneles lado
+	$(PY) visualization/temporal.py --sweeps $(SWEEP),$(CLUSTERS) --model vicsek --eta 2 \
+	    --rhos $(TEMPORAL_RHOS) --item d --paneles lado
 	@for spec in $(FRAMES); do \
 	    $(PY) visualization/animate.py --run $(RUNS)/$${spec%%:*} \
 	        --snapshots $${spec#*:} --columns 1 \
@@ -185,28 +185,20 @@ report-figures:
 # reducida para entrar en un slide eso no se cumple, asi que se genera un juego
 # aparte con tipografia mas grande y los paneles lado a lado, en 16:9.
 #
-# La presentacion muestra, por regla, las animaciones de una configuracion de
-# ruido bajo y una de alto; --resaltar rodea con un aro los puntos del barrido
-# que corresponden a esas corridas. Las comparaciones entre reglas van en una
-# sola figura (item f): va contra eta a rho = 4, y S contra eta y va contra S a
-# rho = 1/pi, que es donde S recorre todo su rango.
-RESALTA_RHO4 := vicsek:4:0.5,vicsek:4:4,voter:4:0.5,voter:4:4
-RESALTA_1PI  := vicsek:0.31831:0.5,vicsek:0.31831:5
+# Las comparaciones entre reglas van en una sola figura (item f): va contra
+# eta a rho = 4, y S contra eta y va contra S a rho = 1/pi, que es donde S
+# recorre todo su rango.
 
 figuras-diapositivas:
-	$(PY) visualization/curves.py --items c --figures $(SLIDES) --estilo diapositiva \
-	    --resaltar $(RESALTA_RHO4)
+	$(PY) visualization/curves.py --items c --figures $(SLIDES) --estilo diapositiva
 	$(PY) visualization/curves.py --items c,f --pares --rhos 4 --figures $(SLIDES) \
 	    --estilo diapositiva
 	$(PY) visualization/curves.py --sweeps $(SWEEP),$(CLUSTERS) --rhos 0.31831 \
-	    --items d,e,f --pares --figures $(SLIDES) --estilo diapositiva \
-	    --resaltar $(RESALTA_1PI)
+	    --items d,e,f --pares --figures $(SLIDES) --estilo diapositiva
 	-$(PY) visualization/bench.py --log --figures $(SLIDES) --estilo diapositiva
-	$(PY) visualization/temporal.py --model vicsek --rho 4 --eta 2 --item b \
-	    --figures $(SLIDES) --estilo diapositiva
-	$(PY) visualization/temporal.py --model vicsek --rho 4 --etas 2 \
+	$(PY) visualization/temporal.py --model vicsek --rho 4 --etas $(PAR) \
 	    --seed $(TRIO_SEED) --item b --figures $(SLIDES) --estilo diapositiva
-	$(PY) visualization/temporal.py --model voter --rho 4 --etas 0.5 \
+	$(PY) visualization/temporal.py --model voter --rho 4 --etas $(PAR) \
 	    --seed $(TRIO_SEED) --item f --figures $(SLIDES) --estilo diapositiva
 	$(PY) visualization/temporal.py --sweeps $(SWEEP),$(CLUSTERS) --model vicsek --eta 2 \
 	    --rhos $(TEMPORAL_RHOS) --item d --figures $(SLIDES) --estilo diapositiva

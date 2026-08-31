@@ -325,9 +325,10 @@ fluctuación temporal, que en el votante es lo dominante
 
 Con \num{5000} pasos el criterio encuentra \teq{} en los \num{126} casos del
 barrido principal. Como control se compara la media de la curva promedio en el
-tercer y en el cuarto cuarto de la corrida: en \num{124} casos difieren menos
-que dos desvíos, y en los dos restantes, en plena transición, la diferencia es
-$0{,}3\,\sigma_{\va}$, un orden por debajo de la barra reportada. El barrido
+tercer y en el cuarto cuarto de la corrida: la mayor diferencia, en
+$\rho = \SI{2}{m^{-2}}$ con $\eta = \SI{2.5}{rad}$ y \SI{3.75}{rad}, en plena
+transición, es de \num{0.03}, o sea $0{,}3\,\sigma_{\va}$, un orden por debajo
+de la barra reportada. El barrido
 extendido sí necesita corridas de \SI{2e4}{s}: a $\rho \le 1/\pi$ los
 encuentros son raros, el transitorio de agregación se alarga y \teq{} llega a
 \SI{5.6e3}{s} con ruido y a \SI{1.96e4}{s} en $\eta = 0$.
@@ -569,8 +570,10 @@ es decir un vecino promedio por partícula o menos: el grafo arranca
 fragmentado, con una componente gigante inicial del 14 al
 \SI{18}{\percent} de las partículas. La Fig.~\ref{fig:cuadros_baja} muestra el
 contraste que produce el ruido a esa densidad y la
-Fig.~\ref{fig:temporal_baja} la evolución: ahora $S(t)$ tiene un transitorio
-propio, que parte de $S \approx 0{,}15$ y crece por agregación. Dos partículas
+Fig.~\ref{fig:temporal_baja} compara la evolución de $S(t)$ a
+$\eta = \SI{2}{rad}$ para las cinco densidades: con las de la consigna $S$
+vale 1 desde el primer paso, mientras que a $1/\pi$ y $1/3\pi$ tiene un
+transitorio propio, que parte de $S \approx 0{,}15$ y crece por agregación. Dos partículas
 que se cruzan se alinean y dejan de separarse, los grupos se fusionan y sólo el
 ruido los rompe; el estacionario es el equilibrio entre ambas cosas. \teq{}
 llega a \SI{3.65e3}{s} en la Fig.~\ref{fig:temporal_baja} y a \SI{5.6e3}{s} en
@@ -595,12 +598,13 @@ otros puntos del barrido, lo que justifica las corridas de \SI{2e4}{s}.
 
 \begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.85\textwidth]{d_clusters/va_S_vs_t_vicsek_rho1pi_etas0.5-2-5_promedioM20_lado.png}
+    \includegraphics[width=0.85\textwidth]{d_clusters/va_S_vs_t_vicsek_eta2_rhos8-4-2-1pi-1-3pi_promedioM20_lado.png}
     \caption{Curvas promedio sobre $M = 20$ realizaciones de $\va(t)$ y $S(t)$
-    para el modelo estándar a $\rho = 1/\pi\ \si{m^{-2}}$ ($N = 32$), corridas
-    de \SI{2e4}{s}. Punteadas verticales: \teq; rayadas horizontales: promedio
-    en el estacionario. A diferencia de la Fig.~\ref{fig:temporal_etas}, aquí
-    $S$ tiene transitorio propio.}
+    para el modelo estándar con $\eta = \SI{2}{rad}$ y las cinco densidades:
+    las tres de la consigna (corridas de \SI{5e3}{s}) y dos del barrido
+    extendido (\SI{2e4}{s}). Punteadas verticales: \teq; rayadas horizontales:
+    promedio en el estacionario. Con $\rho \ge \SI{2}{m^{-2}}$, $S$ vale 1
+    desde el inicio; a $1/\pi$ y $1/3\pi$ tiene transitorio propio.}
     \label{fig:temporal_baja}
 \end{figure}
 
