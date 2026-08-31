@@ -86,15 +86,17 @@
     Introducción (3--4)      & sistema real y modelo matemático        & \SI{2}{min}\\
     Implementación (6--7)    & arquitectura y paso de simulación       & \SI{1.5}{min}\\
     Simulaciones (9--11)     & parámetros, observables, criterio de \teq & \SI{2}{min}\\
-    Resultados (13--24)      & estándar, votante, clusters, tiempos    & \SI{6.5}{min}\\
+    Resultados (13--24)      & por regla: data y puntos; comparaciones; tiempos & \SI{6.5}{min}\\
     Conclusiones (26)        &                                          & \SI{1}{min}\\
 \end{tabular}}
 \par\vspace{0.4em}
 {\small Las diapositivas \num{2}, \num{5}, \num{8}, \num{12} y \num{25} son
-separadores de sección: se pasan sin hablar. Las \num{12} diapositivas de
-resultados promedian \SI{30}{s}; las del votante que repiten una figura del
-estándar (15, 17, 21, 23) van más rápido porque ya se explicó qué se mira, y
-eso libera tiempo para las de estándar.}
+separadores de sección: se pasan sin hablar. Los resultados van \textbf{por
+regla}: primero la data del estándar (animaciones de ruido bajo y alto, la
+evolución temporal) y los puntos del barrido que corresponden a esas corridas
+---los aros---, después lo mismo para el votante, y recién entonces las
+comparaciones entre reglas, cada una en una única diapositiva. Las del votante
+(16--18) repiten el formato del estándar y van más rápido.}
 \end{tcolorbox}
 
 \vspace{0.6em}
@@ -118,11 +120,10 @@ está acá abajo.}
     \item \decir Lo llamativo es que la interacción es \emph{puramente local}
           ---no hay líder ni campo externo que fije una dirección--- y aun así
           el conjunto adopta espontáneamente una dirección común.
-    \item \decir Hay un único parámetro de control, el ruido $\eta$, y el
-          sistema exhibe una transición continua orden--desorden. Es un sistema
-          fuera del equilibrio.
-    \item \preg El cuadro es una corrida nuestra a $\rho = \SI{4}{m^{-2}}$,
-          $\eta = \SI{0.5}{rad}$, en $t = \SI{3e3}{s}$.
+    \item \decir Adelantar de palabra (la diapositiva no lo muestra): el modelo
+          tiene un único parámetro de control, el ruido, y exhibe una
+          transición continua orden--desorden. Es un sistema fuera del
+          equilibrio.
 \end{notas}
 
 \diapo{4}{Modelo matemático}{\SI{75}{s}}
@@ -131,11 +132,12 @@ está acá abajo.}
           único grado de libertad es la dirección $\theta_i$.
     \item \decir La actualización es \emph{sincrónica}: todo lo de $t+1$ se
           calcula con el estado en $t$.
-    \item \decir Las dos ecuaciones de arriba son comunes a los dos escenarios.
-          Lo único que cambia es $\Theta_i$, la regla de interacción.
+    \item \decir Las dos ecuaciones de arriba son comunes a los dos escenarios;
+          lo único que cambia entre ellos es $\Theta_i$, la regla de
+          interacción.
     \item \decir El \textbf{estándar} promedia las direcciones de todo el
-          entorno; el \textbf{votante} elige uno solo al azar y lo copia. Ésa es
-          toda la diferencia, y produce comportamientos muy distintos.
+          entorno; el \textbf{votante} elige un vecino al azar y lo copia. Ésa
+          es toda la diferencia, y produce comportamientos muy distintos.
     \item \decir La propia partícula entra en el promedio y en el sorteo, de
           modo que una partícula aislada conserva su dirección.
     \item \nums $\eta$ en radianes, $\Delta\theta_i$ uniforme en
@@ -150,21 +152,25 @@ está acá abajo.}
 {\large\bfseries\color{azul} Implementación}
 \vspace{-0.2em}
 
-\diapo{6}{Arquitectura del motor}{\SI{30}{s}}
+\diapo{6}{Arquitectura}{\SI{40}{s}}
 \begin{notas}
-    \item \decir El motor de simulación está en C++ y el post-proceso en
-          Python; se comunican por archivos de texto.
+    \item \decir El motor de simulación, en C++, sólo integra la dinámica y
+          escribe \emph{estados}: posiciones y ángulos, paso a paso.
+    \item \decir Los observables \textbf{no} se calculan durante la
+          simulación: los calcula \emph{después} una etapa de post-procesamiento
+          (\texttt{analyse}) que lee los estados guardados y escribe la serie
+          $t$, \va, $S$. La animación y las figuras, en Python, también leen
+          sólo archivos.
     \item \decir Ésa es la separación que pide la consigna: el motor nunca
-          dibuja y el post-proceso nunca simula, así la velocidad de
-          reproducción de la animación no queda atada a la de la simulación.
-    \item \decir Los archivos no se detallan en la diapositiva porque la guía
-          pide dejar fuera el formato de entrada/salida (2.2), pero conviene
-          nombrarlos: \texttt{static.txt} lleva los parámetros de la corrida,
-          \texttt{dynamic.txt} las posiciones y ángulos paso a paso, y
-          \texttt{observables.txt} una fila \texttt{t va S} por paso.
-    \item \preg Se separan \texttt{dynamic} y \texttt{observables} porque los
-          barridos escalares no necesitan las posiciones: para las \num{5040}
-          corridas se escribe sólo el segundo archivo.
+          dibuja ni analiza, y el análisis nunca simula.
+    \item \decir Para $S$ el análisis reconstruye las listas de vecinos con el
+          mismo CIM del motor, a partir de las posiciones guardadas.
+    \item \preg \emph{¿Guardan los estados de las \num{5040} corridas del
+          barrido?} No: ocuparían cientos de gigabytes. Cada corrida escribe
+          sus estados en un archivo temporal, la etapa de análisis lo lee
+          apenas termina la simulación, escribe la serie de observables y el
+          temporal se borra. El cálculo sigue siendo posterior a la
+          simulación y pasa por el archivo.
 \end{notas}
 
 \diapo{7}{El paso de simulación}{\SI{60}{s}}
@@ -188,7 +194,7 @@ está acá abajo.}
     \item \preg \emph{¿Es el mismo CIM del TP1?} Sí, es el mismo código sin
           modificar ---el archivo es idéntico---, junto con la geometría
           periódica. Eso es justamente lo que hace comparables los tiempos de
-          la diapositiva \num{22}.
+          la diapositiva \num{24}.
 \end{notas}
 
 % =========================================================
@@ -196,21 +202,24 @@ está acá abajo.}
 {\large\bfseries\color{azul} Simulaciones}
 \vspace{-0.2em}
 
-\diapo{9}{Sistema particular}{\SI{35}{s}}
+\diapo{9}{Sistema particular}{\SI{40}{s}}
 \begin{notas}
-    \item \decir Caja de \SI{10}{m} de lado con contorno periódico, radio de
-          interacción \SI{1}{m}, rapidez \SI{0.03}{m/s} y $\Delta t = \SI{1}{s}$.
-    \item \decir Barremos $\eta$ de $0$ a \SI{5}{rad} con paso \SI{0.25}{rad},
-          las tres densidades de la consigna y los dos modelos.
+    \item \decir La tabla separa los parámetros \textbf{del sistema} ---la caja,
+          el radio de interacción, la rapidez, el ruido, la densidad y la
+          regla--- de los \textbf{de la simulación}: el paso temporal y las
+          realizaciones.
+    \item \decir Barremos el ruido de $0$ a \SI{5}{rad}, las tres densidades de
+          la consigna y los dos modelos, con \num{20} realizaciones por caso.
     \item \decir Agregamos un barrido \textbf{extendido} a densidades bajas
           ---$1/\pi$, $1/2\pi$ y $1/3\pi$--- porque son las únicas para las que
           $\langle k\rangle$ cae por debajo del umbral de percolación y $S$ deja
           de estar pegado a la unidad. Se usa sólo en el estudio de clusters.
-    \item \nums $N = 200$, \num{400}, \num{800} en el barrido principal;
-          \num{32}, \num{16}, \num{11} en el extendido. \num{20} realizaciones
-          por caso (semillas \num{1} a \num{20}), \num{5040} corridas en total.
-    \item \nums Las corridas de baja densidad duran \SI{2e4}{s} en vez de
-          \SI{5e3}{s} porque el transitorio de agregación es mucho más largo.
+    \item \nums Paso del barrido de ruido: \SI{0.25}{rad} (21 valores).
+          $N = 200$, \num{400}, \num{800} en el barrido principal; \num{32},
+          \num{16}, \num{11} en el extendido. Semillas \num{1} a \num{20};
+          \num{5040} corridas en total. Duración: \SI{5e3}{s}, y \SI{2e4}{s} a
+          baja densidad porque el transitorio de agregación es mucho más largo.
+    \item \nums El CIM corre con $\Mc = 9$, el máximo admisible para esta caja.
     \item \preg Las semillas se reutilizan entre modelos: a igual $\rho$ y
           semilla, estándar y votante parten de la misma configuración inicial.
 \end{notas}
@@ -230,9 +239,8 @@ está acá abajo.}
     \item \nums Piso $\sqrt{\pi/4N}$: \num{0.0627}, \num{0.0443} y \num{0.0313}
           para $N = 200$, \num{400} y \num{800}. Medimos \num{0.064},
           \num{0.045} y \num{0.032}.
-    \item \preg La componente gigante se calcula por barrido en anchura sobre
-          las mismas listas de vecinos que ya devolvió el CIM: no cuesta nada
-          extra.
+    \item \preg Ambos se calculan en el post-procesamiento; para $S$ se usa un
+          barrido en anchura sobre listas de vecinos reconstruidas con el CIM.
 \end{notas}
 
 \diapo{11}{Del observable temporal al escalar}{\SI{45}{s}}
@@ -267,18 +275,18 @@ está acá abajo.}
 {\large\bfseries\color{azul} Resultados}
 \vspace{-0.2em}
 
-\diapo{13}{Animaciones características}{\SI{35}{s}}
+\diapo{13}{Modelo estándar: ruido bajo y ruido alto}{\SI{30}{s}}
 \begin{notas}
-    \item \decir Tres corridas con la misma densidad. Cada flecha es una
-          partícula, con origen en su posición y color según el ángulo de su
-          velocidad; la longitud es fija porque la rapidez es común a todas.
-    \item \decir Izquierda, estándar con $\eta = \SI{0.5}{rad}$: color casi
-          uniforme, todas van para el mismo lado. Centro, estándar con
-          $\eta = \SI{4}{rad}$: colores repartidos, sin dirección común.
-    \item \decir Derecha, el votante con el \emph{mismo} $\eta = \SI{0.5}{rad}$
-          que ordenaba al estándar: no hay bandada única sino \textbf{dominios}
-          de dirección que se arman y se disuelven. Ésa es la firma de copiar a
-          uno solo en vez de promediar.
+    \item \decir La data del modelo estándar: dos corridas a la misma densidad,
+          una con poco ruido y una con mucho. Cada flecha es una partícula, con
+          origen en su posición y color según el ángulo de su velocidad; la
+          longitud es fija porque la rapidez es común a todas.
+    \item \decir Izquierda, $\eta = \SI{0.5}{rad}$: color casi uniforme, todas
+          van para el mismo lado, una única bandada.
+    \item \decir Derecha, $\eta = \SI{4}{rad}$: colores repartidos, sin
+          dirección común.
+    \item \decir Estas dos configuraciones reaparecen marcadas con un aro en la
+          curva de polarización, dos diapositivas más adelante.
     \item \preg Las animaciones se generan con corridas aparte que sí guardan
           las posiciones; los barridos escalares no las guardan.
 \end{notas}
@@ -295,17 +303,45 @@ está acá abajo.}
           horizontales, el promedio en el estacionario.
     \item \decir A la derecha, $S$ se queda pegado a $1$ en las tres: a
           $\rho = \SI{4}{m^{-2}}$ el sistema está percolado desde la condición
-          inicial. Lo retomamos en clusters.
+          inicial. Lo retomamos en el estudio de clusters.
 \end{notas}
 
-\diapo{15}{Modelo de votante: evolución temporal}{\SI{25}{s}}
+\diapo{15}{Modelo estándar: polarización contra ruido}{\SI{40}{s}}
 \begin{notas}
-    \item \decir Mismos tres ruidos, misma densidad, misma semilla que la
-          anterior, ahora con el votante.
-    \item \decir Con $\eta = \SI{0.5}{rad}$, que ordenaba al estándar, el votante
-          se estabiliza en $\va \approx 0{,}3$ y oscila entre \num{0.1} y
-          \num{0.7}: la amplitud es comparable a la media. Son los dominios que
-          se vieron en la animación.
+    \item \decir Los puntos del barrido. Los \textbf{aros} marcan las dos
+          corridas que se mostraron animadas: la ordenada arriba a la
+          izquierda, la desordenada abajo a la derecha.
+    \item \decir La curva decae de forma \emph{continua} desde $\va = 1$, sin
+          salto abrupto: es la transición continua que describe Vicsek.
+    \item \decir A igual ruido, más densidad da más orden. La explicación es
+          directa: cada partícula promedia sobre
+          $\langle k\rangle = \rho\,\pi r_c^2$ vecinos, y promediar atenúa el
+          ruido como $1/\sqrt{\langle k\rangle}$.
+    \item \nums $\eta(\va = 0{,}5)$ pasa de \SI{2.9}{rad} a \SI{3.5}{rad} entre
+          $\rho = 2$ y \SI{8}{m^{-2}}. En los aros: $\va = \num{0.986(3)}$ en
+          $\eta = \SI{0.5}{rad}$ y \num{0.27(7)} en \SI{4}{rad}.
+    \item \preg La barra crece con el ruido porque en el desorden la
+          fluctuación del observable es intrínsecamente mayor, no porque haya
+          menos estadística.
+\end{notas}
+
+\diapo{16}{Modelo de votante: ruido bajo y ruido alto}{\SI{25}{s}}
+\begin{notas}
+    \item \decir La misma data para el votante, con los mismos dos ruidos.
+    \item \decir Izquierda, $\eta = \SI{0.5}{rad}$, el ruido que ordenaba al
+          estándar: acá no hay bandada única sino \textbf{dominios} de
+          dirección que se arman y se disuelven. Ésa es la firma de copiar a
+          uno solo en vez de promediar.
+    \item \decir Derecha, $\eta = \SI{4}{rad}$: desordenado, como el estándar.
+\end{notas}
+
+\diapo{17}{Modelo de votante: evolución temporal}{\SI{25}{s}}
+\begin{notas}
+    \item \decir Mismos tres ruidos, misma densidad, misma semilla que en el
+          estándar.
+    \item \decir Con $\eta = \SI{0.5}{rad}$ el votante se estabiliza en
+          $\va \approx 0{,}3$ y oscila entre \num{0.1} y \num{0.7}: la amplitud
+          es comparable a la media. Son los dominios de la animación.
     \item \decir No hay ningún mecanismo que atenúe el ruido, así que la
           fluctuación es la característica dominante del estacionario. Por eso
           la barra de error se define sobre las muestras y no sobre los
@@ -314,73 +350,62 @@ está acá abajo.}
           \num{0.986(3)} del estándar.
 \end{notas}
 
-\diapo{16}{Modelo estándar: polarización contra ruido}{\SI{40}{s}}
+\diapo{18}{Modelo de votante: polarización contra ruido}{\SI{40}{s}}
 \begin{notas}
-    \item \decir La curva decae de forma \emph{continua} desde $\va = 1$, sin
-          salto abrupto: es la transición continua que describe Vicsek.
-    \item \decir A igual ruido, más densidad da más orden. La explicación es
-          directa: cada partícula promedia sobre
-          $\langle k\rangle = \rho\,\pi r_c^2$ vecinos, y promediar atenúa el
-          ruido como $1/\sqrt{\langle k\rangle}$.
-    \item \nums $\eta(\va = 0{,}5)$ pasa de \SI{2.9}{rad} a \SI{3.5}{rad} entre
-          $\rho = 2$ y \SI{8}{m^{-2}}. En $\eta = \SI{3}{rad}$, $\va$ va de
-          \num{0.48(12)} a \num{0.62(3)}.
-    \item \preg La barra crece con el ruido porque en el desorden la
-          fluctuación del observable es intrínsecamente mayor, no porque haya
-          menos estadística.
-\end{notas}
-
-\diapo{17}{Modelo de votante: polarización contra ruido}{\SI{45}{s}}
-\begin{notas}
-    \item \decir Misma figura que la anterior, mismos ejes y los mismos tres
-          colores, ahora con el votante. Conviene ir y volver una vez entre las
-          dos diapositivas: el cambio se ve solo.
-    \item \decir Primero, la escala del eje $\eta$: el estándar tarda hasta
-          \SI{3.5}{rad} en llegar a la mitad, el votante ya cayó en
-          \SI{0.2}{rad}. Un orden de magnitud antes.
-    \item \decir Y sobre todo, \textbf{se dan vuelta los colores}. En el estándar
-          el verde ---$\rho = \SI{8}{m^{-2}}$--- va arriba y el azul
+    \item \decir Los puntos del votante, con los mismos ejes y colores que los
+          del estándar; los aros vuelven a ser las dos corridas animadas.
+    \item \decir Primero, la escala: el estándar tarda unos \SI{3}{rad} en caer
+          a la mitad, el votante ya cayó en \SI{0.3}{rad}. Un orden de
+          magnitud antes.
+    \item \decir Y sobre todo, \textbf{se dan vuelta los colores}. En el
+          estándar el verde ---$\rho = \SI{8}{m^{-2}}$--- va arriba y el azul
           ---$\rho = \SI{2}{m^{-2}}$--- abajo; en el votante es exactamente al
           revés.
     \item \decir Es decir que la densidad, que en el estándar \emph{favorece} el
           orden, en el votante lo \emph{destruye}: el efecto tiene signo
           opuesto.
-    \item \decir La razón es la regla de interacción. El estándar promedia sobre
-          $\langle k\rangle = \rho\,\pi r_c^2$ vecinos y eso atenúa el ruido como
+    \item \decir La razón es la regla. El estándar promedia sobre
+          $\langle k\rangle$ vecinos y eso atenúa el ruido como
           $1/\sqrt{\langle k\rangle}$, así que más vecinos ayudan. El votante
           copia a uno solo elegido al azar: no promedia nada, y más vecinos sólo
           significan más direcciones distintas de donde copiar.
+    \item \nums $\eta(\va = 0{,}5)$: \SI{0.4}{rad}, \SI{0.3}{rad} y
+          \SI{0.2}{rad} para $\rho = 2$, $4$ y \SI{8}{m^{-2}}.
+    \item \preg Las curvas del votante van con línea de trazos y marcador
+          hueco, y las del estándar con línea llena y marcador lleno, para que
+          no se confundan cuando se muestran juntas.
+\end{notas}
+
+\diapo{19}{Comparación: polarización contra ruido}{\SI{30}{s}}
+\begin{notas}
+    \item \decir Las dos reglas superpuestas, con el mismo sistema:
+          $\rho = \SI{4}{m^{-2}}$, mismas semillas, mismas condiciones
+          iniciales. Lo único que cambia es la regla de interacción.
+    \item \nums $\eta(\va = 0{,}5)$: \SI{3.2}{rad} del estándar contra
+          \SI{0.3}{rad} del votante, a esta densidad.
     \item \decir Un punto que sí comparten: en $\eta = 0$ los dos dan
           $\va = 1$. Sin ruido, copiar y promediar llevan al mismo consenso. Es
           una verificación cruzada de las dos implementaciones.
-    \item \nums $\eta(\va = 0{,}5)$ a $\rho = \SI{8}{m^{-2}}$: \SI{0.2}{rad} en
-          el votante contra \SI{3.5}{rad} en el estándar. A $\rho = \SI{4}{m^{-2}}$
-          (los valores del informe): \SI{0.3}{rad} contra \SI{3.2}{rad}. A
-          $\rho = 2$: \SI{0.4}{rad} contra \SI{2.9}{rad}.
-    \item \preg \emph{¿Dónde está la comparación superpuesta?} En el informe, con
-          los dos modelos en los mismos ejes a $\rho = \SI{4}{m^{-2}}$. Acá se
-          comparan estas dos diapositivas, que comparten ejes y colores.
-    \item \preg Las curvas del votante van con línea de trazos y marcador
-          hueco, y las del estándar con línea llena y marcador lleno, para que
-          no se confundan si se muestran juntas.
 \end{notas}
 
-\diapo{18}{Clusters: animaciones a baja densidad}{\SI{25}{s}}
+\diapo{20}{Baja densidad: ruido bajo y ruido alto}{\SI{30}{s}}
 \begin{notas}
-    \item \decir Con las tres densidades de la consigna el grafo de vecinos está
-          percolado siempre y $S$ no aporta información: por eso mostramos los
-          clusters a $\rho = 1/\pi$, donde hay en promedio un vecino por
-          partícula y $S$ recorre todo su rango.
+    \item \decir Para estudiar los clusters hace falta bajar la densidad: con
+          las tres de la consigna el grafo de vecinos está percolado siempre y
+          $S$ no aporta información. A $\rho = 1/\pi$ hay en promedio un vecino
+          por partícula y $S$ recorre todo su rango.
     \item \decir A la izquierda, con poco ruido, todo terminó agregado en un
-          único grupo. A la derecha, con $\eta = \SI{5}{rad}$, queda
-          fragmentado en grupos de dos o tres.
+          único grupo: $S \to 1$. A la derecha, con $\eta = \SI{5}{rad}$, queda
+          fragmentado en grupos de dos o tres: $S \simeq 0{,}2$.
+    \item \decir Estas dos configuraciones reaparecen con aros en la
+          comparación de $S$ contra el ruido.
     \item \preg \emph{¿Por qué densidades que no pide la consigna?} Porque con
           $\rho = 2$, \num{4} y \num{8} el ítem de clusters queda sin contenido:
           $S \ge 0{,}90$ en todo el barrido. Las tres pedidas están todas
           reportadas; las bajas se agregan para que $S$ tenga rango.
 \end{notas}
 
-\diapo{19}{Clusters: evolución temporal de la componente gigante}{\SI{40}{s}}
+\diapo{21}{Componente gigante: evolución temporal}{\SI{40}{s}}
 \begin{notas}
     \item \decir Ésta es la figura del ítem (d): $S(t)$ para las tres densidades
           de la consigna, más las dos bajas, todas al mismo ruido
@@ -396,7 +421,7 @@ está acá abajo.}
           y \SI{3.25e3}{s} contra \SI{200}{}--\SI{950}{s}. Por eso estas
           corridas duran \SI{2e4}{s}.
     \item \decir En el panel izquierdo se ve además que a baja densidad \va{}
-          sube \emph{junto con} $S$: adelanta el acople de la diapositiva 22.
+          sube \emph{junto con} $S$: adelanta el acople de la diapositiva 23.
     \item \nums \teq{} en $\eta = 2$: \num{200}, \num{650}, \num{950},
           \num{3650}, \SI{3250}{s} para $\rho = 8$, \num{4}, \num{2}, $1/\pi$,
           $1/3\pi$. En otros puntos del barrido bajo llega a \SI{5.6e3}{s}.
@@ -407,67 +432,47 @@ está acá abajo.}
           aunque la ventana estacionaria sea corta.
 \end{notas}
 
-\diapo{20}{Modelo estándar: componente gigante contra ruido}{\SI{35}{s}}
+\diapo{22}{Comparación: componente gigante contra ruido}{\SI{40}{s}}
 \begin{notas}
-    \item \decir $\rho = 8$ y $2$ quedan pegadas a $S = 1$: sus
-          $\langle k\rangle$ valen \num{25} y \num{6.3}, muy por encima del
-          umbral de percolación de un grafo geométrico aleatorio, que está en
-          torno a \num{4.5}.
-    \item \decir $1/\pi$ y $1/3\pi$ sí decaen de forma monótona, hasta
-          $S \simeq 0{,}2$.
-    \item \decir Lo más interesante: en $\eta = 0$ percolan igual, con
-          $\langle k\rangle$ de \num{1} y \num{0.33}. No contradice el umbral,
-          porque ése vale para un grafo \emph{aleatorio} y sin ruido las
-          posiciones dejan de serlo: la agregación es irreversible.
-    \item \decir O sea que \textbf{lo que fragmenta es el ruido, no la
-          densidad}.
-    \item \nums En $\eta = 0$: $S = \num{1.000(1)}$ y \num{0.991(40)}. Ruido de
-          media componente: \SI{2.74}{rad} y \SI{2.12}{rad}. En $\eta = 5$,
-          $S \approx 0{,}2$ son grupos de \num{6.4} y \num{2.5} partículas.
+    \item \decir Las dos reglas a $\rho = 1/\pi$; los aros son las dos corridas
+          animadas de la diapositiva 20, sobre la curva del estándar.
+    \item \decir En las dos reglas $S$ decae de forma monótona con el ruido,
+          hasta $S \simeq 0{,}2$: grupos de media docena de partículas.
+    \item \decir El votante se fragmenta \emph{antes}, por la misma razón que
+          pierde la polarización antes: copiar a un único vecino no atenúa el
+          ruido, así que los grupos se deshacen con menos.
+    \item \decir Lo más interesante: en $\eta = 0$ los dos percolan, con
+          $\langle k\rangle = 1$, muy por debajo del umbral de un grafo
+          geométrico aleatorio ($\langle k\rangle \approx 4{,}5$). No lo
+          contradice, porque sin ruido las posiciones dejan de ser aleatorias:
+          la agregación es irreversible. O sea que \textbf{lo que fragmenta es
+          el ruido, no la densidad}.
+    \item \nums Ruido de media componente: \SI{2.7}{rad} del estándar contra
+          \SI{1.2}{rad} del votante. A $1/3\pi$ (informe): \SI{2.1}{rad}
+          contra \SI{1.1}{rad}.
+    \item \preg A las densidades de la consigna esta comparación es trivial:
+          las dos reglas quedan pegadas a $S = 1$ en todo el barrido
+          ($\langle k\rangle$ entre \num{6.3} y \num{25}, siempre percolado).
 \end{notas}
 
-\diapo{21}{Modelo de votante: componente gigante contra ruido}{\SI{20}{s}}
+\diapo{23}{Comparación: polarización contra componente gigante}{\SI{40}{s}}
 \begin{notas}
-    \item \decir Mismos ejes y colores. El votante reproduce el mismo cuadro
-          ---altas pegadas a 1, bajas que decaen, $\eta = 0$ percolado--- pero se
-          fragmenta antes.
-    \item \nums Ruido de media componente a $\rho = 1/\pi$: \SI{1.19}{rad}
-          contra \SI{2.74}{rad} del estándar. A $1/3\pi$: \SI{1.13}{rad}.
-    \item \decir La razón es la misma de la polarización: copiar a un único
-          vecino no atenúa el ruido, así que los grupos se deshacen con menos.
-\end{notas}
-
-\diapo{22}{Modelo estándar: polarización contra componente gigante}{\SI{40}{s}}
-\begin{notas}
-    \item \decir Cada punto es un valor de $\eta$ del barrido, con las cuatro
-          densidades. La figura separa dos regímenes de manera nítida.
-    \item \decir A $\rho = 8$ y \SI{2}{m^{-2}} los puntos se apilan contra el
-          borde derecho: \va{} recorre casi todo $[0,1]$ mientras $S$ se queda
-          cerca de la unidad. Alineación y conectividad están \emph{desacopladas}
-          y \va{} no es función de $S$.
-    \item \decir A $1/\pi$ y $1/3\pi$ la relación es monótona creciente y las
-          dos densidades caen casi sobre la misma curva: la alineación no puede
-          propagarse más allá del grupo conexo, así que $S$ fija cuánta
-          polarización global es alcanzable.
-    \item \nums Pearson \num{0.45} y \num{0.61} contra \num{0.985} y \num{0.994}.
-    \item \preg La degeneración es explícita: para $S \approx 0{,}957$ el
-          estándar da $\va = \num{0.68}$ en $\eta = \SI{2.25}{rad}$ y
-          \num{0.11} en \SI{4.5}{rad}. Misma conectividad, polarizaciones muy
-          distintas.
-    \item \preg El corrimiento vertical entre $1/\pi$ y $1/3\pi$ es de tamaño
-          finito: en el extremo desordenado cada una satura en su propio piso
-          $\sqrt{\pi/4N}$ (\num{0.157} y \num{0.267}).
-\end{notas}
-
-\diapo{23}{Modelo de votante: polarización contra componente gigante}{\SI{20}{s}}
-\begin{notas}
-    \item \decir Mismos ejes y colores; los mismos dos regímenes.
-    \item \decir A $\rho = \SI{8}{m^{-2}}$ el Pearson es incluso \emph{negativo},
-          $-0{,}48$: confirma que la correlación residual de las densidades altas
-          no tiene significado físico.
-    \item \nums A baja densidad el acople se mantiene: \num{0.968} y
-          \num{0.987}.
-    \item \decir Conclusión de las dos: el desacople es un efecto de los
+    \item \decir Cada punto es un valor de $\eta$ del barrido, a
+          $\rho = 1/\pi$. Acá los dos observables están \emph{acoplados}: la
+          relación es monótona creciente y las dos reglas caen casi sobre la
+          misma curva.
+    \item \decir La lectura física: la alineación no puede propagarse más allá
+          del grupo conexo, así que $S$ fija cuánta polarización global es
+          alcanzable. A baja densidad, \va{} y $S$ son dos lecturas del mismo
+          proceso de agregación.
+    \item \nums Pearson \num{0.985} (estándar) y \num{0.968} (votante). A
+          $1/3\pi$: \num{0.994} y \num{0.987}.
+    \item \decir A las densidades de la consigna esto \textbf{no} pasa: $S$ se
+          queda en la unidad mientras \va{} recorre todo su rango, y \va{} no es
+          función de $S$. Pearson \num{0.45} y \num{0.61} para el estándar, y
+          hasta $-0{,}48$ para el votante a $\rho = 8$: correlación residual sin
+          significado físico.
+    \item \decir Conclusión de la comparación: el desacople es un efecto de los
           parámetros que fija la consigna, no del modelo.
 \end{notas}
 
@@ -543,6 +548,11 @@ está acá abajo.}
     \item \emph{¿Cómo saben que el CIM está bien?} Contra la fuerza bruta: con
           la misma semilla las dos producen trayectorias idénticas, así que no
           pierde ni duplica pares.
+    \item \emph{¿Dónde se calculan los observables?} Después de simular, en una
+          etapa de post-procesamiento que lee los estados guardados. En el
+          barrido, cada corrida escribe sus estados en un archivo temporal que
+          el análisis consume apenas termina la simulación; guardar los de las
+          \num{5040} corridas ocuparía cientos de gigabytes.
     \item \emph{¿Por qué agregaron densidades que no pide la consigna?} Porque
           con $\rho = 2$, \num{4} y \num{8} el grafo está percolado desde la
           condición inicial y el ítem de clusters queda sin contenido: $S \ge

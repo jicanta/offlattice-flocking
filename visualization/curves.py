@@ -44,7 +44,26 @@ def draw_against_noise(axes, points, observable, color, model, label):
     )
 
 
-def against_noise(records, models, rhos, observable, folder, name, full=False) -> None:
+# Aro alrededor de los puntos cuya corrida se muestra como animacion en la
+# presentacion: asi la diapositiva une "la data" (el cuadro animado) con el
+# punto del barrido que le corresponde. El color es el acento de los slides.
+HIGHLIGHT_COLOR = "#c55a11"
+
+
+def draw_highlights(axes, points, observable, model, rho, highlights) -> None:
+    for spec_model, spec_rho, spec_eta in highlights:
+        if spec_model != model or not common.close(spec_rho, rho):
+            continue
+        for point in points:
+            if common.close(point["eta"], spec_eta):
+                axes.scatter([point["eta"]], [point[observable]],
+                             s=240, facecolors="none",
+                             edgecolors=HIGHLIGHT_COLOR, linewidths=2.4,
+                             zorder=6)
+
+
+def against_noise(records, models, rhos, observable, folder, name, full=False,
+                  highlights=()) -> None:
     """observable contra eta; una curva por (modelo, densidad)."""
     figure, axes = plt.subplots()
     for model in models:
@@ -57,6 +76,7 @@ def against_noise(records, models, rhos, observable, folder, name, full=False) -
                      else f"{common.density_legend(rho)} · {common.MODEL_LABEL[model]}")
             color = common.density_color(rho) if len(rhos) > 1 else common.MODEL_STYLE[model]["color"]
             draw_against_noise(axes, points, observable, color, model, label)
+            draw_highlights(axes, points, observable, model, rho, highlights)
     axes.set_xlabel(common.AXIS_NOISE)
     axes.set_ylabel(common.AXIS[observable])
     # va siempre va en [0, 1]. Para S el rango util es angosto cuando todas las
@@ -126,6 +146,10 @@ def main() -> None:
     parser.add_argument("--pares", action="store_true",
                         help="ademas, la comparacion Vicsek-votante de a una densidad "
                              "por figura (item f). Es lo que hace el barrido principal.")
+    parser.add_argument("--resaltar",
+                        help="puntos a rodear con un aro en las curvas contra eta, "
+                             "como 'vicsek:4:0.5,voter:4:4' (modelo:rho:eta). Son las "
+                             "configuraciones que la presentacion muestra animadas.")
     common.add_common_arguments(parser)
     arguments = parser.parse_args()
 
@@ -155,6 +179,14 @@ def main() -> None:
     tag = f"rho{common.joined_densities(rhos)}_M{realizations}"
     figures = arguments.figures
 
+    highlights = []
+    if arguments.resaltar:
+        for piece in arguments.resaltar.split(","):
+            model, rho, eta = piece.strip().split(":")
+            if model not in common.MODEL_LABEL:
+                raise SystemExit(f"modelo desconocido en --resaltar: {model}")
+            highlights.append((model, float(rho), float(eta)))
+
     # Cada figura se dibuja en la carpeta de su item; ademas, las del votante se
     # duplican en la del item (f), que es donde el enunciado pide repetir (c),
     # (d) y (e) para la segunda regla de interaccion. Un item que no se pidio no
@@ -169,7 +201,8 @@ def main() -> None:
         for item, observable in (("c", "va"), ("d", "S")):
             for destination in destinations(item, model):
                 against_noise(records, [model], rhos, observable, destination,
-                              f"{observable}_vs_eta_{model}_{tag}.png", full=full)
+                              f"{observable}_vs_eta_{model}_{tag}.png", full=full,
+                              highlights=highlights)
         for destination in destinations("e", model):
             against_fraction(records, [model], rhos, destination,
                              f"va_vs_S_{model}_{tag}.png", full=full)
@@ -181,10 +214,12 @@ def main() -> None:
         token = common.density_number(rho)
         if "c" in items:
             against_noise(records, ["vicsek", "voter"], [rho], "va", f,
-                          f"va_vs_eta_vicsek_vs_voter_rho{token}_M{realizations}.png")
+                          f"va_vs_eta_vicsek_vs_voter_rho{token}_M{realizations}.png",
+                          highlights=highlights)
         if "d" in items:
             against_noise(records, ["vicsek", "voter"], [rho], "S", f,
-                          f"S_vs_eta_vicsek_vs_voter_rho{token}_M{realizations}.png")
+                          f"S_vs_eta_vicsek_vs_voter_rho{token}_M{realizations}.png",
+                          highlights=highlights)
         if "e" in items:
             against_fraction(records, ["vicsek", "voter"], [rho], f,
                              f"va_vs_S_vicsek_vs_voter_rho{token}_M{realizations}.png")

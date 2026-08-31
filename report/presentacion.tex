@@ -10,6 +10,12 @@
 %   * separadores de seccion sin numerar la seccion (1.13)
 %   * las animaciones van como cuadro fijo + link explicito (2.4.8)
 %
+% Estructura de los resultados, segun la devolucion de la catedra: por cada
+% regla se muestra la data (las animaciones de una configuracion de ruido bajo
+% y una de alto) y los puntos del barrido que corresponden a esas
+% configuraciones (aros en las curvas); recien despues van las comparaciones
+% entre reglas, cada una en una sola diapositiva.
+%
 % Las figuras salen de data/figuras_diapositivas/, que es el mismo analisis que
 % el del informe pero con tipografia agrandada, para que dentro de la
 % diapositiva se lean del tamano del texto de la diapositiva (1.8).
@@ -31,7 +37,7 @@
 \usepackage{siunitx}
 \sisetup{output-decimal-marker={,}, per-mode=symbol}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc,shapes.multipart}
 
 % ---------------------------------------------------------
 % Tema
@@ -80,7 +86,6 @@
 
 \newcommand{\va}{\ensuremath{v_a}}
 \newcommand{\teq}{\ensuremath{t_{\mathrm{eq}}}}
-\newcommand{\Mc}{\ensuremath{M_{\mathrm{c}}}}
 % Igual que en el informe: sin depender de la \max que redefine babel.
 \newcommand{\Cmax}{\ensuremath{\mathcal{C}_{\mathrm{max}}}}
 \newcommand{\cita}[1]{{\scriptsize\color{gris}(#1)}}
@@ -92,7 +97,7 @@
 % Titulo del bloque de condiciones que acompana a cada figura (1.7).
 \newcommand{\setup}[1]{{\color{azul}\bfseries #1}\par\vspace{0.15em}}
 
-% Las cuatro constantes que comparten todas las corridas.
+% Las constantes que comparten todas las corridas.
 \newcommand{\fijos}{%
     $L = \SI{10}{m}$, contorno periódico\\
     $r_c = \SI{1}{m}$, $v = \SI{0.03}{m/s}$\\
@@ -125,25 +130,11 @@
         \end{column}
     \end{columns}}
 
-% Igual que \dosfig pero sin nada debajo de las figuras: los identificadores de
-% panel van en el bloque lateral, porque la guia no admite leyendas debajo de la
-% figura (1.7). Solo las animaciones llevan texto abajo, que es el link (2.4.8).
-\newcommand{\dosfiglimpio}[3]{%
-    \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.355\textwidth}
-            \centering\includegraphics[width=\linewidth]{#1}
-        \end{column}
-        \begin{column}{0.355\textwidth}
-            \centering\includegraphics[width=\linewidth]{#2}
-        \end{column}\hfill
-        \begin{column}{0.255\textwidth}
-            \raggedright\scriptsize#3
-        \end{column}
-    \end{columns}}
-
-% Identificacion de los dos paneles, arriba del bloque lateral.
+% Identificacion de los dos paneles, arriba del bloque lateral: la guia no
+% admite leyendas debajo de la figura (1.7); debajo va solo el link (2.4.8).
 \newcommand{\paneles}[2]{%
-    {\color{azul}\bfseries Izq.:} #1 \enspace{\color{azul}\bfseries Der.:} #2%
+    {\color{azul}\bfseries Izq.:} #1\par
+    {\color{azul}\bfseries Der.:} #2%
     \par\vspace{0.5em}}
 
 \graphicspath{{../data/figuras_diapositivas/}}
@@ -211,31 +202,23 @@
 % =========================================================
 
 \begin{frame}{Sistema real}
-    \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.55\textwidth}
-            \vspace{0.8em}
-            \begin{itemize}
-                \setlength{\itemsep}{1.0em}
-                \item Bandadas, cardúmenes, colonias bacterianas
-                \item Se \alert{autopropulsan} y se \alert{alinean con sus vecinos}
-                \item Interacción \alert{local}, orden global \alert{espontáneo}
-                \item Un solo control: el \alert{ruido} $\eta$
-            \end{itemize}
-            \vspace{1.0em}
-            \cita{Vicsek et al., Phys. Rev. Lett. 75, 1226, 1995}
-        \end{column}\hfill
-        \begin{column}{0.41\textwidth}
-            \centering
-            \includegraphics[width=\linewidth]{a_animaciones/cuadro_vicsek_rho4_eta0.5_t3000.png}
-        \end{column}
-    \end{columns}
+    \vspace{1.4em}
+    \begin{itemize}
+        \setlength{\itemsep}{1.5em}
+        \item Bandadas, cardúmenes, colonias bacterianas
+        \item Individuos que se \alert{autopropulsan} y se \alert{alinean}
+              con sus vecinos
+        \item Interacción \alert{local}, orden colectivo \alert{espontáneo}
+    \end{itemize}
+    \vspace{2.0em}
+    \cita{Vicsek et al., Phys. Rev. Lett. 75, 1226, 1995}
 \end{frame}
 
 \begin{frame}{Modelo matemático}
-    \vspace{-0.2em}
-    {\small $N$ puntos, rapidez común $v$, dirección $\theta_i$; actualización
+    \vspace{0.2em}
+    {\small $N$ partículas puntuales, rapidez común $v$; actualización
     \alert{sincrónica}}
-    \vspace{-0.3em}
+    \vspace{-0.2em}
     \begin{columns}[T,onlytextwidth]
         \begin{column}{0.45\textwidth}
             \begin{equation*}
@@ -250,14 +233,14 @@
             \end{equation*}
         \end{column}
     \end{columns}
-    \vspace{0.2em}
-    {\small $\mathcal{N}_i=\{\,j\neq i:\ d(\mathbf{r}_i,\mathbf{r}_j)<r_c\,\}$,
-    con $d$ de mínima imagen. Entre escenarios sólo cambia \alert{$\Theta_i$}.}
-    \vspace{0.9em}
+    \vspace{0.3em}
+    {\small $\mathcal{N}_i=\{\,j\neq i:\ d(\mathbf{r}_i,\mathbf{r}_j)<r_c\,\}$;
+    \ $\eta$ en radianes}
+    \vspace{1.2em}
 
     \begin{columns}[T,onlytextwidth]
         \begin{column}{0.48\textwidth}
-            {\color{azul}\bfseries Estándar} --- promedia el entorno
+            {\color{azul}\bfseries Estándar}
             \begin{equation*}
                 \Theta_i = \arctan
                 \frac{\sin\theta_i + \sum_{j\in\mathcal{N}_i}\sin\theta_j}
@@ -267,7 +250,7 @@
             \begin{center}\cita{Vicsek et al., PRL, 1995}\end{center}
         \end{column}\hfill
         \begin{column}{0.48\textwidth}
-            {\color{azul}\bfseries Votante} --- copia a uno solo
+            {\color{azul}\bfseries Votante}
             \begin{equation*}
                 \Theta_i = \theta_k,
                 \qquad
@@ -277,43 +260,79 @@
             \begin{center}\cita{Loscar et al., Phys. Rev. E 104, 034111, 2021}\end{center}
         \end{column}
     \end{columns}
-    \vspace{0.7em}
-    {\footnotesize $\eta$ en radianes.}
 \end{frame}
 
 % =========================================================
 \section{Implementación}
 % =========================================================
 
-\begin{frame}{Arquitectura del motor}
-    \vspace{-0.2em}
+\begin{frame}{Arquitectura}
+    \vspace{-0.3em}
     \begin{center}
     \begin{tikzpicture}[
-        font=\footnotesize,
-        modulo/.style={draw=azul!55,fill=azul!6,rounded corners=2pt,align=center,
-                       inner sep=3pt,minimum height=7mm,minimum width=42mm},
-        externo/.style={draw=gris!70,fill=grisclaro,rounded corners=2pt,align=center,
-                        inner sep=4pt,minimum height=9mm,minimum width=30mm},
-        fl/.style={-{Stealth[length=2.2mm]},gris,thick}]
+        font=\scriptsize,
+        clase/.style={rectangle split, rectangle split parts=2,
+                      rectangle split part fill={azul!10,white},
+                      draw=azul!60, align=center, inner sep=3pt},
+        archivo/.style={draw=gris, dashed, fill=grisclaro, align=center,
+                        inner sep=3.5pt},
+        dep/.style={-{Stealth[open,length=2.4mm]}, dashed, gris, semithick},
+        flujo/.style={-{Stealth[length=2.4mm]}, gris, thick},
+        rotulo/.style={fill=white, inner sep=1pt, font=\tiny\color{gris}}]
 
-        \node[modulo] (arg)  {\texttt{arguments}\\[-1pt]{\scriptsize parseo y validación}};
-        \node[modulo,below=2.2mm of arg] (flock) {\texttt{flock}\\[-1pt]{\scriptsize estado y regla de actualización}};
-        \node[modulo,below=2.2mm of flock] (cim) {\texttt{neighbor\_search}\\[-1pt]{\scriptsize CIM y fuerza bruta}};
-        \node[modulo,below=2.2mm of cim] (obs) {\texttt{observables}\\[-1pt]{\scriptsize $\va$ y $S$}};
-        \node[modulo,below=2.2mm of obs] (io) {\texttt{io}\\[-1pt]{\scriptsize escritura de texto}};
+        % --- motor de simulacion ---
+        \node[clase] (cmd)
+            {\texttt{\bfseries simulate / sweep}\nodepart{two} orquesta la corrida};
+        \node[clase, below left=5.5mm and -14mm of cmd] (flock)
+            {\texttt{\bfseries Flock}\nodepart{two}
+             $\mathbf{r}_i,\ \theta_i$\\ \texttt{advance()}};
+        \node[clase, below right=5.5mm and -8mm of cmd] (writer)
+            {\texttt{\bfseries TrajectoryWriter}\nodepart{two} \texttt{writeFrame()}};
+        \node[clase, below=5mm of flock] (ns)
+            {\texttt{\bfseries NeighborSearch}\nodepart{two}
+             \texttt{cim()}, \texttt{bruteForce()}};
 
-        \node[externo,right=22mm of cim] (txt) {archivos\\de texto};
-        \node[externo,right=16mm of txt] (post) {animación y análisis\\[-1pt]{\scriptsize Python, independiente}};
+        % --- archivos ---
+        \node[archivo, right=13mm of writer] (estados)
+            {estados\\ \texttt{static.txt}\\ \texttt{dynamic.txt}};
+
+        % --- post-procesamiento ---
+        \node[clase, draw=acento, right=13mm of estados] (obs)
+            {\texttt{\bfseries analyse}\nodepart{two} $\va(t)$, $S(t)$};
+        \node[archivo, below=5mm of obs] (serie)
+            {\texttt{observables.txt}};
+        \node[clase, below=5mm of serie] (py)
+            {\textbf{animación y figuras}\nodepart{two} Python};
 
         \begin{scope}[on background layer]
-            \node[draw=azul!40,rounded corners=3pt,fit=(arg)(io),inner sep=6pt] (motor) {};
+            \node[draw=azul!40, rounded corners=3pt, fit=(cmd)(flock)(writer)(ns),
+                  inner sep=5pt] (motor) {};
+            \node[draw=acento!50, rounded corners=3pt, fit=(obs)(serie)(py),
+                  inner sep=5pt] (post) {};
         \end{scope}
-        \node[above=1mm of motor,font=\footnotesize\bfseries,color=azul] {Motor de simulación (C++)};
+        \node[above=0.8mm of motor, font=\scriptsize\bfseries, color=azul]
+            {Motor de simulación (C++)};
+        \node[above=0.8mm of post, font=\scriptsize\bfseries, color=acento]
+            {Post-procesamiento};
 
-        \draw[fl] (motor.east) -- (txt.west);
-        \draw[fl] (txt.east) -- (post.west);
+        \draw[dep] (cmd) -- (flock);
+        \draw[dep] (cmd) -- (writer);
+        \draw[dep] (flock) -- node[rotulo,left=1pt]{usa} (ns);
+        \draw[flujo] (writer) -- node[rotulo,above]{escribe} (estados);
+        \draw[dep] (obs) -- node[rotulo,above]{lee} (estados);
+        \draw[flujo] (obs) -- node[rotulo,right=1pt]{escribe} (serie);
+        \draw[dep] (py) -- node[rotulo,right=1pt]{lee} (serie);
+        \draw[dep] (py.west) -| node[rotulo,pos=0.12,above]{lee}
+            (estados.south);
+        \draw[dep] (obs.south west) .. controls ($(estados.south)+(0,-9mm)$)
+            and ($(ns.east)+(14mm,-2mm)$) ..
+            node[rotulo,pos=0.42,below]{reutiliza el CIM} (ns.east);
     \end{tikzpicture}
     \end{center}
+    \vspace{0.2em}
+    \centering
+    {\small Los observables se calculan \alert{después de simular}, leyendo los
+    estados guardados.}
 \end{frame}
 
 \begin{frame}{El paso de simulación}
@@ -351,8 +370,7 @@
             \begin{itemize}
                 \setlength{\itemsep}{1.1em}
                 \item Buffer aparte $\Rightarrow$ \alert{sincrónica}
-                \item \textbf{CIM}: celda propia $+$ 8 adyacentes;
-                      $L/\Mc > r_c \Rightarrow \Mc \le 9$
+                \item \textbf{CIM}: celda propia $+$ 8 adyacentes
                 \item Control: fuerza bruta \alert{idéntica}
             \end{itemize}
         \end{column}
@@ -399,33 +417,24 @@
             \end{center}
         \end{column}\hfill
         \begin{column}{0.57\textwidth}
-            \vspace{0.1em}
-            {\scriptsize
-            \begin{tabular}{@{}p{3.0cm}l@{}}
+            \vspace{0.4em}
+            {\small
+            \begin{tabular}{@{}p{1.4cm}l@{}}
                 \toprule
-                \multicolumn{2}{@{}l}{\color{azul}\bfseries Parámetros fijos}\\
+                \multicolumn{2}{@{}l}{\color{azul}\bfseries Parámetros del sistema}\\
                 \midrule
-                Lado de la caja $L$        & \SI{10}{m}, contorno periódico \\
-                Radio de interacción $r_c$ & \SI{1}{m} \\
-                Rapidez $v$                & \SI{0.03}{m/s} \\
-                Paso temporal $\Delta t$   & \SI{1}{s} \\
-                Celdas del CIM $\Mc$       & $9$ (máximo admisible) \\
+                $L$        & \SI{10}{m}, contorno periódico \\
+                $r_c$      & \SI{1}{m} \\
+                $v$        & \SI{0.03}{m/s} \\
+                $\eta$     & $0$ a $\SI{5}{rad}$ \\
+                $\rho$     & $2$, $4$, $8\ \si{m^{-2}}$ \\
+                           & $\tfrac{1}{\pi}$, $\tfrac{1}{2\pi}$, $\tfrac{1}{3\pi}\ \si{m^{-2}}$ \\
+                Regla      & estándar, votante \\
                 \midrule
-                \multicolumn{2}{@{}l}{\color{azul}\bfseries Parámetros variables}\\
+                \multicolumn{2}{@{}l}{\color{azul}\bfseries Parámetros de la simulación}\\
                 \midrule
-                Ruido $\eta$   & $0$ a $\SI{5}{rad}$, paso $\SI{0.25}{rad}$ \\
-                Densidad $\rho$ & $2$, $4$, $8\ \si{m^{-2}}$
-                                  \ ($N = 200$, $400$, $800$) \\
-                                & $\tfrac{1}{\pi}$, $\tfrac{1}{2\pi}$, $\tfrac{1}{3\pi}\ \si{m^{-2}}$
-                                  \ ($N = 32$, $16$, $11$) \\
-                Regla           & estándar, votante \\
-                \midrule
-                \multicolumn{2}{@{}l}{\color{azul}\bfseries Corridas}\\
-                \midrule
-                Realizaciones $M$ & $20$ por caso (semillas 1 a 20) \\
-                Duración          & \SI{5e3}{s} si $\rho \ge \SI{2}{m^{-2}}$ \\
-                                  & \SI{2e4}{s} si $\rho < \SI{1}{m^{-2}}$ \\
-                Total             & \num{5040} corridas \\
+                $\Delta t$ & \SI{1}{s} \\
+                $M$        & $20$ realizaciones (semillas 1 a 20) \\
                 \bottomrule
             \end{tabular}}
         \end{column}
@@ -436,17 +445,14 @@
     \vspace{-0.2em}
     \begin{columns}[T,onlytextwidth]
         \begin{column}{0.53\textwidth}
-            {\color{azul}\bfseries Polarización} --- cuán alineado está
+            {\color{azul}\bfseries Polarización}
             \begin{equation*}
                 \va(t) = \frac{1}{N v}\left\|\sum_{i=1}^{N}\mathbf{v}_i(t)\right\|
                 \ \in\ [0,1]
             \end{equation*}
-            \vspace{-0.7em}
+            \vspace{1.2em}
 
-            {\scriptsize Piso por tamaño finito: $\sqrt{\pi/4N}$.}
-            \vspace{1.4em}
-
-            {\color{azul}\bfseries Componente gigante} --- cuán conectado está
+            {\color{azul}\bfseries Componente gigante}
             \begin{equation*}
                 S(t) = \frac{|\Cmax(t)|}{N}
                 \ \in\ \left[\tfrac{1}{N},\,1\right]
@@ -518,36 +524,23 @@
 \section{Resultados}
 % =========================================================
 
-\begin{frame}{Animaciones características}
-    \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.235\textwidth}
-            \centering\includegraphics[width=\linewidth]{a_animaciones/cuadro_vicsek_rho4_eta0.5_t3000.png}\\[0.15em]
-            \pendiente
-        \end{column}
-        \begin{column}{0.235\textwidth}
-            \centering\includegraphics[width=\linewidth]{a_animaciones/cuadro_vicsek_rho4_eta4_t3000.png}\\[0.15em]
-            \pendiente
-        \end{column}
-        \begin{column}{0.235\textwidth}
-            \centering\includegraphics[width=\linewidth]{a_animaciones/cuadro_voter_rho4_eta0.5_t3000.png}\\[0.15em]
-            \pendiente
-        \end{column}\hfill
-        \begin{column}{0.255\textwidth}
-            \raggedright\scriptsize
-            {\color{azul}\bfseries Izq.:} estándar, $\eta = \SI{0.5}{rad}$: ordenado\\
-            {\color{azul}\bfseries Centro:} estándar, $\eta = \SI{4}{rad}$: desordenado\\
-            {\color{azul}\bfseries Der.:} votante, $\eta = \SI{0.5}{rad}$: dominios
-            \vspace{0.7em}
+% ----- Modelo estandar: la data y sus puntos -----
 
-            \setup{Las tres corridas}
-            $\rho = \SI{4}{m^{-2}}$ ($N = 400$)\\
-            \fijos\\
-            semilla 1, cuadro en \SI{3e3}{s}
-            \vspace{1.0em}
+\begin{frame}{Modelo estándar: ruido bajo y ruido alto}
+    \dosfig
+        {a_animaciones/cuadro_vicsek_rho4_eta0.5_t3000.png}
+        {\pendiente}
+        {a_animaciones/cuadro_vicsek_rho4_eta4_t3000.png}
+        {\pendiente}
+        {\paneles{$\eta = \SI{0.5}{rad}$: ordenado}{$\eta = \SI{4}{rad}$: desordenado}
+         \setup{Ambas corridas}
+         Modelo estándar\\
+         $\rho = \SI{4}{m^{-2}}$ ($N = 400$)\\
+         \fijos\\
+         semilla 1, cuadro en \SI{3e3}{s}
+         \vspace{1.0em}
 
-            Una flecha por partícula; color según el ángulo, longitud fija.
-        \end{column}
-    \end{columns}
+         Una flecha por partícula; color según el ángulo.}
 \end{frame}
 
 \begin{frame}{Modelo estándar: evolución temporal}
@@ -556,7 +549,6 @@
         Modelo estándar\\
         $\rho = \SI{4}{m^{-2}}$ ($N = 400$)\\
         \fijos\\
-        \SI{5e3}{s} por corrida\\
         \alert{una realización por curva}
         \vspace{1.4em}
 
@@ -565,85 +557,123 @@
         Punteadas: \teq}
 \end{frame}
 
-\begin{frame}{Modelo de votante: evolución temporal}
-    \figpar[0.72]{f_votante/va_S_vs_t_voter_rho4_etas0.5-2-5_semilla1.png}{%
-        \setup{Condiciones}
-        Modelo de votante\\
-        $\rho = \SI{4}{m^{-2}}$ ($N = 400$)\\
-        \fijos\\
-        \SI{5e3}{s} por corrida\\
-        \alert{una realización por curva}
-        \vspace{1.4em}
-
-        \setup{Con el $\eta$ que ordenaba al estándar}
-        Sin bandada única: \alert{dominios} transitorios \\[0.4em]
-        $\va$ oscila con amplitud $\sim$ su media}
-\end{frame}
-
 \begin{frame}{Modelo estándar: polarización contra ruido}
     \figpar[0.60]{c_va_vs_eta/va_vs_eta_vicsek_rho2-4-8_M20.png}{%
         \setup{Condiciones}
         Modelo estándar\\
         \fijos\\
-        \SI{5e3}{s} por corrida\\
         barra: $\sigma_{\va}$ en el estacionario\\
         líneas: guía para el ojo
-        \vspace{1.6em}
+        \vspace{1.2em}
+
+        \setup{Aros}
+        Las dos corridas mostradas ($\rho = \SI{4}{m^{-2}}$)
+        \vspace{1.2em}
 
         \setup{Transición \alert{continua}}
         \alert{Más densidad, más orden}: \\
         $\eta(\va = 0{,}5) = \SI{2.9}{rad} \to \SI{3.5}{rad}$}
 \end{frame}
 
+% ----- Modelo de votante: la data y sus puntos -----
+
+\begin{frame}{Modelo de votante: ruido bajo y ruido alto}
+    \dosfig
+        {a_animaciones/cuadro_voter_rho4_eta0.5_t3000.png}
+        {\pendiente}
+        {a_animaciones/cuadro_voter_rho4_eta4_t3000.png}
+        {\pendiente}
+        {\paneles{$\eta = \SI{0.5}{rad}$: \alert{dominios}, sin bandada única}
+                 {$\eta = \SI{4}{rad}$: desordenado}
+         \setup{Ambas corridas}
+         Modelo de votante\\
+         $\rho = \SI{4}{m^{-2}}$ ($N = 400$)\\
+         \fijos\\
+         semilla 1, cuadro en \SI{3e3}{s}
+         \vspace{1.0em}
+
+         Mismo formato que el estándar.}
+\end{frame}
+
+\begin{frame}{Modelo de votante: evolución temporal}
+    \figpar[0.72]{f_votante/va_S_vs_t_voter_rho4_etas0.5-2-5_semilla1.png}{%
+        \setup{Condiciones}
+        Modelo de votante\\
+        $\rho = \SI{4}{m^{-2}}$ ($N = 400$)\\
+        \fijos\\
+        \alert{una realización por curva}
+        \vspace{1.4em}
+
+        \setup{Con el $\eta$ que ordenaba al estándar}
+        $\va$ oscila con amplitud $\sim$ su media}
+\end{frame}
 
 \begin{frame}{Modelo de votante: polarización contra ruido}
     \figpar[0.60]{c_va_vs_eta/va_vs_eta_voter_rho2-4-8_M20.png}{%
         \setup{Condiciones}
         Modelo de votante\\
         \fijos\\
-        \SI{5e3}{s} por corrida\\
         barra: $\sigma_{\va}$ en el estacionario\\
-        líneas: guía para el ojo\\
-        \alert{mismos ejes y colores que la anterior}
-        \vspace{1.4em}
+        \alert{mismos ejes y colores que el estándar}
+        \vspace{1.2em}
+
+        \setup{Aros}
+        Las dos corridas mostradas ($\rho = \SI{4}{m^{-2}}$)
+        \vspace{1.2em}
 
         \setup{Cae un orden antes}
-        $\eta(\va = 0{,}5) \simeq \SI{0.2}{rad}$ \\
-        contra \SI{3.5}{rad} del estándar ($\rho = \SI{8}{m^{-2}}$)
-        \vspace{0.9em}
+        $\eta(\va = 0{,}5) \simeq \SI{0.3}{rad}$
+        \vspace{1.0em}
 
         \setup{Se dan vuelta los colores}
-        La densidad pasa a tener \alert{signo opuesto}
-        \vspace{0.9em}
-
-        En $\eta = 0$ ambos dan $\va = 1$}
+        La densidad pasa a tener \alert{signo opuesto}}
 \end{frame}
 
-\begin{frame}{Clusters: animaciones a baja densidad}
+% ----- Comparacion de las dos reglas -----
+
+\begin{frame}{Comparación: polarización contra ruido}
+    \figpar[0.60]{f_votante/va_vs_eta_vicsek_vs_voter_rho4_M20.png}{%
+        \setup{Condiciones}
+        $\rho = \SI{4}{m^{-2}}$ ($N = 400$)\\
+        \fijos\\
+        barra: $\sigma_{\va}$ en el estacionario\\
+        líneas: guía para el ojo
+        \vspace{1.6em}
+
+        \setup{Mismo sistema, otra regla}
+        $\eta(\va = 0{,}5)$: \SI{3.2}{rad} $\to$ \SI{0.3}{rad}
+        \vspace{1.0em}
+
+        En $\eta = 0$ ambos ordenan: $\va = 1$}
+\end{frame}
+
+% ----- Baja densidad: la data para S -----
+
+\begin{frame}{Baja densidad: ruido bajo y ruido alto}
     \dosfig
         {a_animaciones/cuadro_vicsek_rho1pi_eta0.5_t20000.png}
         {\pendiente}
         {a_animaciones/cuadro_vicsek_rho1pi_eta5_t20000.png}
         {\pendiente}
-        {\paneles{$\eta = \SI{0.5}{rad}$, agregado, $S \to 1$}{$\eta = \SI{5}{rad}$, fragmentado, $S \simeq 0{,}2$}
+        {\paneles{$\eta = \SI{0.5}{rad}$: agregado, $S \to 1$}
+                 {$\eta = \SI{5}{rad}$: fragmentado, $S \simeq 0{,}2$}
          \setup{Ambas corridas}
          Modelo estándar\\
          $\rho = 1/\pi\ \si{m^{-2}}$ ($N = 32$)\\
          \fijos\\
          semilla 1, cuadro en \SI{2e4}{s}
-         \vspace{1.6em}
+         \vspace{1.2em}
 
          \setup{Por qué baja densidad}
          $\rho \ge \SI{2}{m^{-2}}$: siempre percolado \\[0.4em]
          $\rho = 1/\pi$: $\langle k\rangle = 1$, $S$ recorre todo su rango}
 \end{frame}
 
-\begin{frame}{Clusters: evolución temporal de la componente gigante}
+\begin{frame}{Componente gigante: evolución temporal}
     \figpar[0.72]{d_clusters/va_S_vs_t_vicsek_eta2_rhos8-4-2-1pi-1-3pi_promedioM20.png}{%
         \setup{Condiciones}
         Modelo estándar, $\eta = \SI{2}{rad}$\\
         \fijos\\
-        \SI{5e3}{s} si $\rho \ge \SI{2}{m^{-2}}$, \SI{2e4}{s} si no\\
         curva promedio de las $M$
         \vspace{1.4em}
 
@@ -656,78 +686,54 @@
         \teq{} diez veces mayor}
 \end{frame}
 
-\begin{frame}{Modelo estándar: componente gigante contra ruido}
-    \figpar[0.60]{d_clusters/S_vs_eta_vicsek_rho8-2-1pi-1-3pi_M20.png}{%
+\begin{frame}{Comparación: componente gigante contra ruido}
+    \figpar[0.60]{f_votante/S_vs_eta_vicsek_vs_voter_rho1pi_M20.png}{%
         \setup{Condiciones}
-        Modelo estándar\\
+        $\rho = 1/\pi\ \si{m^{-2}}$ ($N = 32$)\\
         \fijos\\
-        \SI{5e3}{s} si $\rho \ge \SI{2}{m^{-2}}$, \SI{2e4}{s} si no\\
-        barra: $\sigma_S$ en el estacionario\\
-        líneas: guía para el ojo
-        \vspace{1.4em}
+        barra: $\sigma_S$ en el estacionario
+        \vspace{1.2em}
 
-        \setup{Dos regímenes}
-        $\rho = 8$ y $2$: \alert{pegadas a $S = 1$} \\[0.4em]
-        $1/\pi$ y $1/3\pi$: \alert{decaen} hasta $0{,}2$ \\[0.6em]
-        En $\eta = 0$ percolan igual: \alert{fragmenta el ruido}}
+        \setup{Aros}
+        Las dos corridas mostradas (estándar)
+        \vspace{1.2em}
+
+        \setup{El votante se fragmenta antes}
+        $\eta(S = 0{,}5)$: \SI{2.7}{rad} $\to$ \SI{1.2}{rad}
+        \vspace{1.0em}
+
+        En $\eta = 0$ ambos percolan: \alert{fragmenta el ruido}}
 \end{frame}
 
-\begin{frame}{Modelo de votante: componente gigante contra ruido}
-    \figpar[0.60]{d_clusters/S_vs_eta_voter_rho8-2-1pi-1-3pi_M20.png}{%
+\begin{frame}{Comparación: polarización contra componente gigante}
+    \figpar[0.60]{f_votante/va_vs_S_vicsek_vs_voter_rho1pi_M20.png}{%
         \setup{Condiciones}
-        Modelo de votante\\
-        \fijos\\
-        \SI{5e3}{s} si $\rho \ge \SI{2}{m^{-2}}$, \SI{2e4}{s} si no\\
-        barra: $\sigma_S$ en el estacionario\\
-        líneas: guía para el ojo\\
-        \alert{mismos ejes y colores que la anterior}
-        \vspace{1.4em}
-
-        \setup{Mismo cuadro, se fragmenta antes}
-        $\eta(S = 0{,}5)$ a $\rho = 1/\pi$: \SI{1.19}{rad} contra \SI{2.74}{rad} \\[0.6em]
-        Copiar a uno solo no atenúa el ruido}
-\end{frame}
-
-\begin{frame}{Modelo estándar: polarización contra componente gigante}
-    \figpar[0.60]{e_va_vs_S/va_vs_S_vicsek_rho8-2-1pi-1-3pi_M20.png}{%
-        \setup{Condiciones}
-        Modelo estándar\\
+        $\rho = 1/\pi\ \si{m^{-2}}$ ($N = 32$)\\
         un punto por cada $\eta$ del barrido\\
         \fijos\\
         barras: $\sigma_S$ y $\sigma_{\va}$\\
         líneas: guía para el ojo, en orden de $\eta$
         \vspace{1.4em}
 
-        \setup{Dos regímenes}
-        $\rho = 8$ y $2$: \alert{desacopladas}; $\va$ no es función de $S$ \\[0.4em]
-        $1/\pi$ y $1/3\pi$: \alert{acopladas}, casi colapsan \\[0.6em]
-        Pearson $0{,}45$ y $0{,}61$ contra $0{,}985$ y $0{,}994$}
+        \setup{Acoplados}
+        Las dos reglas casi colapsan: \\
+        Pearson $0{,}985$ y $0{,}968$
+        \vspace{1.0em}
+
+        \setup{A densidad alta no}
+        $\rho \ge \SI{2}{m^{-2}}$: $S \simeq 1$ siempre; \\
+        $\va$ queda como único grado de libertad}
 \end{frame}
 
-\begin{frame}{Modelo de votante: polarización contra componente gigante}
-    \figpar[0.60]{e_va_vs_S/va_vs_S_voter_rho8-2-1pi-1-3pi_M20.png}{%
-        \setup{Condiciones}
-        Modelo de votante\\
-        un punto por cada $\eta$ del barrido\\
-        \fijos\\
-        barras: $\sigma_S$ y $\sigma_{\va}$\\
-        líneas: guía para el ojo, en orden de $\eta$\\
-        \alert{mismos ejes y colores que la anterior}
-        \vspace{1.4em}
-
-        \setup{Los mismos dos regímenes}
-        $\rho = 8$: Pearson $-0{,}48$; la correlación residual \alert{no es física} \\[0.6em]
-        $1/\pi$ y $1/3\pi$: $0{,}968$ y $0{,}987$}
-\end{frame}
+% ----- Tiempos -----
 
 \begin{frame}{Tiempos de ejecución del CIM}
     \figpar[0.60]{g_tiempos_cim/tiempo_busqueda_vs_N_L20_M13_cim_bruta_tp1_log.png}{%
         \setup{Caja del TP1}
-        $L = \SI{20}{m}$, $r_c = \SI{1}{m}$\\
-        $\Mc = 13$, \SI{200}{s} por corrida\\
+        $L = \SI{20}{m}$, $r_c = \SI{1}{m}$, $M_{\mathrm{c}} = 13$\\
+        \SI{200}{s} por corrida\\
         5 repeticiones por punto\\
         barra: desvío entre repeticiones\\
-        líneas: guía para el ojo\\
         equipo descargado
         \vspace{1.6em}
 
@@ -735,7 +741,6 @@
         $2{,}11$ (bruta) \enspace $1{,}34$ (CIM) \\[0.6em]
 
         \setup{El CIM baja el prefactor}
-        $9/\Mc^2 = \SI{5.3}{\percent}$ del sistema \\[0.4em]
         Cruce en $N \simeq 90$; $\times\num{10}$ en $N = 1150$ \\[0.6em]
 
         \alert{Misma pendiente que el TP1}}
@@ -754,10 +759,11 @@
                       $\eta$
                 \item \alert{La densidad favorece el orden}:
                       $\eta(\va = 0{,}5) = \SI{2.9}{rad} \to \SI{3.5}{rad}$
-                \item Votante: \alert{un orden más sensible}, densidad con
+                \item Votante: \alert{un orden más sensible}
+                      ($\eta(\va = 0{,}5) \simeq \SI{0.3}{rad}$), densidad con
                       \alert{signo opuesto}
-                \item $\eta = \SI{5}{rad}$: el votante llega al piso
-                      $\sqrt{\pi/4N}$; el estándar no
+                \item En $\eta = \SI{5}{rad}$ el votante queda desordenado
+                      por completo; el estándar todavía no
             \end{itemize}
         \end{column}\hfill
         \begin{column}{0.48\textwidth}\small

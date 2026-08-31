@@ -83,6 +83,7 @@ animations: build
 	    echo "== $$run"; \
 	    (cd engine && ./build/flock simulate --model $$model --rho $$rho --eta $$eta \
 	        --steps $(ANIM_STEPS) --save-every $(ANIM_SAVE) --seed 1 --dir ../$$run) > /dev/null; \
+	    (cd engine && ./build/flock analyse --dir ../$$run) > /dev/null; \
 	    $(PY) visualization/animate.py --run $$run --frames 600; \
 	    $(PY) visualization/animate.py --run $$run --snapshots $(SNAPSHOTS); \
 	done
@@ -93,6 +94,7 @@ animations: build
 	    (cd engine && ./build/flock simulate --model $$model --rho $$rho --eta $$eta \
 	        --steps $(CLUSTER_ANIM_STEPS) --save-every $(CLUSTER_ANIM_SAVE) --seed 1 \
 	        --dir ../$$run) > /dev/null; \
+	    (cd engine && ./build/flock analyse --dir ../$$run) > /dev/null; \
 	    $(PY) visualization/animate.py --run $$run --frames 600 \
 	        --name $${model}_rho1pi_eta$${eta}.mp4; \
 	    $(PY) visualization/animate.py --run $$run --snapshots $(CLUSTER_SNAPSHOTS) \
@@ -180,10 +182,23 @@ report-figures:
 # tamano del texto de la diapositiva (al menos 20 pt). Con la figura del informe
 # reducida para entrar en un slide eso no se cumple, asi que se genera un juego
 # aparte con tipografia mas grande y los paneles lado a lado, en 16:9.
+#
+# La presentacion muestra, por regla, las animaciones de una configuracion de
+# ruido bajo y una de alto; --resaltar rodea con un aro los puntos del barrido
+# que corresponden a esas corridas. Las comparaciones entre reglas van en una
+# sola figura (item f): va contra eta a rho = 4, y S contra eta y va contra S a
+# rho = 1/pi, que es donde S recorre todo su rango.
+RESALTA_RHO4 := vicsek:4:0.5,vicsek:4:4,voter:4:0.5,voter:4:4
+RESALTA_1PI  := vicsek:0.31831:0.5,vicsek:0.31831:5
+
 figuras-diapositivas:
-	$(PY) visualization/curves.py --items c,f --pares --figures $(SLIDES) --estilo diapositiva
-	$(PY) visualization/curves.py --sweeps $(SWEEP),$(CLUSTERS) --rhos $(MIXED_RHOS) \
-	    --items d,e,f --figures $(SLIDES) --estilo diapositiva
+	$(PY) visualization/curves.py --items c --figures $(SLIDES) --estilo diapositiva \
+	    --resaltar $(RESALTA_RHO4)
+	$(PY) visualization/curves.py --items c,f --pares --rhos 4 --figures $(SLIDES) \
+	    --estilo diapositiva
+	$(PY) visualization/curves.py --sweeps $(SWEEP),$(CLUSTERS) --rhos 0.31831 \
+	    --items d,e,f --pares --figures $(SLIDES) --estilo diapositiva \
+	    --resaltar $(RESALTA_1PI)
 	-$(PY) visualization/bench.py --log --figures $(SLIDES) --estilo diapositiva
 	$(PY) visualization/temporal.py --model vicsek --rho 4 --eta 2 --item b \
 	    --figures $(SLIDES) --estilo diapositiva
@@ -191,8 +206,6 @@ figuras-diapositivas:
 	    --seed $(TRIO_SEED) --item b --figures $(SLIDES) --estilo diapositiva
 	$(PY) visualization/temporal.py --model voter --rho 4 --etas $(TRIO) \
 	    --seed $(TRIO_SEED) --item f --figures $(SLIDES) --estilo diapositiva
-	$(PY) visualization/temporal.py --sweep $(CLUSTERS) --model vicsek --rho $(CRHO1) \
-	    --etas $(TRIO) --item d --figures $(SLIDES) --estilo diapositiva
 	$(PY) visualization/temporal.py --sweeps $(SWEEP),$(CLUSTERS) --model vicsek --eta 2 \
 	    --rhos $(TEMPORAL_RHOS) --item d --figures $(SLIDES) --estilo diapositiva
 	@for spec in $(FRAMES); do \
