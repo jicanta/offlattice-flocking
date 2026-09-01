@@ -86,17 +86,17 @@
     Introducción (3--4)      & sistema real y modelo matemático        & \SI{2}{min}\\
     Implementación (6--7)    & arquitectura y paso de simulación       & \SI{1.5}{min}\\
     Simulaciones (9--10)     & parámetros, observables, criterio de \teq & \SI{1.5}{min}\\
-    Resultados (12--25)      & por regla: data y puntos; comparaciones; tiempos & \SI{7}{min}\\
-    Conclusiones (27)        &                                          & \SI{1}{min}\\
+    Resultados (12--27)      & por regla: data y puntos; comparaciones; tiempos & \SI{7}{min}\\
+    Conclusiones (29)        &                                          & \SI{1}{min}\\
 \end{tabular}}
 \par\vspace{0.4em}
-{\small Las diapositivas \num{2}, \num{5}, \num{8}, \num{11} y \num{26} son
+{\small Las diapositivas \num{2}, \num{5}, \num{8}, \num{11} y \num{28} son
 separadores de sección: se pasan sin hablar. Los resultados van \textbf{por
 regla}: primero la data del estándar (animaciones de ruido bajo y alto, la
 evolución temporal) y los puntos del barrido, después lo mismo para el
 votante, y recién entonces las
 comparaciones entre reglas, cada una en una única diapositiva. Las del votante
-(15--17) repiten el formato del estándar y van más rápido.}
+(15--17 y 23--24) repiten el formato del estándar y van más rápido.}
 \end{tcolorbox}
 
 \vspace{0.6em}
@@ -194,7 +194,7 @@ duración, barras y demás condiciones también se dicen, no se muestran.}
     \item \preg \emph{¿Es el mismo CIM del TP1?} Sí, es el mismo código sin
           modificar (el archivo es idéntico), junto con la geometría
           periódica. Eso es justamente lo que hace comparables los tiempos de
-          la diapositiva \num{25}.
+          la diapositiva \num{27}.
 \end{notas}
 
 % =========================================================
@@ -506,7 +506,34 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
           $0{,}157$ y $0{,}267$.
 \end{notas}
 
-\diapo{23}{Comparación: componente gigante contra ruido}{\SI{40}{s}}
+\diapo{23}{Modelo de votante: componente gigante contra ruido}{\SI{20}{s}}
+\begin{notas}
+    \item \decir El punto (d) para el votante, con los mismos ejes y colores.
+          Las de la consigna otra vez pegadas a $S = 1$ (mínimo \num{0.94(10)}
+          a $\rho = 2$). Las bajas se fragmentan mucho antes:
+          $\eta(S = 0{,}5)$ = \SI{1.19}{rad} a $1/\pi$ y \SI{1.13}{rad} a
+          $1/3\pi$, contra \num{2.74} y \num{2.12} del estándar. Copiar a un
+          solo vecino no atenúa el ruido, y con menos ruido alcanza para romper
+          los grupos.
+    \item \decir En $\eta = 0$ también percola, $S = \num{0.91(13)}$, dentro de
+          la barra del $1{,}000(1)$ del estándar. Y en $\eta = 5$ termina en el
+          mismo lugar: $S \approx 0{,}2$, grupos de dos o tres partículas.
+    \item \nums $S(\eta = 5)$: \num{0.19} y \num{0.22} a $1/\pi$ y $1/3\pi$.
+\end{notas}
+
+\diapo{24}{Modelo de votante: polarización contra componente gigante}{\SI{20}{s}}
+\begin{notas}
+    \item \decir El punto (e) para el votante. A $\rho = 8$ y 2 la
+          degeneración es todavía más clara: $S$ queda en 1 mientras \va{}
+          recorre todo el rango, y la correlación residual es incluso negativa,
+          sin significado físico.
+    \item \decir A $1/\pi$ y $1/3\pi$ el acople reaparece, casi sobre la misma
+          curva que el estándar; se ve directo en la comparación que sigue.
+    \item \nums Pearson: \num{-0.48} ($\rho = 8$), \num{-0.13} ($\rho = 2$),
+          \num{0.968} ($1/\pi$), \num{0.987} ($1/3\pi$).
+\end{notas}
+
+\diapo{25}{Comparación: componente gigante contra ruido}{\SI{30}{s}}
 \begin{notas}
     \item \decir Las dos reglas a $\rho = 1/\pi$; las dos corridas animadas de
           la diapositiva 19 son los puntos de $\eta = 0{,}5$ y \SI{5}{rad} de
@@ -530,7 +557,7 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
           ($\langle k\rangle$ entre \num{6.3} y \num{25}, siempre percolado).
 \end{notas}
 
-\diapo{24}{Comparación: polarización contra componente gigante}{\SI{40}{s}}
+\diapo{26}{Comparación: polarización contra componente gigante}{\SI{30}{s}}
 \begin{notas}
     \item \decir Cada punto es un valor de $\eta$ del barrido, a
           $\rho = 1/\pi$. Acá los dos observables están \emph{acoplados}: la
@@ -551,7 +578,7 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
           parámetros que fija la consigna, no del modelo.
 \end{notas}
 
-\diapo{25}{Tiempos de ejecución del CIM}{\SI{35}{s}}
+\diapo{27}{Tiempos de ejecución del CIM}{\SI{35}{s}}
 \begin{notas}
     \item \decir El cronómetro abarca sólo la búsqueda de vecinos, incluido el
           armado de las celdas, y excluye la dinámica y la escritura a disco.
@@ -588,7 +615,7 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
 {\large\bfseries\color{azul} Conclusiones}
 \vspace{-0.2em}
 
-\diapo{27}{Conclusiones}{\SI{60}{s}}
+\diapo{29}{Conclusiones}{\SI{60}{s}}
 \begin{notas}
     \item \decir El modelo estándar exhibe una transición continua
           orden--desorden controlada por $\eta$, y la densidad favorece el
