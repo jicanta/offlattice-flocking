@@ -10,11 +10,14 @@
 %   * separadores de seccion sin numerar la seccion (1.13)
 %   * las animaciones van como cuadro fijo + link explicito (2.4.8)
 %
-% Estructura de los resultados, segun la devolucion de la catedra: por cada
-% regla se muestra la data (las animaciones de una configuracion de ruido bajo
-% y una de alto) y los puntos del barrido que corresponden a esas
-% configuraciones (aros en las curvas); recien despues van las comparaciones
-% entre reglas, cada una en una sola diapositiva.
+% Estructura de los resultados, segun la devolucion de la catedra: primero todo
+% el analisis de la polarizacion y despues todo el de la componente gigante,
+% sin mezclarlos. Dentro de cada bloque, por cada regla se muestra la data
+% (las animaciones de una configuracion de ruido bajo y una de alto, una sola
+% vez), la evolucion temporal del observable y los puntos del barrido que
+% corresponden a esas configuraciones (aros en las curvas); recien despues van
+% las comparaciones entre reglas, cada una en una sola diapositiva. No hay
+% diapositiva de contenido.
 %
 % Las figuras salen de data/figuras_diapositivas/, que es el mismo analisis que
 % el del informe pero con tipografia agrandada, para que dentro de la
@@ -95,10 +98,9 @@
 \newcommand{\video}[1]{{\scriptsize\href{#1}{\texttt{\detokenize{#1}}}}}
 
 % Las constantes que fija el enunciado ($L$, contorno, $r_c$, $v$, $\Delta t$)
-% no se muestran: la diapositiva del sistema particular lo dice y el
-% ayuda-memoria lleva los valores por si preguntan. Junto a cada figura van
-% solo la densidad y el ruido (y la regla, si el titulo no la dice); semilla,
-% duracion, barras y demas se dicen en voz alta.
+% se muestran una sola vez, en la tabla del sistema particular. Junto a cada
+% figura van solo la densidad y el ruido (y la regla, si el titulo no la dice);
+% semilla, duracion, barras y demas se dicen en voz alta.
 
 % Figura centrada con la condicion bajo la que se obtuvo al pie (1.7): es el
 % formato de las comparaciones, cuya figura ya lleva las dos reglas en la
@@ -153,34 +155,26 @@
     \vfill
 \end{frame}
 
-% =========================================================
-\begin{frame}{Contenido}
-    \vspace{1.2em}
-    \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.5\textwidth}
-            \begin{itemize}
-                \setlength{\itemsep}{1.0em}
-                \item Introducción
-                \item Implementación
-                \item Simulaciones
-            \end{itemize}
-        \end{column}
-        \begin{column}{0.5\textwidth}
-            \begin{itemize}
-                \setlength{\itemsep}{1.0em}
-                \item Resultados
-                \item Conclusiones
-            \end{itemize}
-        \end{column}
-    \end{columns}
-\end{frame}
-
 % Separador de seccion: solo el titulo, sin numerar (1.13).
 \AtBeginSection[]{%
     \begin{frame}
         \vfill
         \begin{center}
             {\Large\bfseries\color{azul}\insertsectionhead}\\[0.5em]
+            \textcolor{azul!30}{\rule{0.28\textwidth}{1pt}}
+        \end{center}
+        \vfill
+    \end{frame}}
+
+% Separador de bloque dentro de Resultados: el observable que se analiza a
+% continuacion (primero toda la polarizacion, despues toda la componente
+% gigante), tambien sin numerar.
+\AtBeginSubsection[]{%
+    \begin{frame}
+        \vfill
+        \begin{center}
+            {\small\color{gris}\insertsectionhead}\\[0.5em]
+            {\Large\bfseries\color{azul}\insertsubsectionhead}\\[0.5em]
             \textcolor{azul!30}{\rule{0.28\textwidth}{1pt}}
         \end{center}
         \vfill
@@ -404,26 +398,29 @@
             \end{center}
         \end{column}\hfill
         \begin{column}{0.57\textwidth}
-            \vspace{0.4em}
+            \vspace{0.1em}
             {\small
-            \begin{tabular}{@{}p{1.4cm}l@{}}
+            \begin{tabular}{@{}p{1.9cm}l@{}}
                 \toprule
                 \multicolumn{2}{@{}l}{\color{azul}\bfseries Parámetros del sistema}\\
                 \midrule
-                $\eta$     & $0$ a $\SI{5}{rad}$ \\
-                $\rho$     & $2$, $4$, $8\ \si{m^{-2}}$ \\
-                           & $\tfrac{1}{\pi}$, $\tfrac{1}{2\pi}$, $\tfrac{1}{3\pi}\ \si{m^{-2}}$ \\
-                Regla      & estándar, votante \\
+                $L$                  & \SI{10}{m}, contorno periódico \\
+                $r_c$                & \SI{1}{m} \\
+                $v$                  & \SI{0.03}{m/s} \\
+                $\eta$ [\si{rad}]    & $[0,\ 5]$ \\
+                $\rho$ [\si{m^{-2}}] & $2$, $4$, $8$ \\
+                                     & $\tfrac{1}{\pi}$, $\tfrac{1}{2\pi}$, $\tfrac{1}{3\pi}$ \\
                 \midrule
                 \multicolumn{2}{@{}l}{\color{azul}\bfseries Parámetros de la simulación}\\
                 \midrule
-                $M$        & $20$ realizaciones (semillas 1 a 20) \\
+                $\Delta t$           & \SI{1}{s} \\
+                $M$                  & $20$ realizaciones \\
                 \bottomrule
             \end{tabular}}
-            \vspace{0.7em}
+            \vspace{0.5em}
 
-            {\scriptsize\color{gris} $L$, el contorno, $r_c$, $v$ y $\Delta t$
-            los fija el enunciado.}
+            {\scriptsize\color{gris} Las dos reglas, estándar y votante, se
+            simulan sobre este mismo sistema.}
         \end{column}
     \end{columns}
 \end{frame}
@@ -480,6 +477,14 @@
 \section{Resultados}
 % =========================================================
 
+% Primero todo el analisis de la polarizacion y despues todo el de la
+% componente gigante (devolucion de la catedra: no mezclar los dos). Las
+% animaciones de rho = 4 se muestran una sola vez, en el bloque de la
+% polarizacion; las de baja densidad, donde S deja de ser trivial, abren el
+% bloque de la componente gigante.
+
+\subsection{Polarización}
+
 % ----- Modelo estandar: la data y sus puntos -----
 
 \begin{frame}{Modelo estándar: ruido bajo y ruido alto}
@@ -493,10 +498,8 @@
         {$\rho = \SI{4}{m^{-2}}$}
 \end{frame}
 
-\begin{frame}{Modelo estándar: evolución temporal}
-    \centering
-    \includegraphics[width=0.86\textwidth]{b_evolucion_temporal/va_S_vs_t_vicsek_rho4_etas0.5-4_semilla1.png}\\[0.4em]
-    {\small $\rho = \SI{4}{m^{-2}}$}
+\begin{frame}{Modelo estándar: polarización, evolución temporal}
+    \figcond{b_evolucion_temporal/va_vs_t_vicsek_rho4_etas0.5-4_semilla1.png}{$\rho = \SI{4}{m^{-2}}$}
 \end{frame}
 
 \begin{frame}{Modelo estándar: polarización contra ruido}
@@ -517,10 +520,8 @@
         {$\rho = \SI{4}{m^{-2}}$}
 \end{frame}
 
-\begin{frame}{Modelo de votante: evolución temporal}
-    \centering
-    \includegraphics[width=0.86\textwidth]{f_votante/va_S_vs_t_voter_rho4_etas0.5-4_semilla1.png}\\[0.4em]
-    {\small $\rho = \SI{4}{m^{-2}}$}
+\begin{frame}{Modelo de votante: polarización, evolución temporal}
+    \figcond{f_votante/va_vs_t_voter_rho4_etas0.5-4_semilla1.png}{$\rho = \SI{4}{m^{-2}}$}
 \end{frame}
 
 \begin{frame}{Modelo de votante: polarización contra ruido}
@@ -533,6 +534,8 @@
 \begin{frame}{Comparación: polarización contra ruido}
     \figcond{f_votante/va_vs_eta_vicsek_vs_voter_rho4_M20.png}{$\rho = \SI{4}{m^{-2}}$}
 \end{frame}
+
+\subsection{Componente gigante}
 
 % ----- Baja densidad: la data para S -----
 
@@ -547,10 +550,10 @@
         {Modelo estándar, $\rho = 1/\pi\ \si{m^{-2}}$}
 \end{frame}
 
-\begin{frame}{Componente gigante: evolución temporal}
-    \centering
-    \includegraphics[width=0.9\textwidth,height=0.74\textheight,keepaspectratio]{d_clusters/S_vs_t_vicsek_eta2_rhos8-2-1pi-1-3pi_semilla1.png}\\[0.3em]
-    {\small Modelo estándar, $\eta = \SI{2}{rad}$}
+% ----- Modelo estandar -----
+
+\begin{frame}{Modelo estándar: componente gigante, evolución temporal}
+    \figcond{d_clusters/S_vs_t_vicsek_eta2_rhos8-2-1pi-1-3pi_semilla1.png}{$\eta = \SI{2}{rad}$}
 \end{frame}
 
 \begin{frame}{Modelo estándar: componente gigante contra ruido}
@@ -563,6 +566,12 @@
     \includegraphics[width=0.9\textwidth,height=0.8\textheight,keepaspectratio]{e_va_vs_S/va_vs_S_vicsek_rho8-2-1pi-1-3pi_M20.png}
 \end{frame}
 
+% ----- Modelo de votante -----
+
+\begin{frame}{Modelo de votante: componente gigante, evolución temporal}
+    \figcond{f_votante/S_vs_t_voter_eta2_rhos8-2-1pi-1-3pi_semilla1.png}{$\eta = \SI{2}{rad}$}
+\end{frame}
+
 \begin{frame}{Modelo de votante: componente gigante contra ruido}
     \centering
     \includegraphics[width=0.9\textwidth,height=0.8\textheight,keepaspectratio]{f_votante/S_vs_eta_voter_rho8-2-1pi-1-3pi_M20.png}
@@ -572,6 +581,8 @@
     \centering
     \includegraphics[width=0.9\textwidth,height=0.8\textheight,keepaspectratio]{f_votante/va_vs_S_voter_rho8-2-1pi-1-3pi_M20.png}
 \end{frame}
+
+% ----- Comparacion de las dos reglas -----
 
 \begin{frame}{Comparación: componente gigante contra ruido}
     \figcond{f_votante/S_vs_eta_vicsek_vs_voter_rho1pi_M20.png}{$\rho = 1/\pi\ \si{m^{-2}}$}
@@ -593,18 +604,16 @@
 % =========================================================
 
 \begin{frame}{Conclusiones}
-    \begin{itemize}\setlength{\itemsep}{1.1em}
-        \item El ruido destruye el orden en las dos reglas. En el estándar la
-              caída es gradual; en el votante ocurre con un ruido diez veces
-              menor ($\eta(\va = 0{,}5)$: \SI{3.2}{rad} contra \SI{0.3}{rad}
-              a $\rho = \SI{4}{m^{-2}}$).
-        \item La densidad ayuda al estándar y perjudica al votante: promediar
-              muchos vecinos atenúa el ruido, copiar a uno solo no.
-        \item Con las densidades de la consigna el sistema está siempre
-              percolado ($S \simeq 1$). Al bajar la densidad, $S$ cae con el
-              ruido y $\va$ crece junto con $S$.
-        \item Sin ruido los grupos no se deshacen, aun con un vecino por
-              partícula: lo que fragmenta es el ruido, no la densidad.
+    \begin{itemize}\setlength{\itemsep}{1.4em}
+        \item El ruido destruye el orden en las dos reglas; el votante lo
+              pierde con un ruido diez veces menor.
+        \item La densidad ordena al estándar y desordena al votante:
+              promediar atenúa el ruido, copiar a uno solo no.
+        \item Con $\rho = 2$, $4$ y $\SI{8}{m^{-2}}$ el sistema está siempre
+              percolado ($S \simeq 1$); a baja densidad $S$ cae con el ruido y
+              $\va$ sigue a $S$.
+        \item Sin ruido los grupos no se deshacen: fragmenta el ruido, no la
+              densidad.
         \item CIM: diez veces más rápido que la fuerza bruta en $N = 1150$,
               con la misma pendiente que en el TP1.
     \end{itemize}

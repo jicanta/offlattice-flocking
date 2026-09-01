@@ -217,6 +217,11 @@ report-figures:
 # Las comparaciones entre reglas van en una sola figura (item f): va contra
 # eta a rho = 4, y S contra eta y va contra S a rho = 1/pi, que es donde S
 # recorre todo su rango.
+#
+# En las diapositivas la polarizacion y la componente gigante van en bloques
+# separados (devolucion de la catedra), asi que cada evolucion temporal lleva
+# un solo observable: va(t) a rho = 4 para cada regla, y S(t) por densidad a
+# eta = 2 para cada regla.
 
 figuras-diapositivas:
 	$(PY) visualization/curves.py --items c --figures $(SLIDES) --estilo diapositiva
@@ -226,11 +231,16 @@ figuras-diapositivas:
 	    --items d,e,f --pares --figures $(SLIDES) --estilo diapositiva
 	-$(PY) visualization/bench.py --log --figures $(SLIDES) --estilo diapositiva
 	$(PY) visualization/temporal.py --model vicsek --rho 4 --etas $(PAR) \
-	    --seed $(TRIO_SEED) --item b --figures $(SLIDES) --estilo diapositiva
+	    --seed $(TRIO_SEED) --item b --observables va --figures $(SLIDES) \
+	    --estilo diapositiva
 	$(PY) visualization/temporal.py --model voter --rho 4 --etas $(PAR) \
-	    --seed $(TRIO_SEED) --item f --figures $(SLIDES) --estilo diapositiva
+	    --seed $(TRIO_SEED) --item f --observables va --figures $(SLIDES) \
+	    --estilo diapositiva
 	$(PY) visualization/temporal.py --sweeps $(SWEEP),$(CLUSTERS) --model vicsek --eta 2 \
 	    --rhos $(SLIDE_RHOS) --seed $(TRIO_SEED) --observables S --item d \
+	    --figures $(SLIDES) --estilo diapositiva
+	$(PY) visualization/temporal.py --sweeps $(SWEEP),$(CLUSTERS) --model voter --eta 2 \
+	    --rhos $(SLIDE_RHOS) --seed $(TRIO_SEED) --observables S --item f \
 	    --figures $(SLIDES) --estilo diapositiva
 	@for spec in $(FRAMES); do \
 	    $(PY) visualization/animate.py --run $(RUNS)/$${spec%%:*} \

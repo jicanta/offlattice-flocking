@@ -6,7 +6,8 @@
 % GuiaPresentaciones.pdf (1.6) deben llevar poco texto y ningun parrafo.
 %
 % Los numeros de diapositiva son los del pie de presentacion.pdf, que empieza
-% a contar en la de Contenido (la portada no se numera).
+% a contar en el separador de Introduccion (la portada no se numera; no hay
+% diapositiva de contenido).
 %
 %   tectonic -X compile report/ayudamemoria.tex --outdir report/build
 % =========================================================
@@ -83,20 +84,21 @@
 {\small\bfseries\color{azul} Reparto del tiempo}\par\vspace{0.3em}
 {\small
 \begin{tabular}{@{}llr@{}}
-    Introducción (3--4)      & sistema real y modelo matemático        & \SI{2}{min}\\
-    Implementación (6--7)    & arquitectura y paso de simulación       & \SI{1.5}{min}\\
-    Simulaciones (9--10)     & parámetros, observables, criterio de \teq & \SI{1.5}{min}\\
-    Resultados (12--27)      & por regla: data y puntos; comparaciones; tiempos & \SI{7}{min}\\
-    Conclusiones (29)        &                                          & \SI{1}{min}\\
+    Introducción (2--3)      & sistema real y modelo matemático        & \SI{2}{min}\\
+    Implementación (5--6)    & arquitectura y paso de simulación       & \SI{1.5}{min}\\
+    Simulaciones (8--9)      & parámetros, observables, criterio de \teq & \SI{1.5}{min}\\
+    Resultados (12--29)      & polarización (12--18), componente gigante (20--28), tiempos (29) & \SI{7}{min}\\
+    Conclusiones (31)        &                                          & \SI{1}{min}\\
 \end{tabular}}
 \par\vspace{0.4em}
-{\small Las diapositivas \num{2}, \num{5}, \num{8}, \num{11} y \num{28} son
-separadores de sección: se pasan sin hablar. Los resultados van \textbf{por
-regla}: primero la data del estándar (animaciones de ruido bajo y alto, la
-evolución temporal) y los puntos del barrido, después lo mismo para el
-votante, y recién entonces las
-comparaciones entre reglas, cada una en una única diapositiva. Las del votante
-(15--17 y 23--24) repiten el formato del estándar y van más rápido.}
+{\small Las diapositivas \num{1}, \num{4}, \num{7}, \num{10}, \num{11},
+\num{19} y \num{30} son separadores de sección o de bloque: se pasan sin
+hablar. Los resultados van \textbf{por observable}, sin mezclar los análisis:
+primero todo lo de la polarización y después todo lo de la componente gigante.
+Dentro de cada bloque, por regla: la data (animaciones de ruido bajo y alto),
+la evolución temporal del observable y los puntos del barrido; recién entonces
+las comparaciones entre reglas, cada una en una única diapositiva. Las del
+votante (15--17 y 24--26) repiten el formato del estándar y van más rápido.}
 \end{tcolorbox}
 
 \vspace{0.6em}
@@ -112,7 +114,7 @@ duración, barras y demás condiciones también se dicen, no se muestran.}
 {\large\bfseries\color{azul} Introducción}
 \vspace{-0.2em}
 
-\diapo{3}{Sistema real}{\SI{45}{s}}
+\diapo{2}{Sistema real}{\SI{45}{s}}
 \begin{notas}
     \item \decir El fenómeno aparece en bandadas de aves, cardúmenes y colonias
           bacterianas: agentes que se autopropulsan y ajustan su dirección a la
@@ -126,7 +128,7 @@ duración, barras y demás condiciones también se dicen, no se muestran.}
           equilibrio.
 \end{notas}
 
-\diapo{4}{Modelo matemático}{\SI{75}{s}}
+\diapo{3}{Modelo matemático}{\SI{75}{s}}
 \begin{notas}
     \item \decir $N$ partículas puntuales, todas con la misma rapidez $v$; el
           único grado de libertad es la dirección $\theta_i$.
@@ -152,7 +154,7 @@ duración, barras y demás condiciones también se dicen, no se muestran.}
 {\large\bfseries\color{azul} Implementación}
 \vspace{-0.2em}
 
-\diapo{6}{Arquitectura}{\SI{40}{s}}
+\diapo{5}{Arquitectura}{\SI{40}{s}}
 \begin{notas}
     \item \decir El motor de simulación, en C++, sólo integra la dinámica y
           escribe \emph{estados}: posiciones y ángulos, paso a paso.
@@ -173,7 +175,7 @@ duración, barras y demás condiciones también se dicen, no se muestran.}
           simulación y pasa por el archivo.
 \end{notas}
 
-\diapo{7}{El paso de simulación}{\SI{60}{s}}
+\diapo{6}{El paso de simulación}{\SI{60}{s}}
 \begin{notas}
     \item \decir Tres pasos por iteración: buscar vecinos, calcular la nueva
           dirección, mover.
@@ -194,7 +196,7 @@ duración, barras y demás condiciones también se dicen, no se muestran.}
     \item \preg \emph{¿Es el mismo CIM del TP1?} Sí, es el mismo código sin
           modificar (el archivo es idéntico), junto con la geometría
           periódica. Eso es justamente lo que hace comparables los tiempos de
-          la diapositiva \num{27}.
+          la diapositiva \num{29}.
 \end{notas}
 
 % =========================================================
@@ -202,31 +204,34 @@ duración, barras y demás condiciones también se dicen, no se muestran.}
 {\large\bfseries\color{azul} Simulaciones}
 \vspace{-0.2em}
 
-\diapo{9}{Sistema particular}{\SI{40}{s}}
+\diapo{8}{Sistema particular}{\SI{40}{s}}
 \begin{notas}
-    \item \decir La tabla lleva sólo lo que barremos o elegimos: el ruido, las
-          densidades, la regla y las realizaciones. Lo que fija el enunciado
-          ($L$, el contorno, $r_c$, $v$, $\Delta t$) no se repite en las
-          diapositivas.
-    \item \decir Barremos el ruido de $0$ a \SI{5}{rad}, las tres densidades de
-          la consigna y los dos modelos, con \num{20} realizaciones por caso.
-    \item \nums Fijos por enunciado: $L = \SI{10}{m}$ con contorno periódico,
-          $r_c = \SI{1}{m}$, $v = \SI{0.03}{m/s}$, $\Delta t = \SI{1}{s}$.
+    \item \decir La tabla separa los parámetros del sistema de los de la
+          simulación. Del sistema: lo que fija el enunciado ($L = \SI{10}{m}$
+          con contorno periódico, $r_c = \SI{1}{m}$, $v = \SI{0.03}{m/s}$) y
+          los dos que se barren, el ruido $\eta \in [0, 5]$ rad y la densidad
+          $\rho$. De la simulación: el paso $\Delta t = \SI{1}{s}$ y las
+          $M = 20$ realizaciones por caso.
+    \item \decir La regla de interacción no es un parámetro del sistema: los
+          dos modelos, estándar y votante, se simulan sobre este mismo sistema
+          y con el mismo barrido.
+    \item \decir Los resultados no dependen de las semillas: todo lo que se
+          informa es el promedio sobre las 20 realizaciones, con su
+          dispersión.
     \item \decir Agregamos un barrido \textbf{extendido} a densidades bajas
           ($1/\pi$, $1/2\pi$ y $1/3\pi$) porque son las únicas para las que
           $\langle k\rangle$ cae por debajo del umbral de percolación y $S$ deja
           de estar pegado a la unidad. Se usa sólo en el estudio de clusters.
     \item \nums Paso del barrido de ruido: \SI{0.25}{rad} (21 valores).
           $N = 200$, \num{400}, \num{800} en el barrido principal; \num{32},
-          \num{16}, \num{11} en el extendido. Semillas \num{1} a \num{20};
-          \num{5040} corridas en total. Duración: \SI{5e3}{s}, y \SI{2e4}{s} a
+          \num{16}, \num{11} en el extendido. \num{5040} corridas en total. Duración: \SI{5e3}{s}, y \SI{2e4}{s} a
           baja densidad porque el transitorio de agregación es mucho más largo.
     \item \nums El CIM corre con $\Mc = 9$, el máximo admisible para esta caja.
     \item \preg Las semillas se reutilizan entre modelos: a igual $\rho$ y
           semilla, estándar y votante parten de la misma configuración inicial.
 \end{notas}
 
-\diapo{10}{Observables}{\SI{60}{s}}
+\diapo{9}{Observables}{\SI{60}{s}}
 \begin{notas}
     \item \decir La \textbf{polarización} \va{} mide cuán alineado está el
           sistema: es el módulo de la velocidad media, normalizado. Vale $1$ si
@@ -279,7 +284,7 @@ diapositiva: decirlo en Observables o cuando pregunten)}\par\vspace{0.3em}
     \item Como se evalúa sobre el promedio, \teq{} es \textbf{único por caso},
           no depende de la semilla y es el mismo para \va{} y para $S$ (la
           vertical punteada de las figuras de curvas promedio). En las figuras
-          de una realización (diapositivas 13, 16 y 20) la vertical es el \teq{}
+          de una realización (diapositivas 13, 16, 21 y 24) la vertical es el \teq{}
           de esa corrida, con el mismo criterio aplicado a ella sola.
     \item El \textbf{escalar} de cada observable es el promedio de
           \emph{todas} las muestras con $t \ge \teq$ de las 20 realizaciones,
@@ -296,17 +301,21 @@ diapositiva: decirlo en Observables o cuando pregunten)}\par\vspace{0.3em}
 \textbf{Números}: \teq{} del caso (promedio de 20), $\rho = 4$: estándar
 \SI{350}{s} ($\eta = 0{,}5$), \SI{650}{s} ($\eta = 2$), \SI{1100}{s}
 ($\eta = 4$); votante \SI{150}{s} ($\eta = 0{,}5$) y \SI{50}{s} ($\eta = 4$).
-En las diapositivas 13, 16 y 20 la vertical es de la semilla 1 sola: estándar
-\SI{250}{s} y \SI{450}{s}; votante \SI{150}{s} y \SI{50}{s}; $\eta = 2$ por
-densidad 200, 150, 700 y \SI{800}{s} ($\rho = 8$, 2, $1/\pi$, $1/3\pi$).
-A $\eta = 2$ por densidad: 200, 650, 950, 3650 y \SI{3250}{s} para
-$\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
+En las diapositivas 13, 16, 21 y 24 la vertical es de la semilla 1 sola:
+estándar \SI{250}{s} y \SI{450}{s}; votante \SI{150}{s} y \SI{50}{s}; a
+$\eta = 2$ por densidad, estándar 200, 150, 700 y \SI{800}{s} y votante 100,
+50, 100 y \SI{900}{s} ($\rho = 8$, 2, $1/\pi$, $1/3\pi$).
+\teq{} del caso a $\eta = 2$ por densidad: estándar 200, 650, 950, 3650 y
+\SI{3250}{s} para $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$; votante 50, 100, 550 y
+\SI{1200}{s} para $\rho = 8$, 2, $1/\pi$ y $1/3\pi$.}
 \end{tcolorbox}
 
 % =========================================================
 \vspace{0.7em}
 {\large\bfseries\color{azul} Resultados}
 \vspace{-0.2em}
+
+{\normalsize\bfseries\color{gris} Bloque 1: polarización (11--18)}
 
 \diapo{12}{Modelo estándar: ruido bajo y ruido alto}{\SI{30}{s}}
 \begin{notas}
@@ -325,7 +334,7 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
           las posiciones; los barridos escalares no las guardan.
 \end{notas}
 
-\diapo{13}{Modelo estándar: evolución temporal}{\SI{40}{s}}
+\diapo{13}{Modelo estándar: polarización, evolución temporal}{\SI{40}{s}}
 \begin{notas}
     \item \decir Las mismas dos corridas de las animaciones, una realización
           cada una: $\rho = \SI{4}{m^{-2}}$, semilla 1, $\eta = \SI{0.5}{rad}$
@@ -358,9 +367,10 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
           transitorio". El \teq{} \emph{del caso} (sobre el promedio de las
           20), que usa el punto de la curva siguiente, es \SI{350}{s} y
           \SI{1100}{s}.
-    \item \decir A la derecha, $S$ se queda pegado a $1$ en las dos: a
-          $\rho = \SI{4}{m^{-2}}$ el sistema está percolado desde la condición
-          inicial. Lo retomamos en el estudio de clusters.
+    \item \decir Acá se muestra sólo \va: la componente gigante tiene su
+          propio bloque más adelante. \preg A $\rho = \SI{4}{m^{-2}}$ $S$ queda
+          pegada a 1 en las dos corridas: el sistema está percolado desde la
+          condición inicial.
     \item \nums $\va = \num{0.986(3)}$ en $\eta = \SI{0.5}{rad}$ y
           \num{0.27(9)} en \SI{4}{rad}.
 \end{notas}
@@ -396,7 +406,7 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
     \item \decir Derecha, $\eta = \SI{4}{rad}$: desordenado, como el estándar.
 \end{notas}
 
-\diapo{16}{Modelo de votante: evolución temporal}{\SI{25}{s}}
+\diapo{16}{Modelo de votante: polarización, evolución temporal}{\SI{25}{s}}
 \begin{notas}
     \item \decir Las mismas dos corridas que en el estándar: $\rho = \SI{4}{m^{-2}}$,
           semilla 1, $\eta = \SI{0.5}{rad}$ y \SI{4}{rad}, una realización
@@ -453,7 +463,9 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
           una verificación cruzada de las dos implementaciones.
 \end{notas}
 
-\diapo{19}{Baja densidad: ruido bajo y ruido alto}{\SI{30}{s}}
+{\normalsize\bfseries\color{gris} Bloque 2: componente gigante (19--28)}
+
+\diapo{20}{Baja densidad: ruido bajo y ruido alto}{\SI{30}{s}}
 \begin{notas}
     \item \decir Para estudiar los clusters hace falta bajar la densidad: con
           las tres de la consigna el grafo de vecinos está percolado siempre y
@@ -471,7 +483,7 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
           reportadas; las bajas se agregan para que $S$ tenga rango.
 \end{notas}
 
-\diapo{20}{Componente gigante: evolución temporal}{\SI{40}{s}}
+\diapo{21}{Modelo estándar: componente gigante, evolución temporal}{\SI{40}{s}}
 \begin{notas}
     \item \decir Ésta es la figura del ítem (d): $S(t)$ a un mismo ruido
           $\eta = \SI{2}{rad}$ para cuatro densidades, una realización
@@ -491,7 +503,7 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
     \item \preg Sólo se muestra $S$: a baja densidad hay 32 y 11 partículas,
           y \va{} de una sola corrida es ruido puro que tapa a las demás
           curvas. Que \va{} sube \emph{junto con} $S$ se ve en el promedio de
-          las 20 (figura del informe) y en la diapositiva 22.
+          las 20 (figura del informe) y en la diapositiva 23.
     \item \nums Verticales de la figura (\teq{} de la semilla 1): \num{200},
           \num{150}, \num{700} y \SI{800}{s} para $\rho = 8$, \num{2},
           $1/\pi$ y $1/3\pi$. El \teq{} del caso (promedio de 20), que usan
@@ -507,7 +519,7 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
           aunque la ventana estacionaria sea corta.
 \end{notas}
 
-\diapo{21}{Modelo estándar: componente gigante contra ruido}{\SI{30}{s}}
+\diapo{22}{Modelo estándar: componente gigante contra ruido}{\SI{30}{s}}
 \begin{notas}
     \item \decir El punto (d) para las densidades: $S$ medio en el estacionario
           contra el ruido, dos de la consigna y las dos bajas, con el mismo eje
@@ -525,7 +537,7 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
           $1/3\pi$.
 \end{notas}
 
-\diapo{22}{Modelo estándar: polarización contra componente gigante}{\SI{30}{s}}
+\diapo{23}{Modelo estándar: polarización contra componente gigante}{\SI{30}{s}}
 \begin{notas}
     \item \decir El punto (e): \va{} contra $S$, un punto por cada ruido del
           barrido, las mismas cuatro densidades.
@@ -542,7 +554,31 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
           $0{,}157$ y $0{,}267$.
 \end{notas}
 
-\diapo{23}{Modelo de votante: componente gigante contra ruido}{\SI{20}{s}}
+\diapo{24}{Modelo de votante: componente gigante, evolución temporal}{\SI{25}{s}}
+\begin{notas}
+    \item \decir El ítem (d) para el votante: $S(t)$ al mismo ruido
+          $\eta = \SI{2}{rad}$, las mismas cuatro densidades y la misma
+          realización (semilla 1) que en el estándar.
+    \item \decir Las de la consigna otra vez en $S \simeq 1$; a $\rho = 2$ hay
+          caídas breves hasta $0{,}5$--$0{,}7$: grupos que se separan y se
+          vuelven a juntar, porque a este ruido el votante ya está
+          desordenado ($\va \approx 0{,}1$) y las partículas no viajan juntas.
+    \item \decir Las dos bajas ya \textbf{no agregan}: donde el estándar subía
+          hacia $S \to 1$, el votante se queda fluctuando entre $0{,}2$ y
+          $0{,}6$ desde el principio. A este ruido el votante está
+          fragmentado y el estándar no; es lo que muestra la curva siguiente.
+    \item \nums Verticales (\teq{} de la semilla 1): \num{100}, \num{50},
+          \num{100} y \SI{900}{s} para $\rho = 8$, \num{2}, $1/\pi$ y
+          $1/3\pi$. \teq{} del caso (promedio de 20): \num{50}, \num{100},
+          \num{550} y \SI{1200}{s}. $S$ estacionario: \num{1.000},
+          \num{0.97(7)}, \num{0.36(12)} y \num{0.37(13)}, contra \num{1.000},
+          \num{0.96(8)}, \num{0.67(19)} y \num{0.53(18)} del estándar.
+    \item \preg El \teq{} corto a baja densidad no es convergencia rápida sino
+          ausencia de transitorio de agregación: $S$ arranca y se queda en el
+          mismo nivel fluctuante.
+\end{notas}
+
+\diapo{25}{Modelo de votante: componente gigante contra ruido}{\SI{20}{s}}
 \begin{notas}
     \item \decir El punto (d) para el votante, con los mismos ejes y colores.
           Las de la consigna otra vez pegadas a $S = 1$ (mínimo \num{0.94(10)}
@@ -557,7 +593,7 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
     \item \nums $S(\eta = 5)$: \num{0.19} y \num{0.22} a $1/\pi$ y $1/3\pi$.
 \end{notas}
 
-\diapo{24}{Modelo de votante: polarización contra componente gigante}{\SI{20}{s}}
+\diapo{26}{Modelo de votante: polarización contra componente gigante}{\SI{20}{s}}
 \begin{notas}
     \item \decir El punto (e) para el votante. A $\rho = 8$ y 2 la
           degeneración es todavía más clara: $S$ queda en 1 mientras \va{}
@@ -569,10 +605,10 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
           \num{0.968} ($1/\pi$), \num{0.987} ($1/3\pi$).
 \end{notas}
 
-\diapo{25}{Comparación: componente gigante contra ruido}{\SI{30}{s}}
+\diapo{27}{Comparación: componente gigante contra ruido}{\SI{30}{s}}
 \begin{notas}
     \item \decir Las dos reglas a $\rho = 1/\pi$; las dos corridas animadas de
-          la diapositiva 19 son los puntos de $\eta = 0{,}5$ y \SI{5}{rad} de
+          la diapositiva 20 son los puntos de $\eta = 0{,}5$ y \SI{5}{rad} de
           la curva del estándar.
     \item \decir En las dos reglas $S$ decae de forma monótona con el ruido,
           hasta $S \simeq 0{,}2$: grupos de media docena de partículas.
@@ -593,7 +629,7 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
           ($\langle k\rangle$ entre \num{6.3} y \num{25}, siempre percolado).
 \end{notas}
 
-\diapo{26}{Comparación: polarización contra componente gigante}{\SI{30}{s}}
+\diapo{28}{Comparación: polarización contra componente gigante}{\SI{30}{s}}
 \begin{notas}
     \item \decir Cada punto es un valor de $\eta$ del barrido, a
           $\rho = 1/\pi$. Acá los dos observables están \emph{acoplados}: la
@@ -614,7 +650,7 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
           parámetros que fija la consigna, no del modelo.
 \end{notas}
 
-\diapo{27}{Tiempos de ejecución del CIM}{\SI{35}{s}}
+\diapo{29}{Tiempos de ejecución del CIM}{\SI{35}{s}}
 \begin{notas}
     \item \decir El cronómetro abarca sólo la búsqueda de vecinos, incluido el
           armado de las celdas, y excluye la dinámica y la escritura a disco.
@@ -654,10 +690,18 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
 {\large\bfseries\color{azul} Conclusiones}
 \vspace{-0.2em}
 
-\diapo{29}{Conclusiones}{\SI{60}{s}}
+\diapo{31}{Conclusiones}{\SI{60}{s}}
 \begin{notas}
     \item \decir Leer los cinco puntos tal como están; son la respuesta a los
-          ítems (b)--(f) y al de tiempos. Números de apoyo por si preguntan:
+          ítems (b)--(f) y al de tiempos.
+    \item \decir Al decir \textbf{percolado}, explicarlo: el grafo de vecinos
+          (un nodo por partícula, una arista por cada par a distancia menor
+          que $r_c$) tiene una componente conexa que abarca casi todo el
+          sistema, $S \simeq 1$: desde cualquier partícula se llega a casi
+          cualquier otra saltando de vecino en vecino. Con $\rho = 2$, 4 y
+          \SI{8}{m^{-2}} cada partícula tiene entre 6 y 25 vecinos, así que
+          eso ocurre desde la condición inicial y $S$ no aporta información.
+    \item Números de apoyo por si preguntan:
     \item \nums Ruido de media polarización a $\rho = 4$: \SI{3.2}{rad}
           (estándar) contra \SI{0.3}{rad} (votante). En $\eta = 0$ los dos dan
           $\va = 1$.
