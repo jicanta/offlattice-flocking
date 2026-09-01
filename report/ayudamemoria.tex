@@ -244,16 +244,10 @@ duración, barras y demás condiciones también se dicen, no se muestran.}
     \item \preg Ambos se calculan en el post-procesamiento; para $S$ se usa un
           barrido en anchura sobre listas de vecinos reconstruidas con el CIM.
     \item \decir Adelantar de palabra cómo pasamos de la curva al escalar (no
-          hay diapositiva para esto). El valor escalar se mide sólo en el
-          estacionario, con un criterio automático, sin umbrales a mano:
-          tomamos la curva \emph{promedio} de las \num{20} realizaciones,
-          calculamos su media en la segunda mitad de la corrida, y \teq{} es el
-          inicio del primer bloque de \SI{50}{s} cuya media cruza esa
-          referencia. Es único por caso, no depende de la semilla, y es el
-          mismo para \va{} y para $S$.
-    \item \decir El escalar es el promedio de \emph{todas} las muestras con
-          $t \ge \teq$ de las \num{20} realizaciones, y la barra de error de
-          todas las curvas es el desvío estándar de esas mismas muestras.
+          hay diapositiva para esto; el criterio completo está en el recuadro
+          de abajo). En una frase: \teq{} sale de la curva promedio de las
+          \num{20} realizaciones, y el escalar y su barra son el promedio y el
+          desvío de todas las muestras con $t \ge \teq$.
     \item \preg La barra mezcla la fluctuación temporal y la dispersión entre
           semillas a propósito: es la dispersión del observable en el
           estacionario, no el error de la media.
@@ -264,6 +258,45 @@ duración, barras y demás condiciones también se dicen, no se muestran.}
           \num{0.03}, o sea $0{,}3\,\sigma_{\va}$, un orden menor que la
           barra.
 \end{notas}
+
+\vspace{0.5em}
+\begin{tcolorbox}[colback=grisclaro,colframe=acento!50,boxrule=0.5pt,
+                  arc=2pt,left=6pt,right=6pt,top=4pt,bottom=4pt]
+{\small\bfseries\color{acento} Cómo se elige \teq{} (no está en ninguna
+diapositiva: decirlo en Observables o cuando pregunten)}\par\vspace{0.3em}
+{\small
+\begin{enumerate}
+    \setlength{\itemsep}{1pt}
+    \item Un \textbf{caso} es una terna (modelo, $\rho$, $\eta$), con $M = 20$
+          realizaciones que sólo difieren en la semilla. Se calcula la curva
+          \textbf{promedio} de las 20 realizaciones de $\va(t)$.
+    \item La \textbf{referencia} es la media de esa curva promedio en la
+          segunda mitad de la corrida, que ya está en el estacionario.
+    \item Se recorre la corrida en bloques de \SI{50}{s}: \teq{} es el
+          \textbf{inicio del primer bloque cuya media alcanza la referencia}.
+          Como el transitorio es monótono, ese cruce marca su final; no hay
+          umbrales elegidos a mano.
+    \item Como se evalúa sobre el promedio, \teq{} es \textbf{único por caso},
+          no depende de la semilla y es el mismo para \va{} y para $S$ (la
+          vertical punteada de las figuras).
+    \item El \textbf{escalar} de cada observable es el promedio de
+          \emph{todas} las muestras con $t \ge \teq$ de las 20 realizaciones,
+          y la \textbf{barra} es el desvío estándar de esas mismas muestras
+          (Ec.~8 del informe). Es la única definición de barra del trabajo,
+          salvo en los tiempos del CIM (desvío entre repeticiones).
+    \item Control: con \SI{5e3}{s} el criterio encuentra \teq{} en los 126
+          casos del barrido principal (\teq{} máximo \SI{2900}{s}); la mayor
+          diferencia entre la media del tercer y del cuarto cuarto es
+          \num{0.03}, o sea $0{,}3\,\sigma_{\va}$. A baja densidad las
+          corridas son de \SI{2e4}{s}: \teq{} llega a \SI{5.6e3}{s} con ruido
+          y a \SI{1.96e4}{s} en $\eta = 0$.
+\end{enumerate}
+\textbf{Números}: \teq{} de las corridas mostradas, $\rho = 4$: estándar
+\SI{350}{s} ($\eta = 0{,}5$), \SI{650}{s} ($\eta = 2$), \SI{1100}{s}
+($\eta = 4$); votante \SI{150}{s} ($\eta = 0{,}5$) y \SI{50}{s} ($\eta = 4$).
+A $\eta = 2$ por densidad: 200, 650, 950, 3650 y \SI{3250}{s} para
+$\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
+\end{tcolorbox}
 
 % =========================================================
 \vspace{0.7em}
