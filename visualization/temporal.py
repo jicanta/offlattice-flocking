@@ -8,7 +8,10 @@ Dos tipos de figura, siempre con dos paneles (va arriba, S abajo):
   curvas contra eta. Es la figura que explicita como se calcula el escalar.
 * Varios casos superpuestos: solo la curva promedio de cada caso, con su t_eq
   y su promedio estacionario. Sirve para comparar ruidos, densidades o
-  modelos.
+  modelos. Con --seed se dibuja una realizacion de cada caso en vez del
+  promedio, con el t_eq de esa corrida (mismo criterio, aplicado a ella sola)
+  y sin el promedio estacionario: se ve la fluctuacion real de una corrida,
+  no la que queda despues de promediar.
 
 Sin argumentos genera el juego completo de figuras del informe. Con --model,
 --rho y --eta genera una figura puntual.
@@ -37,15 +40,20 @@ GREY = "#9a9a9a"
 # caerian en el mismo pixel y el ultimo dibujado taparia al anterior.
 DASH_PHASES = [(phase, (1, 5)) for phase in (0, 2, 4, 1, 3, 5)]
 
-# Que significan la vertical punteada y la horizontal a trazos. En las figuras
-# de un solo caso cada trazo ya lleva su etiqueta; en las superpuestas no se
-# puede, porque habria una por serie, asi que se explican una sola vez.
-CONVENTION = [
-    Line2D([], [], color=GREY, linestyle=":", linewidth=1.2,
-           label="inicio del estacionario ($t_{eq}$)"),
-    Line2D([], [], color=GREY, linestyle="--", linewidth=1.0,
-           label="promedio en el estacionario"),
-]
+def convention(seed: int | None) -> list:
+    """Que significa cada trazo de una superposicion, explicado una sola vez.
+
+    En las figuras de un solo caso cada trazo ya lleva su etiqueta; en las
+    superpuestas no se puede, porque habria una por serie. Con una realizacion
+    por caso solo se marca t_eq: el promedio estacionario no se dibuja, porque
+    es el de las M realizaciones y no el de la corrida que se muestra.
+    """
+    handles = [Line2D([], [], color=GREY, linestyle=":", linewidth=1.2,
+                      label="inicio del estacionario ($t_{eq}$)")]
+    if seed is None:
+        handles.append(Line2D([], [], color=GREY, linestyle="--", linewidth=1.0,
+                              label="promedio en el estacionario"))
+    return handles
 
 
 class Cases:
@@ -181,11 +189,13 @@ def single_case(cases: Cases, model: str, rho: float, eta: float, folder) -> Non
 def overlay(cases: Cases, entries: list[tuple], folder, name: str, seed: int | None = None) -> None:
     """entries: [(model, rho, eta, etiqueta, color)].
 
-    Con seed se dibuja esa realizacion en lugar del promedio de las M. El
-    t_eq y el promedio estacionario que se marcan siguen calculandose sobre
-    las M realizaciones, que es la convencion unica del trabajo: lo que cambia
-    es solo la curva que se muestra, para que se vea la fluctuacion real de
-    una corrida y no la que queda despues de promediar.
+    Con seed se dibuja esa realizacion en lugar del promedio de las M, y la
+    vertical es el t_eq de esa corrida: el mismo criterio de
+    common.steady_state_start, aplicado a su va(t) en vez de a la curva
+    promedio. Asi la marca se corresponde con lo que se ve. Los escalares de
+    las curvas contra eta siguen usando el t_eq del caso (sobre el promedio de
+    las M), que puede diferir; el promedio estacionario no se marca en este
+    modo porque es el de las M y no el de la corrida dibujada.
     """
     figure, panels = new_figure()
     realizations = None
@@ -194,12 +204,17 @@ def overlay(cases: Cases, entries: list[tuple], folder, name: str, seed: int | N
         result = common.analyse_case(stack)
         realizations = result["M"] if realizations is None else min(realizations, result["M"])
         time = stack[0, :, 0]
-        start = result["start"]
         style = common.MODEL_STYLE[model]["linestyle"]
+        if seed is None:
+            start = result["start"]
+        else:
+            row = cases.row(model, rho, eta, seed)
+            start = min(common.steady_state_start(stack[row, :, common.COLUMN["va"]]),
+                        stack.shape[1] - 2)
         for axes, observable in zip(panels, OBSERVABLES):
             column = common.COLUMN[observable]
             curve = (stack[:, :, column].mean(axis=0) if seed is None
-                     else stack[cases.row(model, rho, eta, seed), :, column])
+                     else stack[row, :, column])
             # El t_eq va en la etiqueta: si dos verticales coinciden, el valor
             # sigue estando escrito aunque una tape a la otra.
             axes.plot(time, curve, color=color, linewidth=1.3 if seed is None else 0.9,
@@ -207,13 +222,14 @@ def overlay(cases: Cases, entries: list[tuple], folder, name: str, seed: int | N
                       label=f"{label},  $t_{{eq}}$ = {time[start]:.0f} s")
             axes.axvline(time[start], color=color, linewidth=1.2,
                          linestyle=DASH_PHASES[index % len(DASH_PHASES)])
-            axes.hlines(result[observable], time[start], time[-1], color=color,
-                        linestyle="--", linewidth=1.0, alpha=0.8)
+            if seed is None:
+                axes.hlines(result[observable], time[start], time[-1], color=color,
+                            linestyle="--", linewidth=1.0, alpha=0.8)
     # Dos leyendas: las series arriba del area de datos, porque las curvas
     # ocupan todo el ancho, y la convencion de trazos dentro del panel de S,
     # que es el que suele tener lugar libre.
     place_legend(figure, panels, min(len(entries), 3))
-    panels[-1].legend(handles=CONVENTION, loc="best",
+    panels[-1].legend(handles=convention(seed), loc="best",
                       fontsize=13 if common.STYLE == "diapositiva" else 9)
     common.save(figure, folder, name.replace("{M}", str(realizations)))
 

@@ -138,9 +138,14 @@ cluster-figures:
 # saturadas en S = 1 y las de 1/(k*pi) recorren todo el rango; juntas, y con el
 # eje en [0, 1], la comparacion es directa. El orden es el de la leyenda.
 MIXED_RHOS ?= 8,2,0.31831,0.106103
-# S(t) de la diapositiva del item (d): las tres densidades de la consigna y las
-# dos bajas del barrido extendido, superpuestas a un mismo ruido.
+# S(t) del item (d) en el informe: las tres densidades de la consigna y las dos
+# bajas del barrido extendido, superpuestas a un mismo ruido. En la diapositiva
+# van cuatro (sin rho = 4, que se superpone con la de 8), una realizacion por
+# curva como en las demas evoluciones temporales del mazo, y solo el panel de
+# S: a baja densidad hay 32 y 11 particulas, y va de una sola corrida es ruido
+# que tapa a las demas curvas.
 TEMPORAL_RHOS ?= 8,4,2,0.31831,0.106103
+SLIDE_RHOS    ?= 8,2,0.31831,0.106103
 
 mixed-figures:
 	$(PY) visualization/curves.py --sweeps $(SWEEP),$(CLUSTERS) \
@@ -201,7 +206,8 @@ figuras-diapositivas:
 	$(PY) visualization/temporal.py --model voter --rho 4 --etas $(PAR) \
 	    --seed $(TRIO_SEED) --item f --figures $(SLIDES) --estilo diapositiva
 	$(PY) visualization/temporal.py --sweeps $(SWEEP),$(CLUSTERS) --model vicsek --eta 2 \
-	    --rhos $(TEMPORAL_RHOS) --item d --figures $(SLIDES) --estilo diapositiva
+	    --rhos $(SLIDE_RHOS) --seed $(TRIO_SEED) --observables S --item d \
+	    --figures $(SLIDES) --estilo diapositiva
 	@for spec in $(FRAMES); do \
 	    $(PY) visualization/animate.py --run $(RUNS)/$${spec%%:*} \
 	        --snapshots $${spec#*:} --columns 1 \

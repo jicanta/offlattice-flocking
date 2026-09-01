@@ -94,25 +94,19 @@
 % lleva animaciones embebidas.
 \newcommand{\pendiente}{{\scriptsize\color{gris}\texttt{[link -- pendiente]}}}
 
-% Titulo del bloque de condiciones que acompana a cada figura (1.7).
-\newcommand{\setup}[1]{{\color{azul}\bfseries #1}\par\vspace{0.15em}}
-
 % Las constantes que fija el enunciado ($L$, contorno, $r_c$, $v$, $\Delta t$)
 % no se muestran: la diapositiva del sistema particular lo dice y el
 % ayuda-memoria lleva los valores por si preguntan. Junto a cada figura van
 % solo la densidad y el ruido (y la regla, si el titulo no la dice); semilla,
 % duracion, barras y demas se dicen en voz alta.
 
-% Figura a la izquierda, condiciones bajo las que se obtuvo a la derecha (1.7).
-\newcommand{\figpar}[3][0.66]{%
-    \begin{columns}[T,onlytextwidth]
-        \begin{column}{#1\textwidth}
-            \centering\includegraphics[width=\linewidth]{#2}
-        \end{column}\hfill
-        \begin{column}{\dimexpr0.97\textwidth-#1\textwidth\relax}
-            \raggedright\scriptsize#3
-        \end{column}
-    \end{columns}}
+% Figura centrada con la condicion bajo la que se obtuvo al pie (1.7): es el
+% formato de las comparaciones, cuya figura ya lleva las dos reglas en la
+% leyenda y solo falta decir la densidad.
+\newcommand{\figcond}[2]{%
+    \centering
+    \includegraphics[width=0.9\textwidth,height=0.74\textheight,keepaspectratio]{#1}\\[0.3em]
+    {\small #2}}
 
 % Dos cuadros de animacion, cada uno con su rotulo (el ruido) y el link
 % debajo (2.4.8); la densidad, comun a ambos, va centrada al pie.
@@ -491,9 +485,9 @@
 \begin{frame}{Modelo estándar: ruido bajo y ruido alto}
     \dosanim
         {a_animaciones/cuadro_vicsek_rho4_eta0.5_t3000.png}
-        {$\eta = \SI{0.5}{rad}$: ordenado}
+        {$\eta = \SI{0.5}{rad}$}
         {a_animaciones/cuadro_vicsek_rho4_eta4_t3000.png}
-        {$\eta = \SI{4}{rad}$: desordenado}
+        {$\eta = \SI{4}{rad}$}
         {$\rho = \SI{4}{m^{-2}}$}
 \end{frame}
 
@@ -513,9 +507,9 @@
 \begin{frame}{Modelo de votante: ruido bajo y ruido alto}
     \dosanim
         {a_animaciones/cuadro_voter_rho4_eta0.5_t3000.png}
-        {$\eta = \SI{0.5}{rad}$: \alert{dominios}, sin bandada única}
+        {$\eta = \SI{0.5}{rad}$}
         {a_animaciones/cuadro_voter_rho4_eta4_t3000.png}
-        {$\eta = \SI{4}{rad}$: desordenado}
+        {$\eta = \SI{4}{rad}$}
         {$\rho = \SI{4}{m^{-2}}$}
 \end{frame}
 
@@ -526,27 +520,14 @@
 \end{frame}
 
 \begin{frame}{Modelo de votante: polarización contra ruido}
-    \figpar[0.60]{c_va_vs_eta/va_vs_eta_voter_rho2-4-8_M20.png}{%
-        \setup{Cae un orden antes}
-        $\eta(\va = 0{,}5) \simeq \SI{0.3}{rad}$
-        \vspace{1.0em}
-
-        \setup{Se dan vuelta los colores}
-        La densidad pasa a tener \alert{signo opuesto}}
+    \centering
+    \includegraphics[width=0.9\textwidth,height=0.8\textheight,keepaspectratio]{c_va_vs_eta/va_vs_eta_voter_rho2-4-8_M20.png}
 \end{frame}
 
 % ----- Comparacion de las dos reglas -----
 
 \begin{frame}{Comparación: polarización contra ruido}
-    \figpar[0.60]{f_votante/va_vs_eta_vicsek_vs_voter_rho4_M20.png}{%
-        $\rho = \SI{4}{m^{-2}}$
-        \vspace{1.6em}
-
-        \setup{Mismo sistema, otra regla}
-        $\eta(\va = 0{,}5)$: \SI{3.2}{rad} $\to$ \SI{0.3}{rad}
-        \vspace{1.0em}
-
-        En $\eta = 0$ ambos ordenan: $\va = 1$}
+    \figcond{f_votante/va_vs_eta_vicsek_vs_voter_rho4_M20.png}{$\rho = \SI{4}{m^{-2}}$}
 \end{frame}
 
 % ----- Baja densidad: la data para S -----
@@ -554,24 +535,16 @@
 \begin{frame}{Baja densidad: ruido bajo y ruido alto}
     \dosanim
         {a_animaciones/cuadro_vicsek_rho1pi_eta0.5_t20000.png}
-        {$\eta = \SI{0.5}{rad}$: agregado, $S \to 1$}
+        {$\eta = \SI{0.5}{rad}$}
         {a_animaciones/cuadro_vicsek_rho1pi_eta5_t20000.png}
-        {$\eta = \SI{5}{rad}$: fragmentado, $S \simeq 0{,}2$}
+        {$\eta = \SI{5}{rad}$}
         {Modelo estándar, $\rho = 1/\pi\ \si{m^{-2}}$}
 \end{frame}
 
 \begin{frame}{Componente gigante: evolución temporal}
-    \figpar[0.72]{d_clusters/va_S_vs_t_vicsek_eta2_rhos8-4-2-1pi-1-3pi_promedioM20.png}{%
-        Modelo estándar, $\eta = \SI{2}{rad}$
-        \vspace{1.4em}
-
-        \setup{$\rho = 2$, $4$ y $\SI{8}{m^{-2}}$}
-        $S \simeq 1$ desde $t = 0$: \alert{siempre percolado}
-        \vspace{0.8em}
-
-        \setup{$1/\pi$ y $1/3\pi$}
-        $S$ parte de $0{,}15$ y crece por \alert{agregación};
-        \teq{} diez veces mayor}
+    \centering
+    \includegraphics[width=0.9\textwidth,height=0.74\textheight,keepaspectratio]{d_clusters/S_vs_t_vicsek_eta2_rhos8-2-1pi-1-3pi_semilla1.png}\\[0.3em]
+    {\small Modelo estándar, $\eta = \SI{2}{rad}$}
 \end{frame}
 
 \begin{frame}{Modelo estándar: componente gigante contra ruido}
@@ -595,49 +568,19 @@
 \end{frame}
 
 \begin{frame}{Comparación: componente gigante contra ruido}
-    \figpar[0.60]{f_votante/S_vs_eta_vicsek_vs_voter_rho1pi_M20.png}{%
-        $\rho = 1/\pi\ \si{m^{-2}}$
-        \vspace{1.2em}
-
-        \setup{El votante se fragmenta antes}
-        $\eta(S = 0{,}5)$: \SI{2.7}{rad} $\to$ \SI{1.2}{rad}
-        \vspace{1.0em}
-
-        En $\eta = 0$ ambos percolan: \alert{fragmenta el ruido}}
+    \figcond{f_votante/S_vs_eta_vicsek_vs_voter_rho1pi_M20.png}{$\rho = 1/\pi\ \si{m^{-2}}$}
 \end{frame}
 
 \begin{frame}{Comparación: polarización contra componente gigante}
-    \figpar[0.60]{f_votante/va_vs_S_vicsek_vs_voter_rho1pi_M20.png}{%
-        $\rho = 1/\pi\ \si{m^{-2}}$\\
-        un punto por cada $\eta$; líneas en orden de $\eta$
-        \vspace{1.4em}
-
-        \setup{Acoplados}
-        Las dos reglas casi colapsan: \\
-        Pearson $0{,}985$ y $0{,}968$
-        \vspace{1.0em}
-
-        \setup{A densidad alta no}
-        $\rho \ge \SI{2}{m^{-2}}$: $S \simeq 1$ siempre; \\
-        $\va$ queda como único grado de libertad}
+    \figcond{f_votante/va_vs_S_vicsek_vs_voter_rho1pi_M20.png}{$\rho = 1/\pi\ \si{m^{-2}}$}
 \end{frame}
 
 % ----- Tiempos -----
 
 \begin{frame}{Tiempos de ejecución del CIM}
-    \figpar[0.60]{g_tiempos_cim/tiempo_busqueda_vs_N_L20_M13_cim_bruta_tp1_log.png}{%
-        misma caja que el TP1\\
-        barra: desvío entre repeticiones\\
-        equipo descargado
-        \vspace{1.6em}
-
-        \setup{Exponentes ajustados}
-        $2{,}11$ (bruta) \enspace $1{,}34$ (CIM) \\[0.6em]
-
-        \setup{El CIM baja el prefactor}
-        Cruce en $N \simeq 90$; $\times\num{10}$ en $N = 1150$ \\[0.6em]
-
-        \alert{Misma pendiente que el TP1}}
+    \figcond{g_tiempos_cim/tiempo_busqueda_vs_N_L20_M13_cim_bruta_tp1_log.png}{%
+        misma caja que el TP1; barra: desvío entre repeticiones\\
+        exponentes ajustados: $2{,}11$ (bruta), $1{,}34$ (CIM)}
 \end{frame}
 
 % =========================================================
