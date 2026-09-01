@@ -90,9 +90,9 @@
 \newcommand{\Cmax}{\ensuremath{\mathcal{C}_{\mathrm{max}}}}
 \newcommand{\cita}[1]{{\scriptsize\color{gris}(#1)}}
 
-% Link a la animacion, debajo del cuadro fijo (2.4.8). El PDF que se entrega no
-% lleva animaciones embebidas.
-\newcommand{\pendiente}{{\scriptsize\color{gris}\texttt{[link -- pendiente]}}}
+% Link a la animacion, debajo del cuadro fijo (2.4.8): escrito explicitamente y
+% clickeable. El PDF que se entrega no lleva animaciones embebidas.
+\newcommand{\video}[1]{{\scriptsize\href{#1}{\texttt{\detokenize{#1}}}}}
 
 % Las constantes que fija el enunciado ($L$, contorno, $r_c$, $v$, $\Delta t$)
 % no se muestran: la diapositiva del sistema particular lo dice y el
@@ -110,21 +110,21 @@
 
 % Dos cuadros de animacion, cada uno con su rotulo (el ruido) y el link
 % debajo (2.4.8); la densidad, comun a ambos, va centrada al pie.
-\newcommand{\dosanim}[5]{%
+\newcommand{\dosanim}[7]{%
     \begin{columns}[T]
         \begin{column}{0.38\textwidth}
             \centering\includegraphics[width=\linewidth]{#1}\\[0.2em]
             {\small #2}\\[0.1em]
-            \pendiente
+            \video{#3}
         \end{column}
         \begin{column}{0.38\textwidth}
-            \centering\includegraphics[width=\linewidth]{#3}\\[0.2em]
-            {\small #4}\\[0.1em]
-            \pendiente
+            \centering\includegraphics[width=\linewidth]{#4}\\[0.2em]
+            {\small #5}\\[0.1em]
+            \video{#6}
         \end{column}
     \end{columns}
     \vspace{0.4em}
-    \centerline{\small #5}}
+    \centerline{\small #7}}
 
 \graphicspath{{../data/figuras_diapositivas/}}
 
@@ -486,8 +486,10 @@
     \dosanim
         {a_animaciones/cuadro_vicsek_rho4_eta0.5_t3000.png}
         {$\eta = \SI{0.5}{rad}$}
+        {https://youtu.be/NdiRDSNqLrU}
         {a_animaciones/cuadro_vicsek_rho4_eta4_t3000.png}
         {$\eta = \SI{4}{rad}$}
+        {https://youtu.be/LxqkFsOcyE8}
         {$\rho = \SI{4}{m^{-2}}$}
 \end{frame}
 
@@ -508,8 +510,10 @@
     \dosanim
         {a_animaciones/cuadro_voter_rho4_eta0.5_t3000.png}
         {$\eta = \SI{0.5}{rad}$}
+        {https://youtu.be/s5gE7K6xIb0}
         {a_animaciones/cuadro_voter_rho4_eta4_t3000.png}
         {$\eta = \SI{4}{rad}$}
+        {https://youtu.be/OEx4XdnXkis}
         {$\rho = \SI{4}{m^{-2}}$}
 \end{frame}
 
@@ -536,8 +540,10 @@
     \dosanim
         {a_animaciones/cuadro_vicsek_rho1pi_eta0.5_t20000.png}
         {$\eta = \SI{0.5}{rad}$}
+        {https://youtu.be/_LJnusRUPjY}
         {a_animaciones/cuadro_vicsek_rho1pi_eta5_t20000.png}
         {$\eta = \SI{5}{rad}$}
+        {https://youtu.be/mAwkTua0wks}
         {Modelo estándar, $\rho = 1/\pi\ \si{m^{-2}}$}
 \end{frame}
 
@@ -578,9 +584,8 @@
 % ----- Tiempos -----
 
 \begin{frame}{Tiempos de ejecución del CIM}
-    \figcond{g_tiempos_cim/tiempo_busqueda_vs_N_L20_M13_cim_bruta_tp1_log.png}{%
-        misma caja que el TP1; barra: desvío entre repeticiones\\
-        exponentes ajustados: $2{,}11$ (bruta), $1{,}34$ (CIM)}
+    \centering
+    \includegraphics[width=0.9\textwidth,height=0.8\textheight,keepaspectratio]{g_tiempos_cim/tiempo_busqueda_vs_N_L20_M13_cim_bruta_tp1_log.png}
 \end{frame}
 
 % =========================================================
@@ -588,34 +593,21 @@
 % =========================================================
 
 \begin{frame}{Conclusiones}
-    \vspace{-0.2em}
-    \begin{columns}[T,onlytextwidth]
-        \begin{column}{0.48\textwidth}\small
-            \begin{itemize}\setlength{\itemsep}{0.9em}
-                \item Estándar: \alert{transición continua} controlada por
-                      $\eta$
-                \item \alert{La densidad favorece el orden}:
-                      $\eta(\va = 0{,}5) = \SI{2.9}{rad} \to \SI{3.5}{rad}$
-                \item Votante: \alert{un orden más sensible}
-                      ($\eta(\va = 0{,}5) \simeq \SI{0.3}{rad}$), densidad con
-                      \alert{signo opuesto}
-                \item En $\eta = \SI{5}{rad}$ el votante queda desordenado
-                      por completo; el estándar todavía no
-            \end{itemize}
-        \end{column}\hfill
-        \begin{column}{0.48\textwidth}\small
-            \begin{itemize}\setlength{\itemsep}{0.9em}
-                \item Con $\rho = 2$, $4$, $\SI{8}{m^{-2}}$: $S \ge 0{,}90$
-                      siempre, \alert{no es un grado de libertad}
-                \item A $1/\pi$ y $1/3\pi$: $S$ \alert{acoplado} a $\va$;
-                      efecto de los parámetros, no del modelo
-                \item Sin ruido percola con un vecino por partícula:
-                      \alert{fragmenta el ruido}
-                \item CIM $\times\num{10}$ sobre la fuerza bruta en $N = 1150$,
-                      con el escalamiento del TP1
-            \end{itemize}
-        \end{column}
-    \end{columns}
+    \begin{itemize}\setlength{\itemsep}{1.1em}
+        \item El ruido destruye el orden en las dos reglas. En el estándar la
+              caída es gradual; en el votante ocurre con un ruido diez veces
+              menor ($\eta(\va = 0{,}5)$: \SI{3.2}{rad} contra \SI{0.3}{rad}
+              a $\rho = \SI{4}{m^{-2}}$).
+        \item La densidad ayuda al estándar y perjudica al votante: promediar
+              muchos vecinos atenúa el ruido, copiar a uno solo no.
+        \item Con las densidades de la consigna el sistema está siempre
+              percolado ($S \simeq 1$). Al bajar la densidad, $S$ cae con el
+              ruido y $\va$ crece junto con $S$.
+        \item Sin ruido los grupos no se deshacen, aun con un vecino por
+              partícula: lo que fragmenta es el ruido, no la densidad.
+        \item CIM: diez veces más rápido que la fuerza bruta en $N = 1150$,
+              con la misma pendiente que en el TP1.
+    \end{itemize}
 \end{frame}
 
 \begin{frame}[plain,noframenumbering]

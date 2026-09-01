@@ -621,7 +621,8 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
     \item \decir Para comparar con el TP1 hay que igualar la geometría, así que
           estas corridas replican su caja: $L = \SI{20}{m}$ y $\Mc = 13$, no las
           del resto del trabajo.
-    \item \decir La fuerza bruta crece como $\mathcal{O}(N^2)$; el CIM, con
+    \item \decir La fuerza bruta crece como $\mathcal{O}(N^2)$ (exponente
+          ajustado \num{2.11}); el CIM, con
           exponente \num{1.34}. No es \num{1} porque $L$ es fijo: al subir $N$
           sube la densidad y con ella el número de candidatos por celda.
     \item \decir Lo que el CIM reduce no es el orden sino el \textbf{prefactor}:
@@ -655,20 +656,25 @@ $\rho = 8$, 4, 2, $1/\pi$ y $1/3\pi$.}
 
 \diapo{29}{Conclusiones}{\SI{60}{s}}
 \begin{notas}
-    \item \decir El modelo estándar exhibe una transición continua
-          orden--desorden controlada por $\eta$, y la densidad favorece el
-          orden.
-    \item \decir El votante es un orden de magnitud más sensible al ruido y la
-          densidad le juega con signo opuesto; en $\eta = 0$ los dos coinciden
-          en $\va = 1$.
-    \item \decir Con las densidades de la consigna la componente gigante no es
-          un grado de libertad: $S \ge 0.90$ siempre. Al bajar la densidad ese
-          desacople desaparece y $S$ queda fuertemente acoplado a \va{}. O sea
-          que el desacople es un efecto de los parámetros, no del modelo.
-    \item \decir Sin ruido el sistema percola aun con un vecino por partícula:
-          lo que fragmenta es el ruido.
-    \item \decir Y el CIM es \num{10} veces más rápido que la fuerza bruta en
-          $N = 1150$, con el mismo escalamiento que medimos en el TP1.
+    \item \decir Leer los cinco puntos tal como están; son la respuesta a los
+          ítems (b)--(f) y al de tiempos. Números de apoyo por si preguntan:
+    \item \nums Ruido de media polarización a $\rho = 4$: \SI{3.2}{rad}
+          (estándar) contra \SI{0.3}{rad} (votante). En $\eta = 0$ los dos dan
+          $\va = 1$.
+    \item \nums Densidad: en el estándar $\eta(\va = 0{,}5)$ sube de
+          \SI{2.9}{rad} a \SI{3.5}{rad} al pasar de $\rho = 2$ a
+          \SI{8}{m^{-2}}; en el votante baja de \SI{0.4}{rad} a \SI{0.2}{rad}.
+          El estándar promedia $\langle k\rangle$ vecinos y atenúa el ruido
+          como $1/\sqrt{\langle k\rangle}$; el votante copia a uno solo.
+    \item \nums Percolación: $S \ge 0{,}90$ en todo el barrido con $\rho = 2$,
+          4 y 8 ($\langle k\rangle$ entre \num{6.3} y \num{25}). A $1/\pi$ y
+          $1/3\pi$, $S$ recorre de \num{0.2} a 1 y sigue a \va{} (Pearson
+          \num{0.985} y \num{0.968}).
+    \item \nums Sin ruido percola con $\langle k\rangle = 1$, por debajo del
+          umbral de un grafo geométrico aleatorio ($\approx 4{,}5$): la
+          agregación es irreversible y sólo el ruido la deshace.
+    \item \nums CIM: exponente \num{1.34} contra \num{2.11} de la fuerza
+          bruta; $\times\num{10}$ en $N = 1150$, misma pendiente que el TP1.
 \end{notas}
 
 \vspace{0.9em}

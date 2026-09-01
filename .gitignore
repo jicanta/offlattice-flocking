@@ -18,6 +18,9 @@ report/*.aux
 report/*.out
 report/*.toc
 
+# Videos para subir a YouTube (`make youtube`); el .md con los titulos si va
+youtube/*.mp4
+
 # Entregables generados por `make entregables`
 SdS_TP2_*.zip
 SdS_TP2_*.pdf

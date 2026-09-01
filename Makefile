@@ -29,6 +29,10 @@ SLIDES  := data/figuras_diapositivas
 ANIM_CASES := vicsek:4:0.5 vicsek:4:4 voter:4:0.5 voter:4:4 vicsek:2:3.5
 ANIM_STEPS := 3000
 ANIM_SAVE  := 5
+# Todos los cuadros guardados (steps / save + 1): la animacion termina en el
+# t = 3000 s del cuadro fijo de la diapositiva, que tiene que ser un fotograma
+# de la animacion (GuiaPresentaciones 2.4.8). Son 30 s a 20 fps.
+ANIM_FRAMES := 601
 SNAPSHOTS  := 0,250,1000,3000
 
 # Animaciones del item (d). El observable de ese item es S, asi que los dos
@@ -39,6 +43,8 @@ SNAPSHOTS  := 0,250,1000,3000
 CLUSTER_ANIM_CASES := vicsek:0.31831:0.5 vicsek:0.31831:5
 CLUSTER_ANIM_STEPS := 20000
 CLUSTER_ANIM_SAVE  := 25
+# Idem: llega al t = 20000 s del cuadro fijo. Son 40 s a 20 fps.
+CLUSTER_ANIM_FRAMES := 801
 CLUSTER_SNAPSHOTS  := 0,2000,8000,20000
 
 # Densidades del estudio extendido de clusters: rho = 1/(k*pi) da <k> = 1/k
@@ -84,7 +90,7 @@ animations: build
 	    (cd engine && ./build/flock simulate --model $$model --rho $$rho --eta $$eta \
 	        --steps $(ANIM_STEPS) --save-every $(ANIM_SAVE) --seed 1 --dir ../$$run) > /dev/null; \
 	    (cd engine && ./build/flock analyse --dir ../$$run) > /dev/null; \
-	    $(PY) visualization/animate.py --run $$run --frames 600; \
+	    $(PY) visualization/animate.py --run $$run --frames $(ANIM_FRAMES); \
 	    $(PY) visualization/animate.py --run $$run --snapshots $(SNAPSHOTS); \
 	done
 	@for spec in $(CLUSTER_ANIM_CASES); do \
@@ -95,11 +101,29 @@ animations: build
 	        --steps $(CLUSTER_ANIM_STEPS) --save-every $(CLUSTER_ANIM_SAVE) --seed 1 \
 	        --dir ../$$run) > /dev/null; \
 	    (cd engine && ./build/flock analyse --dir ../$$run) > /dev/null; \
-	    $(PY) visualization/animate.py --run $$run --frames 600 \
+	    $(PY) visualization/animate.py --run $$run --frames $(CLUSTER_ANIM_FRAMES) \
 	        --name $${model}_rho1pi_eta$${eta}.mp4; \
 	    $(PY) visualization/animate.py --run $$run --snapshots $(CLUSTER_SNAPSHOTS) \
 	        --name cuadros_$${model}_rho1pi_eta$${eta}_t$$(echo $(CLUSTER_SNAPSHOTS) | tr , -).png; \
 	done
+
+# Las seis animaciones que van linkeadas en las diapositivas, copiadas con un
+# nombre legible para subirlas a YouTube (el nombre del archivo queda como
+# titulo por defecto), numeradas en el orden del mazo. Los links se pegan
+# despues en report/presentacion.tex (macro \dosanim). youtube/titulos.md
+# tiene el titulo y la descripcion sugeridos de cada una.
+YOUTUBE := youtube
+ANIM    := data/figures/a_animaciones
+.PHONY: youtube
+youtube:
+	mkdir -p $(YOUTUBE)
+	cp $(ANIM)/vicsek_rho4_eta0.5.mp4   "$(YOUTUBE)/01 - SdS TP2 G10 - Modelo estandar - rho 4 - eta 0.5 rad.mp4"
+	cp $(ANIM)/vicsek_rho4_eta4.mp4     "$(YOUTUBE)/02 - SdS TP2 G10 - Modelo estandar - rho 4 - eta 4 rad.mp4"
+	cp $(ANIM)/voter_rho4_eta0.5.mp4    "$(YOUTUBE)/03 - SdS TP2 G10 - Modelo de votante - rho 4 - eta 0.5 rad.mp4"
+	cp $(ANIM)/voter_rho4_eta4.mp4      "$(YOUTUBE)/04 - SdS TP2 G10 - Modelo de votante - rho 4 - eta 4 rad.mp4"
+	cp $(ANIM)/vicsek_rho1pi_eta0.5.mp4 "$(YOUTUBE)/05 - SdS TP2 G10 - Modelo estandar - rho 0.32 - eta 0.5 rad.mp4"
+	cp $(ANIM)/vicsek_rho1pi_eta5.mp4   "$(YOUTUBE)/06 - SdS TP2 G10 - Modelo estandar - rho 0.32 - eta 5 rad.mp4"
+	@ls -l $(YOUTUBE)/*.mp4 | awk '{printf "  %5.1f MB  ", $$5/1e6; for (i=9;i<=NF;i++) printf "%s ", $$i; print ""}'
 
 # Misma caja que el TP1 (L = 20, M = 13) y mismos N, para que los tiempos sean
 # comparables. Correr con la maquina descargada.
