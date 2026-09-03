@@ -24,3 +24,6 @@ youtube/*.mp4
 # Entregables generados por `make entregables`
 SdS_TP2_*.zip
 SdS_TP2_*.pdf
+report/informe.synctex.gz
+report/informe.fls
+report/informe.fdb_latexmk
