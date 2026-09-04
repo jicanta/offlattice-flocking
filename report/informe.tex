@@ -137,8 +137,7 @@ Ya que todas las partículas, incluyendo la misma $i$, participan tanto del sort
 
 \subsection{Observables}
 
-La \textbf{polarización} es el módulo de la velocidad media normalizado por la
-rapidez,
+La \textbf{polarización} es definida como el módulo de la velocidad media normalizado por la rapidez,
 
 \begin{equation}
     \va(t) = \frac{1}{N v} \left\| \sum_{i=1}^{N} \mathbf{v}_i(t) \right\|
@@ -147,19 +146,16 @@ rapidez,
     \label{eq:polarizacion}
 \end{equation}
 
-y vale 1 si todas las partículas se mueven en la misma dirección. Si las
-direcciones son independientes y uniformes, la suma es una caminata al azar de
-$N$ pasos unitarios y el valor esperado no es cero sino
+Si todas las partículas se mueven en la misma dirección, la polarización valdrá 1. Pero si las direcciones son independientes y uniformes, la suma representará una caminata aleatoria de $N$ pasos, con valor esperado
 
 \begin{equation}
     \langle \va \rangle_{\text{des}} = \sqrt{\pi/4N} \simeq 0{,}886/\sqrt{N},
     \label{eq:piso}
 \end{equation}
 
-el \textbf{piso por tamaño finito}: en un sistema finito \va{} nunca se anula.
-Un \textbf{cluster} es una componente conexa del grafo con un nodo por
-partícula y una arista por cada par a distancia menor que $r_c$
-(Fig.~\ref{fig:esquema}b). Con $\Cmax(t)$ la componente mayor,
+debido al \textbf{piso por tamaño finito}, \va{} no se anula en un sistema finito.
+
+Un \textbf{cluster} es una componente conexa del grafo dónde se representa a cada partícula con un nodo. Y cada par a distancia menor que $r_c$ es unido por una arista. Tomando $\Cmax(t)$ como la componente mayor,
 
 \begin{equation}
     S(t) = \frac{|\Cmax(t)|}{N} \ \in \left[\tfrac{1}{N},\,1\right].
