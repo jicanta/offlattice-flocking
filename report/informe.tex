@@ -237,28 +237,9 @@ La componente gigante se obtiene iterando sobre los arreglos de vecinos construi
 \section{Simulaciones}
 % =========================================================
 
-La Tabla~\ref{tab:parametros} resume los parámetros; todas las figuras de
-resultados usan los valores fijos de esa tabla. Hay dos barridos. El
-\textbf{principal} usa
-$\rho = 2,\,4,\,\SI{8}{m^{-2}}$ y alimenta todos los resultados. El
-\textbf{extendido} agrega $\rho = 1/\pi,\ 1/2\pi,\ 1/3\pi\ \si{m^{-2}}$ y se
-usa sólo en el estudio de clusters (Secciones \ref{sec:S} y \ref{sec:vaS}):
-son las únicas densidades del trabajo con
-$\langle k \rangle = \rho\,\pi r_c^2$ por debajo del umbral de percolación de
-un grafo geométrico aleatorio bidimensional ($\approx 4{,}5$), y por eso las
-únicas donde $S$ no queda pegado a 1. Dentro de cada barrido, las evoluciones
-temporales y las curvas escalares salen de las mismas corridas.
-
-Un \textbf{caso} es una terna (modelo, $\rho$, $\eta$); de cada caso se corren
-$M$ realizaciones que sólo difieren en la semilla. Cada corrida parte
-desordenada y atraviesa un transitorio, así que el escalar se mide sólo en el
-estacionario. El instante \teq{} se calcula sobre la curva promedio de las $M$
-realizaciones de $\va(t)$: la referencia es la media de esa curva en la segunda
-mitad de la corrida, que ya está en el estacionario, y \teq{} es el inicio del
-primer bloque de \SI{50}{s} cuya media cruza esa referencia. Es único por caso
-y vale para \va{} y para $S$. El escalar de un observable $X \in \{\va, S\}$ y
-su barra de error son el promedio y el desvío estándar de \textbf{todas} las
-muestras con $t \ge \teq$ de las $M$ realizaciones:
+Un \textbf{caso} es una terna (modelo, $\rho$, $\eta$), de cada caso se corren $M$ ejecuciones alterando únicamente la semilla.
+Cada simulación inicia desordenada, atraviesa un transitorio y alcanza un estado estacionario. Por lo que el escalar se mide sólo en el estacionario. El instante \teq{} se calcula sobre la curva promedio de las $M$ realizaciones de $\va(t)$.
+La referencia es la media de la curva en la segunda mitad de la corrida, que ya está en el estacionario, y \teq{} es el inicio del primer bloque de \SI{50}{s} cuya media cruza la referencia. Es único en cada caso y vale para \va{} y para $S$. El escalar de un observable $X \in \{\va, S\}$ y su barra de error son el promedio y el desvío estándar de \textbf{todas} las muestras con $t \ge \teq$ de las $M$ realizaciones
 
 \begin{equation}
     \langle X \rangle = \frac{1}{M T} \sum_{m=1}^{M} \sum_{t \ge \teq} X_m(t),
@@ -268,21 +249,8 @@ muestras con $t \ge \teq$ de las $M$ realizaciones:
     \label{eq:promedio}
 \end{equation}
 
-con $T$ la cantidad de pasos posteriores a \teq. Se prefiere esta barra al
-desvío entre los promedios de cada realización porque este último oculta la
-fluctuación temporal, que en el votante es lo dominante
-(Sección~\ref{sec:votante}). Para los tiempos de ejecución
-(Sección~\ref{sec:tiempos}) la barra es el desvío entre repeticiones.
-
-Con \num{5000} pasos el criterio encuentra \teq{} en los \num{126} casos del
-barrido principal. Como control se compara la media de la curva promedio en el
-tercer y en el cuarto cuarto de la corrida: la mayor diferencia, en
-$\rho = \SI{2}{m^{-2}}$ con $\eta = \SI{2.5}{rad}$ y \SI{3.75}{rad}, en plena
-transición, es de \num{0.03}, o sea $0{,}3\,\sigma_{\va}$, un orden por debajo
-de la barra reportada. El barrido
-extendido sí necesita corridas de \SI{2e4}{s}: a $\rho \le 1/\pi$ los
-encuentros son raros, el transitorio de agregación se alarga y \teq{} llega a
-\SI{5.6e3}{s} con ruido y a \SI{1.96e4}{s} en $\eta = 0$.
+donde $T$ es la cantidad de pasos posteriores a \teq. Se prefiere esta barra al desvío entre los promedios de cada simulación ya que este último oculta la fluctuación temporal, que en el votante es lo dominante (Sección~\ref{sec:votante}).
+Para los tiempos de ejecución (Sección~\ref{sec:tiempos}) la barra es el desvío entre repeticiones.
 
 \begin{table}[!htb]
     \centering
@@ -316,6 +284,22 @@ encuentros son raros, el transitorio de agregación se alarga y \teq{} llega a
         \bottomrule
     \end{tabular}
 \end{table}
+
+La Tabla~\ref{tab:parametros} resume los parámetros; todas las figuras de
+resultados usan los valores fijos de esa tabla. Hay dos barridos. El
+\textbf{principal} usa
+$\rho = 2,\,4,\,\SI{8}{m^{-2}}$ y alimenta todos los resultados. El
+\textbf{extendido} agrega $\rho = 1/\pi,\ 1/2\pi,\ 1/3\pi\ \si{m^{-2}}$ y se
+usa sólo en el estudio de clusters (Secciones \ref{sec:S} y \ref{sec:vaS}):
+son las únicas densidades del trabajo con
+$\langle k \rangle = \rho\,\pi r_c^2$ por debajo del umbral de percolación de
+un grafo geométrico aleatorio bidimensional ($\approx 4{,}5$), y por eso las
+únicas donde $S$ no queda pegado a 1. Dentro de cada barrido, las evoluciones
+temporales y las curvas escalares salen de las mismas corridas.
+
+Con \num{5000} pasos el criterio encuentra \teq{} en los \num{126} casos del barrido principal. Como control se compara la media de la curva promedio en el tercer y en el cuarto cuarto de la corrida. La mayor diferencia, en $\rho = \SI{2}{m^{-2}}$ con $\eta = \SI{2.5}{rad}$ y \SI{3.75}{rad}, durante el estado de transición, es de \num{0.03}, es decir, $0{,}3\,\sigma_{\va}$, un orden por debajo de la barra reportada.
+El barrido extendido sí necesita corridas de \SI{2e4}{s}, con $\rho \le 1/\pi$ el transitorio de agregación se alarga y \teq{} llega a \SI{5.6e3}{s} con ruido y a \SI{1.96e4}{s} en $\eta = 0$.
+
 
 % =========================================================
 \section{Resultados}
