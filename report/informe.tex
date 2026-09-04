@@ -168,17 +168,10 @@ Ambos observables son adimensionales.
 \section{Implementación}
 % =========================================================
 
-El trabajo se divide en módulos comunicados por archivos de texto: el motor
-de simulación en C++, que sólo integra la dinámica y
-escribe estados; una etapa de análisis que calcula los observables
-\textbf{después} de simular, leyendo esos archivos; y la animación y las
-figuras en Python. El motor escribe \texttt{static.txt} (parámetros de la
-corrida) y \texttt{dynamic.txt} (por cuadro, una línea con $t$ y luego $N$
-líneas \texttt{x y theta}); el comando \texttt{analyse} lee ambos y escribe
-\texttt{observables.txt} (una línea \texttt{t va S} por cuadro). Guardar los
-estados de las \num{5040} corridas del barrido ocuparía cientos de gigabytes,
-así que cada corrida escribe a un archivo temporal que el análisis lee apenas
-termina la simulación y borra después.
+El trabajo se divide en módulos aislados: El motor de simulación, escrito C++, que computa la dinámica y vuelca los estados a un archivo de texto
+Posteriormente, se utiliza python para ejecutar una etapa de análisis que calcula los observables. Y en base a los resultados obtenidos se realiza la animación y se procesan las figuras.
+El motor escribe \texttt{static.txt} (parámetros de lacorrida) y \texttt{dynamic.txt} (por cuadro, una línea con $t$ y luego $N$ líneas \texttt{x y theta}). El comando \texttt{analyse} lee ambos y escribe \texttt{observables.txt} (una línea \texttt{t va S} por cuadro).
+Ya que guardar de forma permanente todos los estados de todas las corridas del barrido ocuparía cientos de gigabytes, cada corrida escribe los resultados en un archivo temporal que el análisis lee tan pronto como finalice la simulación.
 
 Cada paso tiene tres etapas: \textbf{(i)} se arma $\mathcal{N}_i$ con el CIM;
 \textbf{(ii)} se evalúa $\Theta_i$ según la Ec.~\eqref{eq:vicsek} o la
