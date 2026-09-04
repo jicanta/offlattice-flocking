@@ -84,17 +84,9 @@
 Cuando observamos bandadas, cardúmenes, o colonias de bacterias, encontramos que del movimiento individual de cada agente surgen patrones colectivos emergentes, donde el conjunto alcanza una dirección de movimiento común.
 Vicsek \textit{et al.} \cite{vicsek1995} presenta evidencia numérica de que este ordenamiento aparece como una transición de fase continua, donde la velocidad promedio se puede escribir en escala de $(\eta_c - \eta)^\beta$, con $\beta \simeq 0.45$ y donde $\eta$ es un parámetro de perturbación aleatoria.
 
-En este trabajo se estudia esa transición por simulación, con dos reglas de
-interacción sobre la misma dinámica: el \textbf{modelo estándar}
-\cite{vicsek1995}, en el que cada partícula adopta la dirección promedio de su
-entorno, y el \textbf{modelo de votante} \cite{loscar2021}, en el que copia la
-dirección de un único vecino elegido al azar. Se miden dos observables: la
-\textbf{polarización} \va, que indica cuán alineado está el sistema, y la
-fracción $S$ de partículas en la \textbf{componente gigante} del grafo de
-vecinos, que indica cuán conectado está. Se estudia cómo dependen de $\eta$ y
-de la densidad $\rho$, cómo se relacionan entre sí y en qué difieren las dos
-reglas. Además se mide el tiempo del \textit{Cell Index Method} (CIM) usado
-para buscar vecinos y se lo compara con el del Trabajo Práctico 1.
+A continuación se simularán agentes auto-propulsados, utilizando dos reglas de interacción distintas: el \textbf{modelo estándar} \cite{vicsek1995}, en el que cada individuo adopta la dirección promedio de los agentes de su entorno, y el \textbf{modelo de votante} \cite{loscar2021}, en el que copia la dirección de un único vecino elegido al azar.
+Se medirán dos observables: la \textbf{polarización} \va, que indica que tan alineado se encuentra el sistema, y la fracción $S$ de partículas en la \textbf{componente gigante} del grafo de vecinos, que indica que tan conectado está.
+Se estudiará cómo varían en función de $\eta$ y de la densidad $\rho$, y cómo se relacionan entre sí. Además se medirá el tiempo del \textit{Cell Index Method} (CIM) utilizado para buscar vecinos y se lo comparará con el del Trabajo Práctico 1.
 
 % =========================================================
 \section{Modelo}
@@ -102,20 +94,14 @@ para buscar vecinos y se lo compara con el del Trabajo Práctico 1.
 
 \subsection{Dinámica}
 
-El sistema tiene $N$ partículas puntuales en una caja cuadrada de lado $L$ con
-contorno periódico. Todas se mueven con la misma rapidez $v$, así que el estado
-de la partícula $i$ es su posición $\mathbf{r}_i(t)$ y el ángulo $\theta_i(t)$
-de su velocidad. La densidad es $\rho = N/L^2$. La actualización es
-\textbf{sincrónica}: todo lo que vale en $t+1$ se calcula con el estado en $t$.
-Las posiciones evolucionan según
+El sistema presenta $N$ partículas puntuales en una caja cuadrada de lado $L$ con contorno periódico. Todas se mueven con la misma rapidez $v$, de esta forma, el estado de cada partícula $i$ es su posición $\mathbf{r}_i(t)$ y el ángulo $\theta_i(t)$ de su velocidad. La densidad es $\rho = N/L^2$. La actualización es sincrónica, es decir, el estado $t+1$ se calcula en función del estado en $t$. Las posiciones se actualizan según la ecuación
 
 \begin{equation}
     \mathbf{r}_i(t+1) = \mathbf{r}_i(t) + \mathbf{v}_i(t)\,\Delta t,
     \label{eq:posicion}
 \end{equation}
 
-con $\mathbf{v}_i$ de módulo $v$ y dirección $\theta_i(t)$, la del instante
-$t$; las coordenadas se reingresan a la caja. Los ángulos evolucionan como
+con $\mathbf{v}_i$ de módulo $v$ y dirección $\theta_i(t)$, la del instante $t$; se aplican condiciones periódicas de contorno a las coordenadas. Los ángulos evolucionan siguiendo la ecuación
 
 \begin{equation}
     \theta_i(t+1) = \Theta_i(t) + \Delta\theta_i,
@@ -124,9 +110,7 @@ $t$; las coordenadas se reingresan a la caja. Los ángulos evolucionan como
     \label{eq:angulo}
 \end{equation}
 
-donde $\Theta_i(t)$ es la dirección que fija la regla de interacción, $\eta$ la
-amplitud del ruido en radianes y $\Delta\theta_i$ una variable uniforme e
-independiente por partícula y por paso.
+donde $\Theta_i(t)$ es la dirección que fijada por la regla de interacción, $\eta$ la amplitud del ruido en radianes y $\Delta\theta_i$ una variable uniforme e independiente por partícula y por paso.
 
 \subsection{Reglas de interacción}
 
