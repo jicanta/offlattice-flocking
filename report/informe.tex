@@ -178,15 +178,8 @@ Primero se construye $\mathcal{N}_i$ con el CIM,
 posteriormente se evalúa $\Theta_i$ según la Ec.~\eqref{eq:vicsek} o la Ec.~\eqref{eq:votante}, se le suma el ruido y se guarda el resultado en un arreglo auxiliar (sin pisar el estado en $t$).
 Por último, se aplica la Ec.~\eqref{eq:posicion} a las direcciones anteriores, a continuación, podemos reemplazar las direcciones anteriores con las del auxiliar. Sin el segundo arreglo, una partícula podría alinearse con direcciones de la siguiente iteración y el resultado dependería del orden de iteración de este.
 
-Se reutiliza sin cambios el CIM del Trabajo Práctico 1, para que los tiempos de
-ambos trabajos midan el mismo algoritmo. La caja se divide en $\Mc \times \Mc$
-celdas y cada partícula se compara sólo con las de su celda y las ocho
-adyacentes; eso requiere $L/\Mc > r_c$, que con $L = \SI{10}{m}$ y
-$r_c = \SI{1}{m}$ acota $\Mc \le 9$, y se usa el máximo. La componente gigante
-se obtiene en el análisis por barrido en anchura sobre listas de vecinos
-reconstruidas con el mismo CIM. Como control, el motor implementa también una
-búsqueda por fuerza bruta $\mathcal{O}(N^2)$: con la misma semilla ambos
-métodos dan trayectorias idénticas.
+Se reutiliza el CIM del Trabajo Práctico 1 sin ninguna modificación, de forma tal en que los tiempos de ejecución sean comparables con los anteriores. La caja se divide en $\Mc \times \Mc$ celdas y cada partícula se compara sólo con las de su celda y las ocho adyacentes. Para esto, será necesario que se cumpla $L/\Mc > r_c$, $L = \SI{10}{m}$ y $r_c = \SI{1}{m}$ acota $\Mc \le 9$, y se usa el máximo.
+La componente gigante se obtiene iterando sobre los arreglos de vecinos construidas por el CIM. Como control, el motor también implementa una búsqueda alternativa por fuerza bruta $\mathcal{O}(N^2)$. Dada la misma semilla, ambos métodos dan trayectorias idénticas.
 
 \begin{figure}[!htb]
     \centering
