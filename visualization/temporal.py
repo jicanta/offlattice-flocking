@@ -13,6 +13,11 @@ Dos tipos de figura, siempre con dos paneles (va arriba, S abajo):
   y sin el promedio estacionario: se ve la fluctuacion real de una corrida,
   no la que queda despues de promediar.
 
+En las superposiciones el t_eq de cada serie va escrito en su etiqueta de la
+leyenda; no hay un recuadro aparte con la convencion de trazos, que taparia
+datos y repetiria lo que ya dice la leyenda (el epigrafe del informe explica
+los trazos).
+
 Sin argumentos genera el juego completo de figuras del informe. Con --model,
 --rho y --eta genera una figura puntual.
 
@@ -30,31 +35,27 @@ from functools import lru_cache
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.lines import Line2D
-
 import common
 
 GREY = "#9a9a9a"
 
-# Fases distintas del punteado de las verticales: dos casos con el mismo t_eq
-# caerian en el mismo pixel y el ultimo dibujado taparia al anterior.
-DASH_PHASES = [(phase, (1, 5)) for phase in (0, 2, 4, 1, 3, 5)]
+# Trazo de las verticales de t_eq: rayas de 4 puntos con hueco de 4, en fases
+# distintas para cada caso, de modo que dos casos con el mismo t_eq se
+# intercalen en vez de que el ultimo dibujado tape al anterior. El trazo es
+# ancho a proposito: un punteado fino no se ve proyectado.
+DASH_PHASES = [(phase, (4, 4)) for phase in (0, 4, 2, 6, 1, 5)]
 
-def convention(seed: int | None) -> list:
-    """Que significa cada trazo de una superposicion, explicado una sola vez.
 
-    En las figuras de un solo caso cada trazo ya lleva su etiqueta; en las
-    superpuestas no se puede, porque habria una por serie. Con una realizacion
-    por caso solo se marca t_eq: el promedio estacionario no se dibuja, porque
-    es el de las M realizaciones y no el de la corrida que se muestra.
-    """
-    handles = [Line2D([], [], color=GREY, linestyle=":", linewidth=1.2,
-                      label="inicio del estacionario ($t_{eq}$)")]
-    if seed is None:
-        handles.append(Line2D([], [], color=GREY, linestyle="--", linewidth=1.0,
-                              label="promedio en el estacionario"))
-    return handles
+def vertical_width() -> float:
+    return 2.4 if common.STYLE == "diapositiva" else 1.4
 
+
+def curve_width(seed) -> float:
+    """Ancho de las curvas superpuestas: una realizacion es mas ruidosa que
+    el promedio y va un poco mas fina, pero nunca tanto que se pierda."""
+    if common.STYLE == "diapositiva":
+        return 2.0 if seed is not None else 2.6
+    return 1.1 if seed is not None else 1.4
 
 class Cases:
     """Carga (y recuerda) las realizaciones de cada caso del barrido."""
@@ -94,7 +95,9 @@ OBSERVABLES: tuple = ("va", "S")
 def new_figure():
     """Un panel por observable: va arriba y S abajo, o uno al lado del otro."""
     if len(OBSERVABLES) == 1:
-        size = (8.6, 4.8) if common.STYLE == "diapositiva" else (5.6, 3.3)
+        # En la diapositiva el panel unico es ancho (16:9 con la leyenda
+        # encima) para que la figura llene el ancho del slide.
+        size = (11.0, 4.6) if common.STYLE == "diapositiva" else (5.6, 3.3)
         figure, axes = plt.subplots(figsize=size)
         panels = [axes]
         axes.set_xlabel(common.AXIS_TIME)
@@ -199,12 +202,16 @@ def overlay(cases: Cases, entries: list[tuple], folder, name: str, seed: int | N
     """
     figure, panels = new_figure()
     realizations = None
+    # El trazo de cada regla (llena el estandar, de trazos el votante) solo
+    # distingue algo cuando la figura mezcla las dos; con una sola regla las
+    # curvas van llenas, que sobre una serie ruidosa se lee mucho mejor.
+    mixed_models = len({entry[0] for entry in entries}) > 1
     for index, (model, rho, eta, label, color) in enumerate(entries):
         stack = cases.stack(model, rho, eta)
         result = common.analyse_case(stack)
         realizations = result["M"] if realizations is None else min(realizations, result["M"])
         time = stack[0, :, 0]
-        style = common.MODEL_STYLE[model]["linestyle"]
+        style = common.MODEL_STYLE[model]["linestyle"] if mixed_models else "-"
         if seed is None:
             start = result["start"]
         else:
@@ -217,20 +224,17 @@ def overlay(cases: Cases, entries: list[tuple], folder, name: str, seed: int | N
                      else stack[row, :, column])
             # El t_eq va en la etiqueta: si dos verticales coinciden, el valor
             # sigue estando escrito aunque una tape a la otra.
-            axes.plot(time, curve, color=color, linewidth=1.3 if seed is None else 0.9,
+            axes.plot(time, curve, color=color, linewidth=curve_width(seed),
                       linestyle=style,
                       label=f"{label},  $t_{{eq}}$ = {time[start]:.0f} s")
-            axes.axvline(time[start], color=color, linewidth=1.2,
-                         linestyle=DASH_PHASES[index % len(DASH_PHASES)])
+            axes.axvline(time[start], color=color, linewidth=vertical_width(),
+                         linestyle=DASH_PHASES[index % len(DASH_PHASES)], zorder=1.5)
             if seed is None:
                 axes.hlines(result[observable], time[start], time[-1], color=color,
                             linestyle="--", linewidth=1.0, alpha=0.8)
-    # Dos leyendas: las series arriba del area de datos, porque las curvas
-    # ocupan todo el ancho, y la convencion de trazos dentro del panel de S,
-    # que es el que suele tener lugar libre.
+    # La leyenda de las series va arriba del area de datos, porque las curvas
+    # ocupan todo el ancho; el t_eq de cada serie esta escrito en su etiqueta.
     place_legend(figure, panels, min(len(entries), 3))
-    panels[-1].legend(handles=convention(seed), loc="best",
-                      fontsize=13 if common.STYLE == "diapositiva" else 9)
     common.save(figure, folder, name.replace("{M}", str(realizations)))
 
 
@@ -243,8 +247,8 @@ def standard_set(cases: Cases, figures) -> None:
     eta_trio = [0.5, 2.0, 5.0]
     trio_seed = 1
     rhos = [2.0, 4.0, 8.0]
-    eta_colors = plt.cm.viridis(np.linspace(0.05, 0.85, len(eta_set)))
-    trio_colors = plt.cm.viridis(np.linspace(0.05, 0.85, len(eta_trio)))
+    eta_colors = common.noise_colors(len(eta_set))
+    trio_colors = common.noise_colors(len(eta_trio))
 
     for model in ("vicsek", "voter"):
         # (b) para Vicsek; (f) repite (b) para el votante.
@@ -360,7 +364,7 @@ def main() -> None:
         raise SystemExit("--rho es obligatorio junto con --model")
     if arguments.etas:
         etas = [float(piece) for piece in arguments.etas.split(",")]
-        colors = plt.cm.viridis(np.linspace(0.05, 0.85, len(etas)))
+        colors = common.noise_colors(len(etas))
         overlay(cases,
                 [(arguments.model, arguments.rho, eta, common.noise_legend(eta), color)
                  for eta, color in zip(etas, colors)],

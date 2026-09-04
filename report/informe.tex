@@ -464,7 +464,7 @@ condiciona las Secciones \ref{sec:S} y \ref{sec:vaS}.
     \includegraphics[width=0.85\textwidth]{b_evolucion_temporal/va_S_vs_t_vicsek_rho4_etas0.5-2-5_semilla1_lado.png}
     \caption{Evolución temporal de \va{} y $S$ para el modelo estándar con
     $\rho = \SI{4}{m^{-2}}$ y tres ruidos, con \textbf{una única realización}
-    (semilla 1) por curva. Punteadas verticales: \teq{} de esa realización,
+    (semilla 1) por curva. Verticales de trazos: \teq{} de esa realización,
     con el mismo criterio del caso aplicado a la corrida sola.}
     \label{fig:temporal_etas}
 \end{figure}
@@ -528,20 +528,11 @@ a $\rho = \SI{4}{m^{-2}}$ y muestran las tres densidades del votante:
 
 \begin{figure}[!htb]
     \centering
-    \begin{minipage}{0.32\textwidth}\centering
-        \includegraphics[width=\linewidth]{c_va_vs_eta/va_vs_eta_vicsek_rho2-4-8_M20.png}\\
-        {\footnotesize\textbf{(a)} estándar, tres densidades}
-    \end{minipage}\hfill
-    \begin{minipage}{0.32\textwidth}\centering
-        \includegraphics[width=\linewidth]{f_votante/va_vs_eta_vicsek_vs_voter_rho4_M20.png}\\
-        {\footnotesize\textbf{(b)} ambos modelos, $\rho = \SI{4}{m^{-2}}$}
-    \end{minipage}\hfill
-    \begin{minipage}{0.32\textwidth}\centering
-        \includegraphics[width=\linewidth]{f_votante/va_vs_eta_voter_rho2-4-8_M20.png}\\
-        {\footnotesize\textbf{(c)} votante, tres densidades}
-    \end{minipage}
+    \includegraphics[width=\textwidth]{c_va_vs_eta/va_vs_eta_estandar_ambos_votante_rho2-4-8_M20.png}
     \caption{Polarización \va{} en el estacionario en función del ruido
-    $\eta$; $M = 20$ por punto y barra $\sigma_{\va}$ de la
+    $\eta$: \textbf{(a)} modelo estándar, tres densidades; \textbf{(b)} ambos
+    modelos con $\rho = \SI{4}{m^{-2}}$; \textbf{(c)} modelo de votante, tres
+    densidades. $M = 20$ por punto y barra $\sigma_{\va}$ de la
     Ec.~\eqref{eq:promedio}. El efecto de la densidad tiene signo opuesto entre
     \textbf{(a)} y \textbf{(c)}. Las líneas que unen los puntos son sólo una
     guía para el ojo.}
@@ -567,7 +558,13 @@ clusters se extiende a
 es decir un vecino promedio por partícula o menos: el grafo arranca
 fragmentado, con una componente gigante inicial del 14 al
 \SI{18}{\percent} de las partículas. La Fig.~\ref{fig:cuadros_baja} muestra el
-contraste que produce el ruido a esa densidad y la
+contraste que produce el ruido a esa densidad. Con $\eta = \SI{0.5}{rad}$ las
+partículas se agregan: la corrida llega a $S = 1$ en unos \SI{400}{s}, pero el
+grupo no se conserva, se parte y se vuelve a juntar durante toda la corrida, y
+en el estacionario $S = 1$ sólo un tercio del tiempo, con
+$\langle S \rangle = 0{,}83$ para esa realización y \num{0.89(16)} para el
+caso. Con $\eta = \SI{5}{rad}$ no hay agregación y el grupo mayor tiene en
+promedio seis partículas ($S = \num{0.20(7)}$). La
 Fig.~\ref{fig:temporal_baja} compara la evolución de $S(t)$ a
 $\eta = \SI{2}{rad}$ para las cinco densidades: con las de la consigna $S$
 vale 1 desde el primer paso, mientras que a $1/\pi$ y $1/3\pi$ tiene un
@@ -581,16 +578,18 @@ otros puntos del barrido, lo que justifica las corridas de \SI{2e4}{s}.
     \centering
     \begin{minipage}{0.30\textwidth}\centering
         \includegraphics[width=\linewidth]{a_animaciones/cuadro_vicsek_rho1pi_eta0.5_t20000.png}\\
-        {\footnotesize\textbf{(a)} $\eta = \SI{0.5}{rad}$, $S \to 1$}
+        {\footnotesize\textbf{(a)} $\eta = \SI{0.5}{rad}$, $S = 0{,}59$}
     \end{minipage}\hspace{0.05\textwidth}
     \begin{minipage}{0.30\textwidth}\centering
         \includegraphics[width=\linewidth]{a_animaciones/cuadro_vicsek_rho1pi_eta5_t20000.png}\\
-        {\footnotesize\textbf{(b)} $\eta = \SI{5}{rad}$, $S \approx 0{,}2$}
+        {\footnotesize\textbf{(b)} $\eta = \SI{5}{rad}$, $S = 0{,}16$}
     \end{minipage}
     \caption{Cuadro en $t = \SI{2e4}{s}$ del modelo estándar a baja densidad,
     $\rho = 1/\pi\ \si{m^{-2}}$ ($N = 32$), con la convención de color de la
-    Fig.~\ref{fig:cuadros}. Con ruido bajo el sistema coalesce en un único
-    grupo; con ruido alto queda en grupos de dos o tres partículas.}
+    Fig.~\ref{fig:cuadros}. Con ruido bajo las partículas se agregan en uno o
+    dos grupos alineados, que se separan y se vuelven a juntar (en este cuadro
+    son dos, de 19 y 13 partículas); con ruido alto no hay agregación y quedan
+    grupos de cinco o seis partículas.}
     \label{fig:cuadros_baja}
 \end{figure}
 
@@ -600,8 +599,8 @@ otros puntos del barrido, lo que justifica las corridas de \SI{2e4}{s}.
     \caption{Curvas promedio sobre $M = 20$ realizaciones de $\va(t)$ y $S(t)$
     para el modelo estándar con $\eta = \SI{2}{rad}$ y las cinco densidades:
     las tres de la consigna (corridas de \SI{5e3}{s}) y dos del barrido
-    extendido (\SI{2e4}{s}). Punteadas verticales: \teq; rayadas horizontales:
-    promedio en el estacionario. Con $\rho \ge \SI{2}{m^{-2}}$, $S$ vale 1
+    extendido (\SI{2e4}{s}). Verticales de trazos: \teq; horizontales de
+    trazos: promedio en el estacionario. Con $\rho \ge \SI{2}{m^{-2}}$, $S$ vale 1
     desde el inicio; a $1/\pi$ y $1/3\pi$ tiene transitorio propio.}
     \label{fig:temporal_baja}
 \end{figure}
@@ -623,16 +622,10 @@ $\rho = 1/\pi\ \si{m^{-2}}$): copiar a un único vecino no atenúa el ruido.
 
 \begin{figure}[!htb]
     \centering
-    \begin{minipage}{0.44\textwidth}\centering
-        \includegraphics[width=\linewidth]{d_clusters/S_vs_eta_vicsek_rho8-2-1pi-1-3pi_M20.png}\\
-        {\footnotesize\textbf{(a)} modelo estándar}
-    \end{minipage}\hfill
-    \begin{minipage}{0.44\textwidth}\centering
-        \includegraphics[width=\linewidth]{d_clusters/S_vs_eta_voter_rho8-2-1pi-1-3pi_M20.png}\\
-        {\footnotesize\textbf{(b)} modelo de votante}
-    \end{minipage}
+    \includegraphics[width=\textwidth]{d_clusters/S_vs_eta_estandar_votante_rho8-2-1pi-1-3pi_M20.png}
     \caption{Fracción $S$ en la componente gigante en el estacionario en
-    función de $\eta$, para dos densidades de la consigna y dos del barrido
+    función de $\eta$ para el \textbf{(a)} modelo estándar y el \textbf{(b)}
+    modelo de votante, con dos densidades de la consigna y dos del barrido
     extendido; $M = 20$ por punto, barra $\sigma_S$ de la
     Ec.~\eqref{eq:promedio}, \SI{5e3}{s} por corrida si
     $\rho \ge \SI{2}{m^{-2}}$ y \SI{2e4}{s} si $\rho < \SI{1}{m^{-2}}$. Las
@@ -668,16 +661,10 @@ se leen con más precisión que la de sus barras.
 
 \begin{figure}[!htb]
     \centering
-    \begin{minipage}{0.44\textwidth}\centering
-        \includegraphics[width=\linewidth]{e_va_vs_S/va_vs_S_vicsek_rho8-2-1pi-1-3pi_M20.png}\\
-        {\footnotesize\textbf{(a)} modelo estándar}
-    \end{minipage}\hfill
-    \begin{minipage}{0.44\textwidth}\centering
-        \includegraphics[width=\linewidth]{e_va_vs_S/va_vs_S_voter_rho8-2-1pi-1-3pi_M20.png}\\
-        {\footnotesize\textbf{(b)} modelo de votante}
-    \end{minipage}
+    \includegraphics[width=\textwidth]{e_va_vs_S/va_vs_S_estandar_votante_rho8-2-1pi-1-3pi_M20.png}
     \caption{Polarización \va{} en función de la fracción $S$ en la componente
-    gigante, en el estacionario. Cada punto es un valor de $\eta$ del barrido;
+    gigante, en el estacionario, para el \textbf{(a)} modelo estándar y el
+    \textbf{(b)} modelo de votante. Cada punto es un valor de $\eta$ del barrido;
     barras: $\sigma_S$ y $\sigma_{\va}$ de la Ec.~\eqref{eq:promedio}. Mismas
     duraciones que la Fig.~\ref{fig:S_eta}. Las líneas que unen los puntos, en
     orden de $\eta$, son sólo una guía para el ojo.}

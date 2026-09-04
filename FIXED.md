@@ -1,6 +1,6 @@
 # Revisión de resultados, diapositivas e informe (1/9/2026)
 
-Estado: **propuesta, nada aplicado todavía.** Se revisó cada número de las
+Estado: **aplicado el 3/9/2026** (todos los puntos, incluido el 3; figuras, PDF y zip regenerados). Se revisó cada número de las
 diapositivas, del ayuda-memoria y del informe contra `data/sweep/resumen.csv`,
 `data/sweep_clusters/resumen.csv`, las series de la semilla 1 y
 `data/bench/bench_l20.txt`.

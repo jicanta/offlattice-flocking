@@ -17,9 +17,17 @@ densidades del enunciado y las de 1/(k*pi) entren en la misma figura. Es lo
 que piden los items (d) y (e): S solo recorre todo [0, 1] si se ven juntas una
 densidad muy por encima del umbral de percolacion y otra por debajo.
 
+Con --conjunta los paneles de un item van en una sola figura con el eje y
+compartido, que es como los muestra el informe: para (c) tres paneles
+(estandar por densidad, ambos modelos a rho = 4, votante por densidad) y para
+(d) y (e) dos (estandar y votante). Como figura unica al ancho del texto, la
+tipografia queda del tamano de las figuras temporales; como tres imagenes
+sueltas reducidas al tercio del ancho no se lee.
+
     python3 visualization/curves.py --pares
     python3 visualization/curves.py --sweeps data/sweep,data/sweep_clusters \
         --rhos 8,2,0.31831,0.106103 --items d,e,f
+    python3 visualization/curves.py --items c --conjunta
 """
 
 from __future__ import annotations
@@ -62,23 +70,27 @@ def draw_highlights(axes, points, observable, model, rho, highlights) -> None:
                              zorder=6)
 
 
-def against_noise(records, models, rhos, observable, folder, name, full=False,
-                  highlights=()) -> None:
-    """observable contra eta; una curva por (modelo, densidad)."""
-    figure, axes = plt.subplots()
+def series_label(models, rhos, model, rho) -> str:
+    if len(models) == 1:
+        return common.density_legend(rho)
+    if len(rhos) == 1:
+        return common.MODEL_LABEL[model]
+    return f"{common.density_legend(rho)} · {common.MODEL_LABEL[model]}"
+
+
+def noise_panel(axes, records, models, rhos, observable, full=False,
+                highlights=()) -> None:
+    """observable contra eta en un panel dado; una curva por (modelo, densidad)."""
     for model in models:
         for rho in rhos:
             points = common.series_by(records, model, rho)
             if not points:
                 continue
-            label = (common.density_legend(rho) if len(models) == 1
-                     else f"{common.MODEL_LABEL[model]}" if len(rhos) == 1
-                     else f"{common.density_legend(rho)} · {common.MODEL_LABEL[model]}")
+            label = series_label(models, rhos, model, rho)
             color = common.density_color(rho) if len(rhos) > 1 else common.MODEL_STYLE[model]["color"]
             draw_against_noise(axes, points, observable, color, model, label)
             draw_highlights(axes, points, observable, model, rho, highlights)
     axes.set_xlabel(common.AXIS_NOISE)
-    axes.set_ylabel(common.AXIS[observable])
     # va siempre va en [0, 1]. Para S el rango util es angosto cuando todas las
     # densidades estan por encima del umbral de percolacion, y ahi se deja que
     # matplotlib lo ajuste a los datos en vez de dejar la figura casi vacia;
@@ -88,21 +100,26 @@ def against_noise(records, models, rhos, observable, folder, name, full=False,
     if observable == "va" or full:
         axes.set_ylim(0.0, 1.05)
     axes.legend(loc="best")
+
+
+def against_noise(records, models, rhos, observable, folder, name, full=False,
+                  highlights=()) -> None:
+    """observable contra eta, una figura de un solo panel."""
+    figure, axes = plt.subplots()
+    noise_panel(axes, records, models, rhos, observable, full, highlights)
+    axes.set_ylabel(common.AXIS[observable])
     common.save(figure, folder, name)
 
 
-def against_fraction(records, models, rhos, folder, name, full=False) -> None:
-    """va contra S; cada punto es un eta del barrido."""
-    figure, axes = plt.subplots()
+def fraction_panel(axes, records, models, rhos, full=False) -> None:
+    """va contra S en un panel dado; cada punto es un eta del barrido."""
     for model in models:
         for rho in rhos:
             points = common.series_by(records, model, rho)
             if not points:
                 continue
             style = common.MODEL_STYLE[model]
-            label = (common.density_legend(rho) if len(models) == 1
-                     else f"{common.MODEL_LABEL[model]}" if len(rhos) == 1
-                     else f"{common.density_legend(rho)} · {common.MODEL_LABEL[model]}")
+            label = series_label(models, rhos, model, rho)
             color = common.density_color(rho) if len(rhos) > 1 else style["color"]
             # Las barras (sobre todo sigma_S a rho = 2) son grandes frente al
             # rango de S: se dibujan tenues y sin remate para que los puntos
@@ -118,14 +135,73 @@ def against_fraction(records, models, rhos, folder, name, full=False) -> None:
                 label=label, zorder=3,
             )
     axes.set_xlabel(common.AXIS["S"])
-    axes.set_ylabel(common.AXIS["va"])
     axes.set_ylim(0.0, 1.05)
     # Ambos observables son fracciones: cuando la figura mezcla densidades
     # altas y bajas, S recorre todo [0, 1] y conviene el eje entero; si no, se
     # recorta a la izquierda para que se vea la estructura cerca de S = 1.
     axes.set_xlim(0.0, 1.005) if full else axes.set_xlim(right=1.005)
     axes.legend(loc="best")
+
+
+def against_fraction(records, models, rhos, folder, name, full=False) -> None:
+    """va contra S, una figura de un solo panel."""
+    figure, axes = plt.subplots()
+    fraction_panel(axes, records, models, rhos, full)
+    axes.set_ylabel(common.AXIS["va"])
     common.save(figure, folder, name)
+
+
+# --------------------------------------------------------------------------
+# Figuras conjuntas del informe: los paneles de un item en una sola figura
+# --------------------------------------------------------------------------
+
+# Mismo alto y mismo ancho total que las figuras temporales del informe con
+# los paneles lado a lado (temporal.py), asi todas las figuras a lo ancho del
+# texto quedan con la misma tipografia efectiva.
+JOINT_SIZE = (11.0, 3.4)
+PANEL_LETTERS = "abcdef"
+
+
+def joint_figure(count: int):
+    """Una fila de paneles con el eje y compartido; la letra de cada panel va
+    arriba a la izquierda, fuera del area de datos, y el rotulo del eje y solo
+    en el primero."""
+    figure, panels = plt.subplots(1, count, sharey=True, figsize=JOINT_SIZE)
+    figure.subplots_adjust(wspace=0.08)
+    for letter, axes in zip(PANEL_LETTERS, panels):
+        axes.text(0.0, 1.02, f"({letter})", transform=axes.transAxes,
+                  ha="left", va="bottom", fontweight="bold")
+    return figure, panels
+
+
+def joint_polarization(records, rhos, folder, realizations: int,
+                       highlights=()) -> None:
+    """Item (c) en tres paneles: estandar por densidad, ambos modelos a
+    rho = 4 y votante por densidad."""
+    figure, panels = joint_figure(3)
+    noise_panel(panels[0], records, ["vicsek"], rhos, "va", highlights=highlights)
+    noise_panel(panels[1], records, ["vicsek", "voter"], [4.0], "va", highlights=highlights)
+    noise_panel(panels[2], records, ["voter"], rhos, "va", highlights=highlights)
+    panels[0].set_ylabel(common.AXIS["va"])
+    common.save(figure, folder,
+                f"va_vs_eta_estandar_ambos_votante_rho{common.joined_densities(rhos)}"
+                f"_M{realizations}.png")
+
+
+def joint_models(records, rhos, observable, folder, realizations: int,
+                 full=False, highlights=()) -> None:
+    """Items (d) y (e) en dos paneles, estandar y votante, mismas densidades."""
+    figure, panels = joint_figure(2)
+    for axes, model in zip(panels, ("vicsek", "voter")):
+        if observable == "S":
+            noise_panel(axes, records, [model], rhos, "S", full, highlights)
+        else:
+            fraction_panel(axes, records, [model], rhos, full)
+    panels[0].set_ylabel(common.AXIS[observable])
+    stem = "S_vs_eta" if observable == "S" else "va_vs_S"
+    common.save(figure, folder,
+                f"{stem}_estandar_votante_rho{common.joined_densities(rhos)}"
+                f"_M{realizations}.png")
 
 
 def main() -> None:
@@ -146,6 +222,10 @@ def main() -> None:
     parser.add_argument("--pares", action="store_true",
                         help="ademas, la comparacion Vicsek-votante de a una densidad "
                              "por figura (item f). Es lo que hace el barrido principal.")
+    parser.add_argument("--conjunta", action="store_true",
+                        help="en vez de una figura por panel, los paneles de cada item "
+                             "en una sola figura con eje y compartido (figuras del "
+                             "informe): (c) en tres paneles, (d) y (e) en dos")
     parser.add_argument("--resaltar",
                         help="puntos a rodear con un aro en las curvas contra eta, "
                              "como 'vicsek:4:0.5,voter:4:4' (modelo:rho:eta). Son las "
@@ -186,6 +266,18 @@ def main() -> None:
             if model not in common.MODEL_LABEL:
                 raise SystemExit(f"modelo desconocido en --resaltar: {model}")
             highlights.append((model, float(rho), float(eta)))
+
+    if arguments.conjunta:
+        if "c" in items:
+            joint_polarization(records, rhos, common.folder("c", figures),
+                               realizations, highlights)
+        if "d" in items:
+            joint_models(records, rhos, "S", common.folder("d", figures),
+                         realizations, full, highlights)
+        if "e" in items:
+            joint_models(records, rhos, "va", common.folder("e", figures),
+                         realizations, full)
+        return
 
     # Cada figura se dibuja en la carpeta de su item; ademas, las del votante se
     # duplican en la del item (f), que es donde el enunciado pide repetir (c),

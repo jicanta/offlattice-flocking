@@ -1,6 +1,6 @@
 # Animaciones para YouTube (TP2, Grupo 10, comisión S2)
 
-Seis videos, uno por cuadro fijo de las diapositivas 12, 15 y 19. El nombre del archivo
+Seis videos, uno por cuadro fijo de las diapositivas 12, 15 y 20. El nombre del archivo
 queda como título por defecto al subirlo; abajo va un título con símbolos y una
 descripción para pegar. Una vez subidos, los links van en `report/presentacion.tex`
 (macro `\dosanim`), en el orden de esta lista; ya están pegados.
@@ -54,16 +54,16 @@ semilla 1. Se guarda un cuadro cada 5 s (cada 25 s a baja densidad).
 
 - **Link**: https://youtu.be/_LJnusRUPjY
 
-- **Diapositiva**: 19, cuadro de la izquierda.
+- **Diapositiva**: 20, cuadro de la izquierda.
 - **Título sugerido**: SdS TP2 G10 — Modelo estándar (Vicsek), ρ = 1/π m⁻², η = 0,5 rad
 - **Sistema**: N = 32 partículas, 20000 s simulados, un cuadro cada 25 s.
-- **Descripción**: Modelo estándar (Vicsek), ρ = 1/π m⁻², η = 0,5 rad; baja densidad (un vecino por partícula en promedio) y ruido bajo: los grupos que se encuentran se alinean y quedan unidos; el sistema termina agregado en un único grupo (S → 1).
+- **Descripción**: Modelo estándar (Vicsek), ρ = 1/π m⁻², η = 0,5 rad; baja densidad (un vecino por partícula en promedio) y ruido bajo: los grupos que se encuentran se alinean y se agregan; en unos 400 s todo el sistema forma un único grupo (S = 1), que después se parte y se vuelve a juntar durante el resto de la corrida (S entre 0,4 y 1, promedio 0,8).
 
 ## 06 - SdS TP2 G10 - Modelo estandar - rho 0.32 - eta 5 rad.mp4
 
 - **Link**: https://youtu.be/mAwkTua0wks
 
-- **Diapositiva**: 19, cuadro de la derecha.
+- **Diapositiva**: 20, cuadro de la derecha.
 - **Título sugerido**: SdS TP2 G10 — Modelo estándar (Vicsek), ρ = 1/π m⁻², η = 5 rad
 - **Sistema**: N = 32 partículas, 20000 s simulados, un cuadro cada 25 s.
-- **Descripción**: Modelo estándar (Vicsek), ρ = 1/π m⁻², η = 5 rad; baja densidad y ruido alto: queda fragmentado en grupos de dos o tres partículas (S ≈ 0,2).
+- **Descripción**: Modelo estándar (Vicsek), ρ = 1/π m⁻², η = 5 rad; baja densidad y ruido alto: no hay agregación; queda fragmentado en grupos de cinco o seis partículas que se arman y se deshacen (S ≈ 0,2).

@@ -37,9 +37,11 @@ SNAPSHOTS  := 0,250,1000,3000
 
 # Animaciones del item (d). El observable de ese item es S, asi que los dos
 # casos tienen que diferir en conectividad y no en alineacion: a rho = 1/pi el
-# ruido bajo coalesce hasta S = 1 y el alto deja grupitos de dos o tres
-# particulas. A baja densidad los encuentros son raros y el transitorio de
-# agregacion es un orden de magnitud mas largo, de ahi los pasos extra.
+# ruido bajo agrega las particulas en uno o dos grupos alineados que se
+# separan y se vuelven a juntar (S entre 0,4 y 1, promedio 0,8) y el alto deja
+# grupitos de cinco o seis particulas (S = 0,2). A baja densidad los encuentros
+# son raros y el transitorio de agregacion es un orden de magnitud mas largo,
+# de ahi los pasos extra.
 CLUSTER_ANIM_CASES := vicsek:0.31831:0.5 vicsek:0.31831:5
 CLUSTER_ANIM_STEPS := 20000
 CLUSTER_ANIM_SAVE  := 25
@@ -164,12 +166,9 @@ cluster-figures:
 MIXED_RHOS ?= 8,2,0.31831,0.106103
 # S(t) del item (d) en el informe: las tres densidades de la consigna y las dos
 # bajas del barrido extendido, superpuestas a un mismo ruido. En la diapositiva
-# van cuatro (sin rho = 4, que se superpone con la de 8), una realizacion por
-# curva como en las demas evoluciones temporales del mazo, y solo el panel de
-# S: a baja densidad hay 32 y 11 particulas, y va de una sola corrida es ruido
-# que tapa a las demas curvas.
+# no va esta figura sino S(t) de las dos corridas animadas a rho = 1/pi (ver
+# figuras-diapositivas).
 TEMPORAL_RHOS ?= 8,4,2,0.31831,0.106103
-SLIDE_RHOS    ?= 8,2,0.31831,0.106103
 
 mixed-figures:
 	$(PY) visualization/curves.py --sweeps $(SWEEP),$(CLUSTERS) \
@@ -185,6 +184,7 @@ mixed-figures:
 # una.
 TRIO      ?= 0.5,2,5
 PAR       ?= 0.5,4
+PAR_BAJA  ?= 0.5,5
 TRIO_SEED ?= 1
 
 # Cuadro suelto de cada corrida animada: caso:instante. Es lo que va impreso en
@@ -194,8 +194,14 @@ FRAMES := vicsek_rho4_eta0.5:3000 vicsek_rho4_eta4:3000 \
           vicsek_rho1pi_eta0.5:20000 vicsek_rho1pi_eta5:20000
 
 # El informe necesita los dos paneles (va y S) lado a lado en vez de apilados:
-# asi cada evolucion temporal ocupa la mitad de alto de pagina.
+# asi cada evolucion temporal ocupa la mitad de alto de pagina. Las curvas
+# escalares van en figuras conjuntas (los paneles de un item en una sola
+# figura con eje y compartido), que a lo ancho del texto se leen con la misma
+# tipografia que las temporales.
 report-figures:
+	$(PY) visualization/curves.py --items c --conjunta
+	$(PY) visualization/curves.py --sweeps $(SWEEP),$(CLUSTERS) \
+	    --rhos $(MIXED_RHOS) --items d,e --conjunta
 	$(PY) visualization/temporal.py --model vicsek --rho 4 --eta 2 --item b --paneles lado
 	$(PY) visualization/temporal.py --model vicsek --rho 4 --etas $(TRIO) \
 	    --seed $(TRIO_SEED) --item b --paneles lado
@@ -220,13 +226,21 @@ report-figures:
 #
 # En las diapositivas la polarizacion y la componente gigante van en bloques
 # separados (devolucion de la catedra), asi que cada evolucion temporal lleva
-# un solo observable: va(t) a rho = 4 para cada regla, y S(t) por densidad a
-# eta = 2 para cada regla.
+# un solo observable: va(t) a rho = 4 para cada regla, y S(t) a rho = 1/pi
+# para cada regla, siempre con las dos corridas que se muestran animadas
+# (ruido bajo y alto, semilla 1). Esas mismas corridas van rodeadas con un aro
+# en las curvas contra eta (--resaltar), que es lo que pidio la catedra: la
+# data, su evolucion temporal y su punto en el barrido.
+RESALTAR_RHO4  := vicsek:4:0.5,vicsek:4:4,voter:4:0.5,voter:4:4
+RESALTAR_BAJA  := vicsek:0.31831:0.5,vicsek:0.31831:5
 
 figuras-diapositivas:
-	$(PY) visualization/curves.py --items c --figures $(SLIDES) --estilo diapositiva
+	$(PY) visualization/curves.py --items c --figures $(SLIDES) --estilo diapositiva \
+	    --resaltar $(RESALTAR_RHO4)
 	$(PY) visualization/curves.py --items c,f --pares --rhos 4 --figures $(SLIDES) \
 	    --estilo diapositiva
+	$(PY) visualization/curves.py --sweeps $(SWEEP),$(CLUSTERS) --rhos $(MIXED_RHOS) \
+	    --items d,e,f --figures $(SLIDES) --estilo diapositiva --resaltar $(RESALTAR_BAJA)
 	$(PY) visualization/curves.py --sweeps $(SWEEP),$(CLUSTERS) --rhos 0.31831 \
 	    --items d,e,f --pares --figures $(SLIDES) --estilo diapositiva
 	-$(PY) visualization/bench.py --log --figures $(SLIDES) --estilo diapositiva
@@ -236,11 +250,11 @@ figuras-diapositivas:
 	$(PY) visualization/temporal.py --model voter --rho 4 --etas $(PAR) \
 	    --seed $(TRIO_SEED) --item f --observables va --figures $(SLIDES) \
 	    --estilo diapositiva
-	$(PY) visualization/temporal.py --sweeps $(SWEEP),$(CLUSTERS) --model vicsek --eta 2 \
-	    --rhos $(SLIDE_RHOS) --seed $(TRIO_SEED) --observables S --item d \
+	$(PY) visualization/temporal.py --sweep $(CLUSTERS) --model vicsek --rho 0.31831 \
+	    --etas $(PAR_BAJA) --seed $(TRIO_SEED) --observables S --item d \
 	    --figures $(SLIDES) --estilo diapositiva
-	$(PY) visualization/temporal.py --sweeps $(SWEEP),$(CLUSTERS) --model voter --eta 2 \
-	    --rhos $(SLIDE_RHOS) --seed $(TRIO_SEED) --observables S --item f \
+	$(PY) visualization/temporal.py --sweep $(CLUSTERS) --model voter --rho 0.31831 \
+	    --etas $(PAR_BAJA) --seed $(TRIO_SEED) --observables S --item f \
 	    --figures $(SLIDES) --estilo diapositiva
 	@for spec in $(FRAMES); do \
 	    $(PY) visualization/animate.py --run $(RUNS)/$${spec%%:*} \

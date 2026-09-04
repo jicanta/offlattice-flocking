@@ -30,6 +30,7 @@ from collections import defaultdict
 from pathlib import Path
 
 import matplotlib
+import matplotlib.pyplot
 import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -142,11 +143,29 @@ def use_report_style(style: str = "informe") -> None:
 
 
 DENSITY_COLOR = {2.0: "#1f77b4", 4.0: "#d62728", 8.0: "#2ca02c"}
+# La regla de Vicsek se nombra "estandar" en todos los documentos; la leyenda
+# usa el mismo nombre para que la figura no diga una cosa y el titulo otra.
 MODEL_STYLE = {
-    "vicsek": {"linestyle": "-", "marker": "o", "label": "Vicsek", "color": "#1f77b4"},
+    "vicsek": {"linestyle": "-", "marker": "o", "label": "estándar", "color": "#1f77b4"},
     "voter": {"linestyle": "--", "marker": "s", "label": "votante", "color": "#d62728"},
 }
-MODEL_LABEL = {"vicsek": "Vicsek", "voter": "votante"}
+MODEL_LABEL = {"vicsek": "estándar", "voter": "votante"}
+
+# Colores de los ruidos en las superposiciones a densidad fija, de frio
+# (ordenado) a calido (desordenado). Hasta tres ruidos van con colores fijos
+# de buen contraste sobre fondo blanco; con mas se recurre a viridis, sin el
+# extremo amarillo, que no se ve proyectado.
+NOISE_COLORS = ["#1f77b4", "#2ca02c", "#d62728"]
+
+
+def noise_colors(count: int) -> list:
+    if count == 1:
+        return [NOISE_COLORS[0]]
+    if count == 2:
+        return [NOISE_COLORS[0], NOISE_COLORS[-1]]
+    if count == 3:
+        return list(NOISE_COLORS)
+    return list(matplotlib.pyplot.cm.viridis(np.linspace(0.0, 0.75, count)))
 
 # Densidades del estudio extendido de clusters. Con rho = 1/(k*pi) y rc = 1 el
 # numero medio de vecinos es <k> = rho*pi*rc^2 = 1/k, es decir por debajo del
