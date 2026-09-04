@@ -114,11 +114,7 @@ donde $\Theta_i(t)$ es la dirección que fijada por la regla de interacción, $\
 
 \subsection{Reglas de interacción}
 
-El entorno de la partícula $i$ es
-$\mathcal{N}_i = \{\, j \neq i : d(\mathbf{r}_i, \mathbf{r}_j) < r_c \,\}$, con
-$d$ la distancia de mínima imagen y $r_c$ el radio de interacción. En el
-\textbf{modelo estándar}, $\Theta_i$ es el promedio vectorial de las
-direcciones del entorno, incluida la propia:
+El entorno de la partícula $i$ es $\mathcal{N}_i = \{\, j \neq i : d(\mathbf{r}_i, \mathbf{r}_j) < r_c \,\}$, donde $d$ es la distancia periódica y $r_c$ el radio de interacción. En el \textbf{modelo estándar}, $\Theta_i$ es el promedio vectorial de las direcciones del entorno, sin excluir la propia
 
 \begin{equation}
     \Theta_i^{\,\text{est}}(t) = \arctan\!
@@ -127,9 +123,7 @@ direcciones del entorno, incluida la propia:
     \label{eq:vicsek}
 \end{equation}
 
-evaluado con el arco tangente de dos argumentos. En el \textbf{modelo de
-votante} la partícula copia la dirección de un único elemento elegido al azar
-\cite{loscar2021}:
+En el \textbf{modelo votante} la partícula copia la dirección de un único vecino elegido al azar \cite{loscar2021}:
 
 \begin{equation}
     \Theta_i^{\,\text{vot}}(t) = \theta_k(t),
@@ -138,9 +132,7 @@ votante} la partícula copia la dirección de un único elemento elegido al azar
     \label{eq:votante}
 \end{equation}
 
-La propia partícula participa del sorteo, igual que participa del promedio en
-la Ec.~\eqref{eq:vicsek}; así, una partícula aislada conserva su dirección en
-ambos modelos.
+Ya que todas las partículas, incluyendo la misma $i$, participan tanto del sorteo cómo del promedio, una partícula aislada conserva su dirección en ambos modelos.
 
 \subsection{Observables}
 
