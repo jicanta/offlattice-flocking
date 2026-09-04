@@ -173,14 +173,10 @@ Posteriormente, se utiliza python para ejecutar una etapa de análisis que calcu
 El motor escribe \texttt{static.txt} (parámetros de lacorrida) y \texttt{dynamic.txt} (por cuadro, una línea con $t$ y luego $N$ líneas \texttt{x y theta}). El comando \texttt{analyse} lee ambos y escribe \texttt{observables.txt} (una línea \texttt{t va S} por cuadro).
 Ya que guardar de forma permanente todos los estados de todas las corridas del barrido ocuparía cientos de gigabytes, cada corrida escribe los resultados en un archivo temporal que el análisis lee tan pronto como finalice la simulación.
 
-Cada paso tiene tres etapas: \textbf{(i)} se arma $\mathcal{N}_i$ con el CIM;
-\textbf{(ii)} se evalúa $\Theta_i$ según la Ec.~\eqref{eq:vicsek} o la
-Ec.~\eqref{eq:votante}, se suma el ruido y el resultado se guarda en un arreglo
-auxiliar, sin pisar el estado en $t$; \textbf{(iii)} se aplica la
-Ec.~\eqref{eq:posicion} con las direcciones \textbf{viejas} y recién entonces
-el auxiliar pasa a ser el estado vigente. El arreglo auxiliar garantiza la
-actualización sincrónica: sin él, una partícula se alinearía con direcciones ya
-actualizadas y el resultado dependería del orden de recorrido.
+Cada paso tiene tres etapas:
+Primero se construye $\mathcal{N}_i$ con el CIM,
+posteriormente se evalúa $\Theta_i$ según la Ec.~\eqref{eq:vicsek} o la Ec.~\eqref{eq:votante}, se le suma el ruido y se guarda el resultado en un arreglo auxiliar (sin pisar el estado en $t$).
+Por último, se aplica la Ec.~\eqref{eq:posicion} a las direcciones anteriores, a continuación, podemos reemplazar las direcciones anteriores con las del auxiliar. Sin el segundo arreglo, una partícula podría alinearse con direcciones de la siguiente iteración y el resultado dependería del orden de iteración de este.
 
 Se reutiliza sin cambios el CIM del Trabajo Práctico 1, para que los tiempos de
 ambos trabajos midan el mismo algoritmo. La caja se divide en $\Mc \times \Mc$
