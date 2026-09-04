@@ -101,7 +101,7 @@ El sistema presenta $N$ partículas puntuales en una caja cuadrada de lado $L$ c
     \label{eq:posicion}
 \end{equation}
 
-con $\mathbf{v}_i$ de módulo $v$ y dirección $\theta_i(t)$, la del instante $t$; se aplican condiciones periódicas de contorno a las coordenadas. Los ángulos evolucionan siguiendo la ecuación
+con $\mathbf{v}_i$ de módulo $v$ y dirección $\theta_i(t)$, la del instante $t$, se aplican condiciones periódicas de contorno a las coordenadas. Los ángulos evolucionan siguiendo la ecuación
 
 \begin{equation}
     \theta_i(t+1) = \Theta_i(t) + \Delta\theta_i,
@@ -223,11 +223,11 @@ La componente gigante se obtiene iterando sobre los arreglos de vecinos construi
         \draw[thin] (4.3,4.15) -- (3.6,3.75);
         \node at (3.2,-1.15) {\textbf{(b)}};
     \end{tikzpicture}
-    \caption{\textbf{(a)} Sistema simulado: caja de lado $L$ con contorno
-    periódico (flechas en los bordes); cada partícula es un vector de módulo
+    \caption{\textbf{(a)} Caja de lado $L$ con contorno
+    periódico (flechas en los bordes), cada partícula es un vector de módulo
     $v$, y en trazo grueso van la partícula $i$ y su entorno $\mathcal{N}_i$.
     \textbf{(b)} Grafo de vecinos con el que se calcula $S$: un nodo por
-    partícula y una arista por cada par a distancia menor que $r_c$; en negro
+    partícula y una arista por cada par a distancia menor que $r_c$, en negro
     la componente gigante \Cmax. En el ejemplo $N = 14$ y $|\Cmax| = 7$, o sea
     $S = 0{,}5$ según la Ec.~\eqref{eq:componente}.}
     \label{fig:esquema}
