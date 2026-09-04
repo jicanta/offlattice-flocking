@@ -454,23 +454,12 @@ Para que el observable informe algo, el estudio de clusters se extiende a
     \label{eq:densidades_bajas}
 \end{equation}
 
-es decir un vecino promedio por partícula o menos: el grafo arranca
-fragmentado, con una componente gigante inicial del 14 al
-\SI{18}{\percent} de las partículas. La Fig.~\ref{fig:cuadros_baja} muestra el
-contraste que produce el ruido a esa densidad. Con $\eta = \SI{0.5}{rad}$ las
-partículas se agregan: la corrida llega a $S = 1$ en unos \SI{400}{s}, pero el
-grupo no se conserva, se parte y se vuelve a juntar durante toda la corrida, y
-en el estacionario $S = 1$ sólo un tercio del tiempo, con
-$\langle S \rangle = 0{,}83$ para esa realización y \num{0.89(16)} para el
-caso. Con $\eta = \SI{5}{rad}$ no hay agregación y el grupo mayor tiene en
-promedio seis partículas ($S = \num{0.20(7)}$). La
-Fig.~\ref{fig:temporal_baja} compara la evolución de $S(t)$ a
-$\eta = \SI{2}{rad}$ para las cinco densidades: con las del barrido principal $S$
-vale 1 desde el primer paso, mientras que a $1/\pi$ y $1/3\pi$ tiene un
-transitorio propio, que parte de $S \approx 0{,}15$ y crece por agregación. Dos partículas
-que se cruzan se alinean y dejan de separarse, los grupos se fusionan y sólo el
-ruido los rompe; el estacionario es el equilibrio entre ambas cosas. \teq{}
-llega a \SI{3.65e3}{s} en la Fig.~\ref{fig:temporal_baja} y a \SI{5.6e3}{s} en
+es decir un vecino promedio por partícula o menos. El grafo arranca fragmentado, con una componente gigante inicial del 14 al \SI{18}{\percent} de las partículas. La Fig.~\ref{fig:cuadros_baja} muestra el contraste que produce el ruido a esa densidad.
+Cuando $\eta = \SI{0.5}{rad}$ las partículas se agregan. La ejecución alcanza $S = 1$ en unos \SI{400}{s}, pero el grupo no se conserva, se parte y se vuelve a juntar durante toda la corrida, y en el estacionario $S = 1$ sólo un tercio del tiempo, con $\langle S \rangle = 0{,}83$ para esa realización y \num{0.89(16)} para el caso.
+Con $\eta = \SI{5}{rad}$ no hay agregación y el grupo mayor tiene en promedio seis partículas ($S = \num{0.20(7)}$). La Fig.~\ref{fig:temporal_baja} compara la evolución de $S(t)$ a $\eta = \SI{2}{rad}$ para las cinco densidades.
+Con las del barrido principal $S$ vale 1 desde el primer paso, mientras que a $1/\pi$ y $1/3\pi$ tiene un transitorio propio, que parte de $S \approx 0{,}15$ y crece por agregación.
+Dos partículas que se cruzan se alinean y dejan de separarse, los grupos se fusionan y sólo el ruido los rompe, el estacionario es el equilibrio entre ambas situaciones.
+\teq{} se alcanza en \SI{3.65e3}{s} en la Fig.~\ref{fig:temporal_baja} y en \SI{5.6e3}{s} en
 otros puntos del barrido, lo que justifica las corridas de \SI{2e4}{s}.
 
 \begin{figure}[!htb]
@@ -487,7 +476,7 @@ otros puntos del barrido, lo que justifica las corridas de \SI{2e4}{s}.
     $\rho = 1/\pi\ \si{m^{-2}}$ ($N = 32$), con la convención de color de la
     Fig.~\ref{fig:cuadros}. Con ruido bajo las partículas se agregan en uno o
     dos grupos alineados, que se separan y se vuelven a juntar (en este cuadro
-    son dos, de 19 y 13 partículas); con ruido alto no hay agregación y quedan
+    son dos, de 19 y 13 partículas), con ruido alto no hay agregación y quedan
     grupos de cinco o seis partículas.}
     \label{fig:cuadros_baja}
 \end{figure}
@@ -496,11 +485,11 @@ otros puntos del barrido, lo que justifica las corridas de \SI{2e4}{s}.
     \centering
     \includegraphics[width=0.85\textwidth]{d_clusters/va_S_vs_t_vicsek_eta2_rhos8-4-2-1pi-1-3pi_promedioM20_lado.png}
     \caption{Curvas promedio sobre $M = 20$ realizaciones de $\va(t)$ y $S(t)$
-    para el modelo estándar con $\eta = \SI{2}{rad}$ y las cinco densidades:
-    las tres del barrido principal (corridas de \SI{5e3}{s}) y dos del barrido
-    extendido (\SI{2e4}{s}). Verticales de trazos: \teq; horizontales de
+    para el modelo estándar con $\eta = \SI{2}{rad}$ y las cinco densidades.
+    Las tres del barrido principal (corridas de \SI{5e3}{s}) y dos del barrido
+    extendido (\SI{2e4}{s}). Verticales de trazos: \teq. Horizontales de
     trazos: promedio en el estacionario. Con $\rho \ge \SI{2}{m^{-2}}$, $S$ vale 1
-    desde el inicio; a $1/\pi$ y $1/3\pi$ tiene transitorio propio.}
+    desde el inicio, a $1/\pi$ y $1/3\pi$ tiene transitorio propio.}
     \label{fig:temporal_baja}
 \end{figure}
 
