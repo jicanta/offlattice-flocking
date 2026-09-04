@@ -134,7 +134,7 @@ El entorno de la partícula $i$ es
 $\mathcal{N}_i = \{\, j \neq i : d(\mathbf{r}_i, \mathbf{r}_j) < r_c \,\}$, con
 $d$ la distancia de mínima imagen y $r_c$ el radio de interacción. En el
 \textbf{modelo estándar}, $\Theta_i$ es el promedio vectorial de las
-direcciones del entorno, incluida la propia (criterio fijado por la cátedra):
+direcciones del entorno, incluida la propia:
 
 \begin{equation}
     \Theta_i^{\,\text{est}}(t) = \arctan\!
@@ -195,8 +195,8 @@ Ambos observables son adimensionales.
 \section{Implementación}
 % =========================================================
 
-El trabajo se divide en módulos comunicados por archivos de texto, como exige
-la consigna: el motor de simulación en C++, que sólo integra la dinámica y
+El trabajo se divide en módulos comunicados por archivos de texto: el motor
+de simulación en C++, que sólo integra la dinámica y
 escribe estados; una etapa de análisis que calcula los observables
 \textbf{después} de simular, leyendo esos archivos; y la animación y las
 figuras en Python. El motor escribe \texttt{static.txt} (parámetros de la
@@ -284,8 +284,8 @@ métodos dan trayectorias idénticas.
 
 La Tabla~\ref{tab:parametros} resume los parámetros; todas las figuras de
 resultados usan los valores fijos de esa tabla. Hay dos barridos. El
-\textbf{principal} usa las densidades de la consigna,
-$\rho = 2,\,4,\,\SI{8}{m^{-2}}$, y alimenta todos los ítems. El
+\textbf{principal} usa
+$\rho = 2,\,4,\,\SI{8}{m^{-2}}$ y alimenta todos los resultados. El
 \textbf{extendido} agrega $\rho = 1/\pi,\ 1/2\pi,\ 1/3\pi\ \si{m^{-2}}$ y se
 usa sólo en el estudio de clusters (Secciones \ref{sec:S} y \ref{sec:vaS}):
 son las únicas densidades del trabajo con
@@ -347,7 +347,7 @@ encuentros son raros, el transitorio de agregación se alarga y \teq{} llega a
         Rapidez $v$                & \SI{0.03}{m/s}  & Celdas del CIM $\Mc$ & \num{9} (máximo admisible) \\
         Paso temporal $\Delta t$   & \SI{1}{s}       & Corridas totales & \num{5040} \\
         \midrule
-        \multicolumn{2}{@{}l}{\textit{Barrido principal (todos los ítems)}} &
+        \multicolumn{2}{@{}l}{\textit{Barrido principal (todos los resultados)}} &
         \multicolumn{2}{l}{\textit{Barrido extendido (clusters)}} \\
         \midrule
         Densidades $\rho$          & \num{2}, \num{4}, \SI{8}{m^{-2}} &
@@ -443,7 +443,7 @@ barras de las curvas escalares crezcan con el ruido.
 En ambas figuras $S$ se mantiene cerca de 1 durante toda la corrida, con caídas
 breves cuando la bandada se parte. No es un artefacto:
 $\langle k \rangle$ vale \num{6.3}, \num{12.6} y \num{25.1} para las tres
-densidades de la consigna, muy por encima del umbral de percolación, así que el
+densidades del barrido principal, muy por encima del umbral de percolación, así que el
 sistema está percolado desde la condición inicial para cualquier $\eta$. Esto
 condiciona las Secciones \ref{sec:S} y \ref{sec:vaS}.
 
@@ -542,7 +542,7 @@ a $\rho = \SI{4}{m^{-2}}$ y muestran las tres densidades del votante:
 \subsection{Componente gigante}
 \label{sec:S}
 
-Con las densidades de la consigna la componente gigante está saturada: el
+Con las densidades del barrido principal la componente gigante está saturada: el
 mínimo de todo el barrido estándar es $S = \num{0.90(11)}$, en
 $\rho = \SI{2}{m^{-2}}$ y $\eta = \SI{3.75}{rad}$, y a $\rho = \SI{8}{m^{-2}}$
 nunca baja de \num{0.9988}. Para que el observable informe algo, el estudio de
@@ -566,7 +566,7 @@ $\langle S \rangle = 0{,}83$ para esa realización y \num{0.89(16)} para el
 caso. Con $\eta = \SI{5}{rad}$ no hay agregación y el grupo mayor tiene en
 promedio seis partículas ($S = \num{0.20(7)}$). La
 Fig.~\ref{fig:temporal_baja} compara la evolución de $S(t)$ a
-$\eta = \SI{2}{rad}$ para las cinco densidades: con las de la consigna $S$
+$\eta = \SI{2}{rad}$ para las cinco densidades: con las del barrido principal $S$
 vale 1 desde el primer paso, mientras que a $1/\pi$ y $1/3\pi$ tiene un
 transitorio propio, que parte de $S \approx 0{,}15$ y crece por agregación. Dos partículas
 que se cruzan se alinean y dejan de separarse, los grupos se fusionan y sólo el
@@ -598,7 +598,7 @@ otros puntos del barrido, lo que justifica las corridas de \SI{2e4}{s}.
     \includegraphics[width=0.85\textwidth]{d_clusters/va_S_vs_t_vicsek_eta2_rhos8-4-2-1pi-1-3pi_promedioM20_lado.png}
     \caption{Curvas promedio sobre $M = 20$ realizaciones de $\va(t)$ y $S(t)$
     para el modelo estándar con $\eta = \SI{2}{rad}$ y las cinco densidades:
-    las tres de la consigna (corridas de \SI{5e3}{s}) y dos del barrido
+    las tres del barrido principal (corridas de \SI{5e3}{s}) y dos del barrido
     extendido (\SI{2e4}{s}). Verticales de trazos: \teq; horizontales de
     trazos: promedio en el estacionario. Con $\rho \ge \SI{2}{m^{-2}}$, $S$ vale 1
     desde el inicio; a $1/\pi$ y $1/3\pi$ tiene transitorio propio.}
@@ -606,7 +606,7 @@ otros puntos del barrido, lo que justifica las corridas de \SI{2e4}{s}.
 \end{figure}
 
 La Fig.~\ref{fig:S_eta} junta las dos familias de densidad por modelo, con el
-mismo eje $[0,1]$. Las densidades de la consigna quedan pegadas a $S = 1$; a
+mismo eje $[0,1]$. Las densidades del barrido principal quedan pegadas a $S = 1$; a
 \SI{2}{m^{-2}} apenas se insinúa un mínimo de \num{0.90(11)} en
 $\eta \approx \SI{3.75}{rad}$, la región donde \va{} cae más rápido: en la zona
 intermedia se forman grupos densos separados por regiones vacías. Las
@@ -625,7 +625,7 @@ $\rho = 1/\pi\ \si{m^{-2}}$): copiar a un único vecino no atenúa el ruido.
     \includegraphics[width=\textwidth]{d_clusters/S_vs_eta_estandar_votante_rho8-2-1pi-1-3pi_M20.png}
     \caption{Fracción $S$ en la componente gigante en el estacionario en
     función de $\eta$ para el \textbf{(a)} modelo estándar y el \textbf{(b)}
-    modelo de votante, con dos densidades de la consigna y dos del barrido
+    modelo de votante, con dos densidades del barrido principal y dos del barrido
     extendido; $M = 20$ por punto, barra $\sigma_S$ de la
     Ec.~\eqref{eq:promedio}, \SI{5e3}{s} por corrida si
     $\rho \ge \SI{2}{m^{-2}}$ y \SI{2e4}{s} si $\rho < \SI{1}{m^{-2}}$. Las
@@ -654,7 +654,7 @@ polarización es alcanzable. El corrimiento vertical entre las dos curvas bajas
 es el piso de la Ec.~\eqref{eq:piso} de cada $N$: los valores en
 $\eta = \SI{5}{rad}$, \num{0.163} y \num{0.272}, coinciden con \num{0.157} y
 \num{0.267} dentro del \SI{4}{\percent}. El desacople a densidad alta es
-entonces un efecto de los parámetros de la consigna, no del modelo. Con
+entonces un efecto de las densidades del barrido principal, no del modelo. Con
 $N = 32$ y \num{11} los sistemas son chicos a propósito: las barras son grandes
 y $S$ está cuantizado en múltiplos de $1/N$, así que los valores puntuales no
 se leen con más precisión que la de sus barras.
