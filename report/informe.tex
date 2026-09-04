@@ -384,48 +384,37 @@ En ambas figuras $S$ se mantiene cerca de 1 durante toda la simulación, con bre
 \subsection{Polarización en función del ruido}
 \label{sec:va}
 
-En la Fig.~\ref{fig:va_eta}a, \va{} decae de forma continua desde 1 en
-$\eta = 0$ hasta cerca del piso de la Ec.~\eqref{eq:piso} en
-$\eta = \SI{5}{rad}$, sin salto, compatible con la transición continua de
-\cite{vicsek1995}. A igual ruido, más densidad da más polarización: en
-$\eta = \SI{3}{rad}$, \va{} pasa de \num{0.48(12)} con $\rho = \SI{2}{m^{-2}}$
-a \num{0.62(3)} con \SI{8}{m^{-2}}, y el ruido de media polarización se corre
-de \SI{2.9}{rad} a \SI{3.5}{rad}. El motivo está en la Ec.~\eqref{eq:vicsek}:
-promediar sobre $\langle k \rangle \propto \rho$ vecinos atenúa el ruido en un
-factor $\sim 1/\sqrt{\langle k \rangle}$, así que subir la densidad equivale a
-bajar el ruido efectivo. Las barras crecen hacia la transición y son mayores
-cuanto menor es $N$: en $\eta = \SI{3}{rad}$, $\sigma_{\va}$ vale \num{0.12},
-\num{0.08} y \num{0.03}.
+En la Fig.~\ref{fig:va_eta}a, \va{} decae de forma continua desde 1 en $\eta = 0$ hasta cerca del piso de la Ec.~\eqref{eq:piso} en $\eta = \SI{5}{rad}$, sin salto, compatible con la transición continua de \cite{vicsek1995}.
+A igual ruido, más densidad da más polarización. En $\eta = \SI{3}{rad}$, \va{} pasa de \num{0.48(12)} con $\rho = \SI{2}{m^{-2}}$ a \num{0.62(3)} con \SI{8}{m^{-2}}, y el ruido de media polarización se corre desde \SI{2.9}{rad} hasta \SI{3.5}{rad}.
+Esto se debe a que, según la Ec.~\eqref{eq:vicsek}, promediar sobre $\langle k \rangle \propto \rho$ vecinos atenúa el ruido en un factor $\sim 1/\sqrt{\langle k \rangle}$, por lo que subir la densidad equivale a bajar el ruido efectivo. Las barras crecen hacia la transición y son mayores cuanto menor es $N$.
+En $\eta = \SI{3}{rad}$, $\sigma_{\va}$ vale \num{0.12}, \num{0.08} y \num{0.03}.
 
 \subsection{Modelo de votante}
 \label{sec:votante}
 
-La Fig.~\ref{fig:temporal_votante} repite la Fig.~\ref{fig:temporal_etas} con
-la regla de la Ec.~\eqref{eq:votante}: donde el estándar alcanzaba
-$\va \approx 0{,}99$, el votante se estabiliza en \num{0.30(14)} y oscila entre
-\num{0.1} y \num{0.7}. Su estacionario no es una bandada única sino dominios
-que se forman, crecen y se disuelven, y por eso $\sigma_{\va}$ es del orden de
-$\langle \va \rangle$. Las Figuras \ref{fig:va_eta}b y c comparan ambos modelos
-a $\rho = \SI{4}{m^{-2}}$ y muestran las tres densidades del votante:
+La Fig.~\ref{fig:temporal_votante} repite la Fig.~\ref{fig:temporal_etas} con la regla de la Ec.~\eqref{eq:votante}.
+Donde el estándar alcanzaba $\va \approx 0{,}99$, el votante se estabiliza en \num{0.30(14)} y oscila entre \num{0.1} y \num{0.7}.
+Su estacionario no es una bandada única sino dominios que se forman, crecen y se disuelven, y por este motivo, $\sigma_{\va}$ es del orden de $\langle \va \rangle$.
+Las Figuras \ref{fig:va_eta}b y c comparan ambos modelos cuando $\rho = \SI{4}{m^{-2}}$ y muestran las tres densidades del votante.
 
 \begin{itemize}
     \setlength{\itemsep}{1pt}
-    \item En $\eta = 0$ ambos modelos dan $\va = 1$: copiar a un vecino
+    \item En $\eta = 0$ ambos modelos dan $\va = 1$. Copiar a un vecino
           alineado y promediar vecinos alineados es lo mismo. Sirve de
           verificación cruzada de las dos implementaciones.
-    \item Para $\eta > 0$ las curvas se separan de inmediato: en
+    \item Para $\eta > 0$ las curvas se separan de inmediato En
           $\eta = \SI{0.5}{rad}$ el estándar conserva $\va = \num{0.986(3)}$ y
-          el votante ya cayó a \num{0.30(14)}; el ruido de media polarización
+          el votante ya cayó a \num{0.30(14)}, el ruido de media polarización
           es \SI{0.3}{rad} contra \SI{3.2}{rad}.
-    \item La densidad actúa con signo opuesto: a $\eta = \SI{1}{rad}$, \va{}
+    \item La densidad actúa con signo opuesto. Cuando $\eta = \SI{1}{rad}$, \va{}
           vale \num{0.20(10)}, \num{0.15(8)} y \num{0.11(6)} para
           $\rho = 2$, \num{4} y \SI{8}{m^{-2}}. Copiar a uno solo no promedia
-          nada: el ruido entra íntegro en cada paso, sin la atenuación
+          nada, sino que el ruido entra en cada paso sin la atenuación
           $1/\sqrt{\langle k \rangle}$, y más vecinos sólo aceleran la
           propagación del desorden.
-    \item El votante llega al desorden completo dentro del rango: en
+    \item El votante llega al desorden dentro del rango. Con
           $\eta = \SI{5}{rad}$ reproduce el piso de la Ec.~\eqref{eq:piso}
-          dentro del \SI{3}{\percent}; el estándar queda bien por encima
+          dentro del \SI{3}{\percent}, el estándar queda muy por encima,
           (\num{0.0792} contra \num{0.0313} para $\rho = \SI{8}{m^{-2}}$).
 \end{itemize}
 
